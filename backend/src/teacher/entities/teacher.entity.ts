@@ -1,3 +1,4 @@
+import { Class } from 'src/class/entities/class.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
@@ -7,6 +8,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -33,6 +35,12 @@ export class Teacher {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
+  // Relação com User (1,1)
   @ManyToOne(() => User, (user) => user.teachers)
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'userId' })
   user?: User;
+
+  // Relação com Class (0,n)
+  @OneToMany(() => Class, (classEntity) => classEntity.teacher)
+  classes: Class[];
 }

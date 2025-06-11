@@ -4,10 +4,12 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
-import { Class } from '../../class/entities/class.entity'; 
 import { Assessment } from '../../assessment/entities/assessment.entity';
-
+import { Class } from 'src/class/entities/class.entity';
+import { Code } from 'src/code/entities/code.entity';
+import { Checkin } from 'src/checkin/entities/checkin.entity';
 
 export enum ActivityType {
   ACTIVITY = 'activity',
@@ -47,23 +49,32 @@ export class Activity {
   @Column({
     type: 'varchar',
     length: 36,
-    name: 'class_id', 
+    name: 'class_id',
   })
   classId: string;
 
   @Column({
     type: 'varchar',
     length: 36,
-    name: 'assessment_id', 
+    name: 'assessment_id',
   })
   assessmentId: string;
 
-
+  // Relação com Class (1,1)
   @ManyToOne(() => Class, (cls) => cls.activities)
   @JoinColumn({ name: 'class_id' })
   class: Class;
 
+  // Relação com Assessment (1,1)
   @ManyToOne(() => Assessment, (assessment) => assessment.activities)
   @JoinColumn({ name: 'assessment_id' })
   assessment: Assessment;
+
+  //Relação com Code (0,n)
+  @OneToMany(() => Code, (code) => code.activity)
+  codes: Code[];
+
+  // Relação com Checkin (0,n)
+  @OneToMany(() => Checkin, (checkin) => checkin.activity)
+  checkins: Checkin[];
 }

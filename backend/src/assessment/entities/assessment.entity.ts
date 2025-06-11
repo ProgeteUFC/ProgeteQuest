@@ -32,10 +32,12 @@ export class Assessment {
   })
   classId: string;
 
+  // Relação com Class (1,1)
   @ManyToOne(() => Class, (cls) => cls.assessments)
-  @JoinColumn({ name: 'class_id' }) 
+  @JoinColumn({ name: 'class_id' })
   class: Class;
 
+  // Relação com Activity (0,n)
   @OneToMany(() => Activity, (activity) => activity.assessment)
   activities: Activity[];
 }
