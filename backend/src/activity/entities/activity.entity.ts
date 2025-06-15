@@ -10,12 +10,7 @@ import { Assessment } from '../../assessment/entities/assessment.entity';
 import { Class } from 'src/class/entities/class.entity';
 import { Code } from 'src/code/entities/code.entity';
 import { Checkin } from 'src/checkin/entities/checkin.entity';
-
-export enum ActivityType {
-  ACTIVITY = 'activity',
-  SEMINAR = 'seminar',
-  ATTENDANCE = 'attendance',
-}
+import { ActivityType } from 'src/Enums/activity.enum';
 
 @Entity({ name: 'activity' })
 export class Activity {

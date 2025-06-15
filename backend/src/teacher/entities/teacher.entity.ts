@@ -27,7 +27,7 @@ export class Teacher {
     name: 'registration_teacher',
     length: 6,
   })
-  registrationStudent: string;
+  registrationTeacher: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
