@@ -31,7 +31,7 @@ DB_USERNAME=seu_usuario
 DB_PASSWORD=sua_senha
 DB_DATABASE=progetequest
 
-JWT_SECRET= chave_secreta
+JWT_SECRET=chave_secreta
 
 PORT=3000
 ```
