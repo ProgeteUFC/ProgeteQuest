@@ -8,6 +8,7 @@ import { StudentClassModule } from './student_class/student_class.module';
 import { CheckinModule } from './checkin/checkin.module';
 import { CodeModule } from './code/code.module';
 import { AuthModule } from './auth/auth.module';
+import { ActivityModule } from './activity/activity.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,6 +32,7 @@ import { AuthModule } from './auth/auth.module';
     CheckinModule,
     CodeModule,
     AuthModule,
+    ActivityModule,
   ],
 })
 export class AppModule {}
