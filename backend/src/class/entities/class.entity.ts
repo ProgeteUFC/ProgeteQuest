@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -44,10 +45,9 @@ export class Class {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  // ANALISAR SE ESTÁ CORRETO:
-
   // Relação com Teacher (1,1)
   @ManyToOne(() => Teacher, (teacher) => teacher.classes)
+  @JoinColumn({ name: 'teacher_id' })
   teacher: Teacher;
 
   // Relação com Assessment (0,n)
