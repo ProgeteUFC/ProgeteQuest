@@ -1,4 +1,5 @@
 export class CreateClassDto {
-  teacherId: string;
   name: string;
+  classId: string;
+  teacherId: string;
 }
