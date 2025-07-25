@@ -9,6 +9,8 @@ import { CheckinModule } from './checkin/checkin.module';
 import { CodeModule } from './code/code.module';
 import { AuthModule } from './auth/auth.module';
 import { ActivityModule } from './activity/activity.module';
+import { AssessmentModule } from './assessment/assessment.module';
+import { ClassModule } from './class/class.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +35,8 @@ import { ActivityModule } from './activity/activity.module';
     CodeModule,
     AuthModule,
     ActivityModule,
+    AssessmentModule,
+    ClassModule,
   ],
 })
 export class AppModule {}
