@@ -65,4 +65,100 @@ export class UserService {
       email: user.email,
     };
   }
+
+  async findAll() {
+    const users = await this.userRepository.find({
+      select: ['userId', 'name', 'email', 'createdAt', 'updatedAt'],
+      relations: ['students', 'teachers'],
+    });
+
+    return users.map((user) => {
+      let type: 'student' | 'teacher' | null = null;
+      if (user.students && user.students.length > 0) {
+        type = 'student';
+      } else if (user.teachers && user.teachers.length > 0) {
+        type = 'teacher';
+      }
+      return {
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        type,
+      };
+    });
+  }
+
+  async remove(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+      relations: ['students', 'teachers'],
+    });
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    // Remove registros de estudante, se existirem
+    if (user.students && user.students.length > 0) {
+      await this.studentRepository.delete({ userId });
+    }
+
+    // Remove registros de professor, se existirem
+    if (user.teachers && user.teachers.length > 0) {
+      await this.teacherRepository.delete({ userId });
+    }
+
+    // Remove o usuário
+    await this.userRepository.delete({ userId });
+
+    return { message: 'Usuário removido com sucesso' };
+  }
+
+  async update(userId: string, updateUserDto: Partial<CreateUserDto>) {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+      relations: ['students', 'teachers'],
+    });
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    // Atualiza campos básicos
+    if (updateUserDto.name) user.name = updateUserDto.name.trim();
+    if (updateUserDto.email)
+      user.email = updateUserDto.email.trim().toLowerCase();
+    if (updateUserDto.password) {
+      user.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+    await this.userRepository.save(user);
+
+    // Atualiza registro de estudante
+    if (
+      user.students &&
+      user.students.length > 0 &&
+      updateUserDto.registrationStudent
+    ) {
+      const student = user.students[0];
+      student.registrationStudent = updateUserDto.registrationStudent.trim();
+      await this.studentRepository.save(student);
+    }
+
+    // Atualiza registro de professor
+    if (
+      user.teachers &&
+      user.teachers.length > 0 &&
+      updateUserDto.registrationTeacher
+    ) {
+      const teacher = user.teachers[0];
+      teacher.registrationTeacher = updateUserDto.registrationTeacher.trim();
+      await this.teacherRepository.save(teacher);
+    }
+
+    return {
+      userId: user.userId,
+      name: user.name,
+      email: user.email,
+    };
+  }
 }
