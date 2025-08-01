@@ -1,0 +1,57 @@
+:root {
+    --primary: #3F37A6;
+    --primary-dark: #2A007B;
+    --text-primary: #FFF;
+    --text-secondary: #c1c5cd;
+    --bg-light: #F9FAFB;
+    --border: #E5E7EB;
+  }
+  
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
+}
+.login{
+  margin-right: 10rem;
+  
+}
+.login img{
+  width: 200px;
+  margin-bottom: 3rem;
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--primary);
+  padding: 3rem;
+  border-radius: 1.5rem;
+}
+
+.form-group{
+  display: flex;
+  flex-direction: column;
+  
+}
+
+
+.form-group input{
+  padding: 0.5rem;
+  border:0;
+  border-radius:1rem;
+  margin:0.5rem 0.5rem;
+  
+}
+
+.form-group a{
+  color:aquamarine;
+}
+
+.about-us .planet{
+  display:flex;
+  flex:1;
+  margin-left:auto;
+  width: 300px;
+}
