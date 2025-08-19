@@ -39,6 +39,15 @@ export class Class {
   })
   name: string;
 
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    name: 'join_code',
+    length: 10,
+    unique: true,
+  })
+  joinCode: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

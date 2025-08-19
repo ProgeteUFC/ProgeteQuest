@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -44,9 +45,11 @@ export class StudentClass {
 
   // Relação com Class (1,1)
   @ManyToOne(() => Class, (classEntity) => classEntity.studentClasses)
+  @JoinColumn({ name: 'class_id', referencedColumnName: 'classId' })
   class: Class;
 
   // Relação com Student (1,1)
   @ManyToOne(() => Student, (student) => student.studentClasses)
+  @JoinColumn({ name: 'student_id', referencedColumnName: 'userId' })
   student: Student;
 }
