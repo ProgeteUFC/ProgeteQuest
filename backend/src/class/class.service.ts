@@ -10,9 +10,14 @@ import { Repository } from 'typeorm';
 import { Class } from './entities/class.entity';
 import { Teacher } from '../teacher/entities/teacher.entity';
 import { validate as isUuid } from 'uuid';
+
 import { generateJoinCode } from '../utils/generateJoinCode';
 import { Student } from 'src/student/entities/student.entity';
 import { StudentClass } from 'src/student_class/entities/studentClass.entity';
+
+import { UpdateClassDto } from './dtos/updateClass.dto';
+import { Assessment } from '../assessment/entities/assessment.entity';
+
 
 @Injectable()
 export class ClassService {
@@ -22,8 +27,14 @@ export class ClassService {
 
     @InjectRepository(Teacher)
     private readonly teacherRepository: Repository<Teacher>,
+
     @InjectRepository(StudentClass)
     private readonly studentClassRepository: Repository<StudentClass>,
+
+
+    @InjectRepository(Assessment)
+    private readonly assessmentRepository: Repository<Assessment>,
+
   ) {}
 
   async getAllClasses(): Promise<Class[]> {
@@ -126,5 +137,45 @@ export class ClassService {
       classId: classEntity.classId,
     });
     return this.studentClassRepository.save(studentClass);
+  }
+  async updateClass(id: string, updateDto: UpdateClassDto): Promise<Class> {
+    const existing = await this.classRepository.findOne({
+      where: { classId: id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Turma com id ${id} não encontrada`);
+    }
+
+    if (updateDto.name !== undefined) {
+      if (typeof updateDto.name !== 'string' || updateDto.name.trim() === '') {
+        throw new BadRequestException('O campo "name" não pode ser vazio.');
+      }
+      existing.name = updateDto.name;
+    }
+
+    if (updateDto.classId !== undefined) {
+      const assessmentExists = await this.assessmentRepository.findOne({
+        where: { assessmentId: updateDto.assessmentId },
+      });
+      if (!assessmentExists) {
+        throw new NotFoundException(
+          `Avaliação com id ${updateDto.assessmentId} não encontrada`,
+        );
+      }
+      if (!isUuid(updateDto.classId)) {
+        throw new BadRequestException('ID inválido fornecido');
+      }
+      existing.classId = updateDto.classId;
+    }
+
+    return await this.classRepository.save(existing);
+  }
+
+  async deleteClass(id: string): Promise<void> {
+    const result = await this.classRepository.delete(id);
+    if (!result.affected || result.affected === 0) {
+      throw new NotFoundException(`Turma com id ${id} não encontrada`);
+    }
   }
 }
