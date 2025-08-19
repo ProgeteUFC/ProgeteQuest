@@ -45,7 +45,8 @@ export class ClassController {
       body.registrationStudent,
       body.joinCode,
     );
-      
+  }
+
   @Put(':id')
   update(
     @Param('id') id: string,
