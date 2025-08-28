@@ -211,4 +211,32 @@ export class ClassService {
 
     return ranking;
   }
+
+  async getClassParticipants(classId: string) {
+    const studentClasses = await this.studentClassRepository.find({
+      where: { classId },
+      relations: ['student', 'student.user'],
+    });
+
+    return studentClasses.map((sc) => ({
+      studentId: sc.studentId,
+      registrationStudent: sc.student.registrationStudent,
+      name: sc.student.user?.name,
+      email: sc.student.user?.email,
+    }));
+  }
+
+  async getStudentClasses(studentId: string) {
+    const studentClasses = await this.studentClassRepository.find({
+      where: { studentId },
+      relations: ['class'],
+    });
+
+    return studentClasses.map((sc) => ({
+      classId: sc.class.classId,
+      name: sc.class.name,
+      joinCode: sc.class.joinCode,
+      teacherId: sc.class.teacherId,
+    }));
+  }
 }

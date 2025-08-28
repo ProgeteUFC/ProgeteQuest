@@ -64,4 +64,14 @@ export class ClassController {
   async getRanking(@Param('id') classId: string) {
     return this.classService.getClassRanking(classId);
   }
+
+  @Get(':id/participants')
+  async getParticipants(@Param('id') classId: string) {
+    return this.classService.getClassParticipants(classId);
+  }
+
+  @Get('student/:studentId')
+  async getStudentClasses(@Param('studentId') studentId: string) {
+    return this.classService.getStudentClasses(studentId);
+  }
 }
