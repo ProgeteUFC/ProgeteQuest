@@ -42,7 +42,7 @@ export class Code {
     nullable: false,
     name: 'active',
   })
-  active: string;
+  active: boolean;
 
   @Column({
     type: 'int',
