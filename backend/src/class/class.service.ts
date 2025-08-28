@@ -18,6 +18,7 @@ import { StudentClass } from 'src/student_class/entities/studentClass.entity';
 import { UpdateClassDto } from './dtos/updateClass.dto';
 import { Assessment } from '../assessment/entities/assessment.entity';
 
+import { Checkin } from 'src/checkin/entities/checkin.entity';
 
 @Injectable()
 export class ClassService {
@@ -31,10 +32,8 @@ export class ClassService {
     @InjectRepository(StudentClass)
     private readonly studentClassRepository: Repository<StudentClass>,
 
-
     @InjectRepository(Assessment)
     private readonly assessmentRepository: Repository<Assessment>,
-
   ) {}
 
   async getAllClasses(): Promise<Class[]> {
@@ -177,5 +176,39 @@ export class ClassService {
     if (!result.affected || result.affected === 0) {
       throw new NotFoundException(`Turma com id ${id} não encontrada`);
     }
+  }
+
+  async getClassRanking(classId: string) {
+    // Busca todos os alunos matriculados na turma
+    const students = await this.studentClassRepository
+      .createQueryBuilder('student_class')
+      .leftJoinAndSelect('student_class.student', 'student')
+      .where('student_class.classId = :classId', { classId })
+      .getMany();
+
+    // Busca todos os check-ins dos alunos dessa turma
+    const checkins = await this.studentClassRepository.manager
+      .getRepository(Checkin)
+      .createQueryBuilder('checkin')
+      .leftJoin('checkin.student', 'student')
+      .leftJoin('checkin.activity', 'activity')
+      .where('activity.classId = :classId', { classId })
+      .getMany();
+
+    // Conta check-ins por aluno
+    const ranking = students.map((sc) => {
+      const count = checkins.filter((c) => c.studentId === sc.studentId).length;
+      return {
+        studentId: sc.studentId,
+        registrationStudent: sc.student.registrationStudent,
+        name: sc.student.user?.name,
+        checkins: count,
+      };
+    });
+
+    // Ordena do maior para o menor
+    ranking.sort((a, b) => b.checkins - a.checkins);
+
+    return ranking;
   }
 }

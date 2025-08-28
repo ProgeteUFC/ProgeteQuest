@@ -59,4 +59,9 @@ export class ClassController {
   delete(@Param('id') id: string): Promise<void> {
     return this.classService.deleteClass(id);
   }
+
+  @Get(':id/ranking')
+  async getRanking(@Param('id') classId: string) {
+    return this.classService.getClassRanking(classId);
+  }
 }
