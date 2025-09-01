@@ -30,4 +30,23 @@ export class ActivityController {
   delete(@Param('id') id: string): Promise<Activity[]> {
     return this.activityService.deleteActivity(id);
   }
+
+  @Post('search')
+  async searchActivities(
+    @Body() body: { name?: string; classId?: string; assessmentId?: string },
+  ) {
+    return this.activityService.searchActivities(body);
+  }
+
+  @Get('class/:classId')
+  async listByClass(
+    @Param('classId') classId: string,
+    @Body() body: { orderBy?: 'name' | 'date'; order?: 'ASC' | 'DESC' },
+  ) {
+    return this.activityService.listActivitiesByClass(
+      classId,
+      body.orderBy ?? 'date',
+      body.order ?? 'ASC',
+    );
+  }
 }

@@ -74,4 +74,9 @@ export class ClassController {
   async getStudentClasses(@Param('studentId') studentId: string) {
     return this.classService.getStudentClasses(studentId);
   }
+
+  @Get('search')
+  async searchClasses(@Body() body: { name?: string; joinCode?: string }) {
+    return this.classService.searchClasses(body);
+  }
 }

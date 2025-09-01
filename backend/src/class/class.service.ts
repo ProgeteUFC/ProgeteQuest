@@ -239,4 +239,19 @@ export class ClassService {
       teacherId: sc.class.teacherId,
     }));
   }
+
+  async searchClasses(query: { name?: string; joinCode?: string }) {
+    const qb = this.classRepository.createQueryBuilder('class');
+
+    if (query.name) {
+      qb.andWhere('LOWER(class.name) LIKE :name', {
+        name: `%${query.name.toLowerCase()}%`,
+      });
+    }
+    if (query.joinCode) {
+      qb.andWhere('class.joinCode = :joinCode', { joinCode: query.joinCode });
+    }
+
+    return qb.getMany();
+  }
 }
