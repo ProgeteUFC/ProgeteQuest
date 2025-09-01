@@ -163,4 +163,39 @@ export class ActivityService {
     await this.activityRepository.remove(existing);
     return this.getAllActivities(); // retorna a lista atualizada
   }
+
+  async searchActivities(query: {
+    name?: string;
+    classId?: string;
+    assessmentId?: string;
+  }) {
+    const qb = this.activityRepository.createQueryBuilder('activity');
+
+    if (query.name) {
+      qb.andWhere('LOWER(activity.name) LIKE :name', {
+        name: `%${query.name.toLowerCase()}%`,
+      });
+    }
+    if (query.classId) {
+      qb.andWhere('activity.classId = :classId', { classId: query.classId });
+    }
+    if (query.assessmentId) {
+      qb.andWhere('activity.assessmentId = :assessmentId', {
+        assessmentId: query.assessmentId,
+      });
+    }
+
+    return qb.getMany();
+  }
+
+  async listActivitiesByClass(
+    classId: string,
+    orderBy: 'name' | 'date' = 'date',
+    order: 'ASC' | 'DESC' = 'ASC',
+  ) {
+    return this.activityRepository.find({
+      where: { classId },
+      order: { [orderBy]: order },
+    });
+  }
 }
