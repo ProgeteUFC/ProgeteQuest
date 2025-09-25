@@ -2,7 +2,6 @@ import styled from 'styled-components';
 
 export const Container = styled.div`
     display: flex;    
-    background-color: ${props => props.theme.COLORS.kingfisherDaisy};
     padding: 20px;
     font-size: 14px;
     margin-top: 30px;
@@ -10,6 +9,7 @@ export const Container = styled.div`
     position: relative;
     width: 100%;
     height: 130px;
+    z-index:1;
 `
 export const Image = styled.img`
     width: 220px;

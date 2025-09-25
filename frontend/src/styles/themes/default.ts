@@ -2,7 +2,8 @@ export const defaultTheme = {
     COLORS: {
         kingfisherDaisy: '#2c0383',
         indigo: '#4f4192',
-        white: '#ffffff'
+        white: '#ffffff',
+        lightOrange: '#e69517'
     },
     FONT_SIZE: {
         P10: 10,

@@ -2,15 +2,28 @@ import styled from "styled-components";
 
 export const Container = styled.div`
 background-color: ${props => props.theme.COLORS.kingfisherDaisy};
+display:flex;
+flex-direction: column;
+justify-content: space-between;
 height: 100vh;
 `;
 
 export const Content = styled.div`
 width: 100%;
+padding:200px;
 max-width: 1120px;
 `;
 
 export const Title = styled.h2`
 color: ${props => props.theme.COLORS.white};
 font-size: ${props => props.theme.FONT_SIZE.G34}px;
-margin: 40px 0;`
+`
+
+export const Image = styled.img`
+position: fixed;
+width: 700px;
+z-index:0;
+bottom: 0;
+right: 0;
+transform: translate(30%, 30%); 
+`

@@ -11,3 +11,16 @@ export const Container = styled.div`
     margin-top: 20px;
     align-items: center;
 `;
+
+export const Icon = styled.div`
+    cursor: pointer;
+    svg {
+        color: ${props => props.theme.COLORS.white}; /* 1. Cor padrão: white */
+        transition: color 0.3s ease-in-out;
+    }
+    &:hover {
+        svg {
+            color: ${props => props.theme.COLORS.lightOrange}; /* Cor ao passar o mouse: lightOrange */
+        }
+    }
+`;

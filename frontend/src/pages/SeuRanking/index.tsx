@@ -2,9 +2,12 @@ import Footer from "../../components/Footer";
 import { HeaderRanking } from "../../components/headerRanking";
 import { MenuRanking } from "../../components/MenuRanking";
 import { Ranking } from "../../components/Ranking";
-import { Content } from "../suasDisciplinas/styles";
+import { Content } from "../SeuRanking/styles";
 import { Container } from "./styles";
 import { Title } from "./styles";
+import { Image } from "./styles"
+import planet_blue from "../../assets/planet_blue.png";
+
 
 const SeuRanking = () => {
   return (
@@ -18,6 +21,10 @@ const SeuRanking = () => {
           <Ranking />
         </Content>
         <Footer />
+        <Image
+        src={planet_blue}
+        alt="Planeta Azul"
+        />
       </Container>
     </>
   );
