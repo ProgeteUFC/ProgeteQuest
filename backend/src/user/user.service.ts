@@ -21,6 +21,14 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    // Verifica se o email já existe
+    const existingUser = await this.userRepository.findOne({
+      where: { email: createUserDto.email.trim().toLowerCase() },
+    });
+    if (existingUser) {
+      throw new BadRequestException('Conta já existe para este email');
+    }
+
     //Verifica o tipo de usuário
     if (createUserDto.type !== 'student' && createUserDto.type !== 'teacher') {
       throw new BadRequestException('Tipo de usuário inválido');
@@ -159,6 +167,34 @@ export class UserService {
       userId: user.userId,
       name: user.name,
       email: user.email,
+    };
+  }
+
+  async findOne(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+      relations: ['students', 'teachers'],
+    });
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    let type: 'student' | 'teacher' | null = null;
+    if (user.students && user.students.length > 0) {
+      type = 'student';
+    } else if (user.teachers && user.teachers.length > 0) {
+      type = 'teacher';
+    }
+
+    return {
+      userId: user.userId,
+      name: user.name,
+      email: user.email,
+      type,
+      registrationStudent: user.students?.[0]?.registrationStudent,
+      registrationTeacher: user.teachers?.[0]?.registrationTeacher,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 }
