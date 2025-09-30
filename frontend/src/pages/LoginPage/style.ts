@@ -6,23 +6,53 @@ export const Container = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 100vw; /* Adicionado para garantir largura total */
+  width: 100vw; 
   background-color: ${({ theme }) => theme.colors.kingfisherDaisy || 'var(--kingfisherDaisy)'};
 
-  padding: 2rem; /* Adicionado para espaçamento */
-  box-sizing: border-box; /* Garante que o padding não afete a largura total
+  padding: 2rem; 
+  box-sizing: border-box; 
+
+  @media (max-width: 1440px) {
+
+    flex-direction: column;
+    overflow-y: auto;
   
+  }
+  
+
 
   `;
 
 export const Login = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
   margin-right: 10rem;
   width: 100%;
   max-width: 500px; /* Adicionado para melhor responsividade */
+  position: relative;
+  
+  .astronauta {
+    position: fixed;
+    width: 400px;
+    height: auto;
+    z-index:0;
+
+    bottom: 0;
+    left: -100;
+    margin-left: -200px;
+
+
+
+}
+
+  @media (max-width: 1440px) {
+
+    .astronauta{
+      display:none;
+    }
+  }
   
 
   
@@ -31,18 +61,26 @@ export const Login = styled.div`
 export const LoginCard = styled.div`
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) => theme.colors.primary || 'var(--primary)'};
+  justify-content: spcace-between;
+  align-items: center;
+  background: ${({ theme }) => theme.colors.indigo || 'var(--primary)'};
   padding: 3rem;
   border-radius: 1.5rem;
   width: 100%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adiciona sombra para profundidade */
-`;
+
+  object-fit:cover;
+  z-index: 1;
+
+
+  `;
 
 export const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
   margin-bottom: 1rem;
+  
 
   input {
     padding: 0.8rem; /* Aumentado para melhor usabilidade */
@@ -96,6 +134,8 @@ export const AboutUs = styled.div`
     width: 300px;
     height: auto;
     max-width: 100%;
+
+    
   }
 
   .about-content {
@@ -104,4 +144,23 @@ export const AboutUs = styled.div`
     
   }
   
+
+  @media (max-width: 1440px) {
+    margin-top: 5rem;
+    .about-content{
+
+      height:10rem;
+
+    }
+
+    .planet-image{
+
+      width:600px;
+
+    }
+  }
+    @media (max-width: 768px) {
+    
+  
+
 `;

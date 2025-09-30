@@ -1,11 +1,17 @@
 import React from "react";
-import { Container , Login, LoginCard, FormGroup, AboutUs} from "./style";
+import { Container , Login, LoginCard, FormGroup, AboutUs } from "./style";
 import  logo from "../../assets/logo.png";
 import progete from "../../assets/progete.png";
 import planetOrange from "../../assets/planet_orange.png";
-import {Button} from "../../components/Button";
+import { Button } from "../../components/Button";
 import { TitleName } from "../../components/TitleName";
 import { TitleDescription } from "../../components/TitleDescription";
+
+import {defaultTheme} from "../../styles/themes/default";
+import astronauta from "../../assets/astronauta.png";
+
+
+const bgcolor = defaultTheme.colors;
 
 export default function LoginPage() {
  
@@ -14,16 +20,18 @@ export default function LoginPage() {
       <Login>
         <img src={progete} alt="progete" />
         <LoginCard>
-          <Button title="Sou aluno" />
-          <Button title="Sou professor" />
+          <Button title="Sou aluno" bgColor="rewardGold" />
+          <Button title="Sou professor" bgColor="rewardGold"/>
           <FormGroup>
             <input type="text" name="usuario" placeholder="Email" required />
             <input type="password" name="senha" placeholder="Senha" required />
             <a href="">Esqueci minha senha</a>
             <a href="/register">Registre-se</a>
-            <Button title="Entrar" />
+            <Button title="Entrar" bgColor="rewardGold"/>
           </FormGroup>
         </LoginCard>
+        <img className="astronauta" src={astronauta} alt="astronauta" />
+
       </Login>
 
       <AboutUs>
