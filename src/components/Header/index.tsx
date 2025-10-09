@@ -32,7 +32,7 @@ export default function Header() {
           </MenuOptions>
           <a href="/">
             <IconSair>
-              <img src={iconSair} alt="Ícone que leva para Login" width={35} />
+              <img src={iconSair} alt="Ícone que leva para Login" width={32} />
               <p>Sair</p>
             </IconSair>
           </a>

@@ -26,7 +26,7 @@ export const MenuContent = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
 `
 
 export const MenuOption = styled.a`
@@ -58,6 +58,7 @@ export const IconSair = styled.div`
     justify-content: center;
     align-items: center;
     gap: 4px;
+    padding-left: 5px;
 
     &:active {
         scale: 0.97;
