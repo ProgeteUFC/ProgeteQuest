@@ -21,9 +21,38 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    if (!createUserDto.name || createUserDto.name.trim() === '') {
+      throw new BadRequestException('Campo obrigatório: nome');
+    }
+    if (!createUserDto.email || createUserDto.email.trim() === '') {
+      throw new BadRequestException('Campo obrigatório: email');
+    }
+    if (!createUserDto.password || createUserDto.password.trim() === '') {
+      throw new BadRequestException('Campo obrigatório: senha');
+    }
+    if (
+      createUserDto.type === 'student' &&
+      (!createUserDto.registrationStudent ||
+        createUserDto.registrationStudent.trim().length !== 6)
+    ) {
+      throw new BadRequestException('Matrícula do aluno deve ter 6 dígitos');
+    }
+    if (
+      createUserDto.type === 'teacher' &&
+      (!createUserDto.registrationTeacher ||
+        createUserDto.registrationTeacher.trim().length !== 6)
+    ) {
+      throw new BadRequestException(
+        'Matrícula do professor deve ter 6 dígitos',
+      );
+    }
+
+    // Normaliza o e-mail ANTES de verificar se já existe
+    const normalizedEmail = createUserDto.email.trim().toLowerCase();
+
     // Verifica se o email já existe
     const existingUser = await this.userRepository.findOne({
-      where: { email: createUserDto.email.trim().toLowerCase() },
+      where: { email: normalizedEmail },
     });
     if (existingUser) {
       throw new BadRequestException('Conta já existe para este email');
@@ -39,7 +68,7 @@ export class UserService {
     const user = this.userRepository.create({
       userId: generateUuid(),
       name: createUserDto.name.trim(),
-      email: createUserDto.email.trim().toLowerCase(),
+      email: normalizedEmail, // Salva sempre normalizado!
       password: hashedPassword,
     });
 
@@ -124,6 +153,16 @@ export class UserService {
   }
 
   async update(userId: string, updateUserDto: Partial<CreateUserDto>) {
+    if (
+      !updateUserDto.name &&
+      !updateUserDto.email &&
+      !updateUserDto.password
+    ) {
+      throw new BadRequestException(
+        'Nenhum campo válido enviado para atualização',
+      );
+    }
+
     const user = await this.userRepository.findOne({
       where: { userId },
       relations: ['students', 'teachers'],
