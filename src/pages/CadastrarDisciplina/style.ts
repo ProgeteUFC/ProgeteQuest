@@ -7,6 +7,7 @@ export const Pagina = styled.h1`
     font-family: Arial, Helvetica, sans-serif;
     height: 84.2vh;
     position: relative;
+    overflow: hidden;
 `
 
 export const TituloPagina = styled.h1`
@@ -45,6 +46,13 @@ export const LabelSenha = styled.label`
     font-size: 20px;
 `
 
+export const IconEnviarSenha = styled.img`
+    position: absolute;
+    top: 32px;
+    right: 15px;
+    cursor: pointer;
+`
+
 export const LogoProgete = styled.img`
     position: absolute;
     bottom: 20px;
@@ -53,6 +61,6 @@ export const LogoProgete = styled.img`
 
 export const PlanetaCadastrar = styled.img`
     position: absolute;
-    bottom: 0;
-    right: 0;
+    bottom: -200px;
+    right: -110px;
 `
