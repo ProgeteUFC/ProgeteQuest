@@ -43,6 +43,14 @@ export class User {
   })
   password: string;
 
+  @Column({
+    type: 'varchar',
+    nullable: false,
+    name: 'type',
+    length: 20,
+  })
+  type: 'student' | 'teacher';
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
