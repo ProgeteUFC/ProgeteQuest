@@ -100,7 +100,8 @@ export class ClassService {
     const exists = await this.studentClassRepository.findOne({
       where: { studentId: student.userId, classId: classEntity.classId },
     });
-    if (exists) throw new BadRequestException('Aluno já está na turma');
+    if (exists)
+      throw new BadRequestException('Aluno já matriculado nessa turma');
 
     const studentClass = this.studentClassRepository.create({
       studentClassId: generateUuid(),
