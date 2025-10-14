@@ -25,5 +25,5 @@ width: 700px;
 z-index:0;
 bottom: 0;
 right: 0;
-transform: translate(30%, 30%); 
+transform: translate(20%, 20%); 
 `

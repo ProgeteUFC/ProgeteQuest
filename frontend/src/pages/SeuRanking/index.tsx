@@ -6,7 +6,7 @@ import { Content } from "../SeuRanking/styles";
 import { Container } from "./styles";
 import { Title } from "./styles";
 import { Image } from "./styles"
-import planet_blue from "../../assets/planet_blue.png";
+import planet_blue from "../../assets/planet_blue_anel.png";
 
 
 const SeuRanking = () => {

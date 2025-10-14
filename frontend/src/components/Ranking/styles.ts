@@ -3,13 +3,27 @@ import styled from "styled-components";
 export const Container = styled.div`
     background-color: ${props => props.theme.COLORS.indigo};
     display: flex;
-    width: 580px;
-    height: 100px;
-    justify-content: space-between;
-    padding: 20px;
-    border-radius: 20px;
-    margin-top: 20px;
+    justify-content: center;
+    algn-items: center;
+    border-radius: 50px;
     align-items: center;
+    padding: 10px;
+`;
+
+export const Content = styled.div`
+    display: flex;
+    gap: 50px;
+    justify-content: center;
+    align-items: center;
+`;
+
+export const Position = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    margin: 0;
+    padding: 0;
+    position: relative;
 `;
 
 export const Icon = styled.div`

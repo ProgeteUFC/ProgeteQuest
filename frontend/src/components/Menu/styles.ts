@@ -8,4 +8,5 @@ export const Container = styled.div`
     justify-content: center;
     border: 0px;
     border-radius: 20px;
+    font-weight: bold;
 `

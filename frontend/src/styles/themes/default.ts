@@ -14,6 +14,7 @@ export const defaultTheme = {
         G24: 24,
         G34: 34,
         G41: 41,
-        G45: 45
+        G45: 45,
+        G60: 60
     }    
 }

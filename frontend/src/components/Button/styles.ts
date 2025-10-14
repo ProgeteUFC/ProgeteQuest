@@ -14,6 +14,10 @@ export const ButtonContainer = styled.button`
     align-items: center;
     justify-content: center;
     margin: 7px;
+    &:hover {
+    background-color: ${props => props.theme.COLORS.secondary || props.theme.COLORS.lightOrange}; 
+    color: ${props => props.theme.COLORS.darkGrey};
+    }
 `
 
 export const Title = styled.p`

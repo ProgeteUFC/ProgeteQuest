@@ -7,7 +7,7 @@ export const Container = styled.div`
     
 export const Number = styled.div`
     color: ${props => props.theme.COLORS.white};
-    font-size: ${props => props.theme.FONT_SIZE.G45}px;
+    font-size: ${props => props.theme.FONT_SIZE.G60}px;
     font-weight: bold;
 `;
 

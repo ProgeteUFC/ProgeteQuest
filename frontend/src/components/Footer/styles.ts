@@ -6,7 +6,7 @@ export const Container = styled.div`
     font-size: 14px;
     margin-top: 30px;
     bottom: 0px;
-    position: relative;
+    position: absolute;
     width: 100%;
     height: 130px;
     z-index:1;
@@ -24,5 +24,4 @@ export const Text = styled.p`
     bottom:0;
     margin-right:10px;
     margin-bottom:5px;
-    
 `
