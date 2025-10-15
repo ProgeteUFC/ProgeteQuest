@@ -43,6 +43,14 @@ export class User {
   })
   password: string;
 
+  @Column({
+    type: 'enum',
+    enum: ['student', 'teacher'],
+    nullable: false,
+    name: 'type',
+  })
+  type: 'student' | 'teacher';
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
