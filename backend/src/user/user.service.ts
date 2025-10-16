@@ -22,81 +22,102 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    if (!createUserDto.name || createUserDto.name.trim() === '') {
-      throw new BadRequestException('Campo obrigatório: nome');
-    }
-    if (!createUserDto.email || createUserDto.email.trim() === '') {
-      throw new BadRequestException('Campo obrigatório: email');
-    }
-    if (!createUserDto.password || createUserDto.password.trim() === '') {
-      throw new BadRequestException('Campo obrigatório: senha');
-    }
-    if (
-      createUserDto.type === 'student' &&
-      (!createUserDto.registrationStudent ||
-        createUserDto.registrationStudent.trim().length !== 6)
-    ) {
-      throw new BadRequestException('Matrícula do aluno deve ter 6 dígitos');
-    }
-    if (
-      createUserDto.type === 'teacher' &&
-      (!createUserDto.registrationTeacher ||
-        createUserDto.registrationTeacher.trim().length !== 6)
-    ) {
-      throw new BadRequestException(
-        'Matrícula do professor deve ter 6 dígitos',
-      );
-    }
-
-    // Normaliza o e-mail ANTES de verificar se já existe
-    const normalizedEmail = createUserDto.email.trim().toLowerCase();
-
-    // Verifica se o email já existe
-    const existingUser = await this.userRepository.findOne({
-      where: { email: normalizedEmail },
-    });
-    if (existingUser) {
-      throw new BadRequestException('Conta já existe para este email');
-    }
-
-    //Verifica o tipo de usuário
+    // Verifica o tipo de usuário
     if (createUserDto.type !== 'student' && createUserDto.type !== 'teacher') {
       throw new BadRequestException('Tipo de usuário inválido');
     }
 
+    // Verifica se o email já está em uso
+    const email = createUserDto.email.trim().toLowerCase();
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
+    if (existingUser) {
+      throw new BadRequestException('Email já está em uso.');
+    }
+
+    // Validação antecipada da matrícula com verificação cruzada
+    if (createUserDto.type === 'student') {
+      const reg = createUserDto.registrationStudent?.trim();
+
+      if (!reg) {
+        throw new BadRequestException('registrationStudent é obrigatório');
+      }
+
+      if (!/^\d{6}$/.test(reg)) {
+        throw new BadRequestException(
+          'registrationStudent deve conter exatamente 6 dígitos numéricos',
+        );
+      }
+
+      const existingStudent = await this.studentRepository.findOne({
+        where: { registrationStudent: reg },
+      });
+      const existingTeacher = await this.teacherRepository.findOne({
+        where: { registrationTeacher: reg },
+      });
+
+      if (existingStudent || existingTeacher) {
+        throw new BadRequestException(
+          'Essa matrícula já está em uso por outro usuário',
+        );
+      }
+    } else if (createUserDto.type === 'teacher') {
+      const reg = createUserDto.registrationTeacher?.trim();
+
+      if (!reg) {
+        throw new BadRequestException('registrationTeacher é obrigatório');
+      }
+
+      if (!/^\d{6}$/.test(reg)) {
+        throw new BadRequestException(
+          'registrationTeacher deve conter exatamente 6 dígitos numéricos',
+        );
+      }
+
+      const existingTeacher = await this.teacherRepository.findOne({
+        where: { registrationTeacher: reg },
+      });
+      const existingStudent = await this.studentRepository.findOne({
+        where: { registrationStudent: reg },
+      });
+
+      if (existingTeacher || existingStudent) {
+        throw new BadRequestException(
+          'Essa matrícula já está em uso por outro usuário',
+        );
+      }
+    }
+
+    // Criação e salvamento do usuário
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const user = this.userRepository.create({
       userId: generateUuid(),
       name: createUserDto.name.trim(),
-      email: normalizedEmail, // Salva sempre normalizado!
+      email,
       password: hashedPassword,
+      type: createUserDto.type,
     });
 
     await this.userRepository.save(user);
 
-    // Cria o registro de estudante ou professor
+    // Criação do vínculo com estudante ou professor
     if (createUserDto.type === 'student') {
-      if (!createUserDto.registrationStudent) {
-        throw new BadRequestException('registrationStudent é obrigatório');
-      }
       await this.studentRepository.save({
         userId: user.userId,
-        registrationStudent: createUserDto.registrationStudent.trim(),
+        registrationStudent: createUserDto.registrationStudent?.trim(),
         user,
       });
     } else if (createUserDto.type === 'teacher') {
-      if (!createUserDto.registrationTeacher) {
-        throw new BadRequestException('registrationTeacher é obrigatório');
-      }
       await this.teacherRepository.save({
         userId: user.userId,
-        registrationTeacher: createUserDto.registrationTeacher.trim(),
+        registrationTeacher: createUserDto.registrationTeacher?.trim(),
         user,
       });
     }
 
-    // Retornará apenas dados não sensíveis
+    // Retorno dos dados públicos
     return {
       userId: user.userId,
       name: user.name,
