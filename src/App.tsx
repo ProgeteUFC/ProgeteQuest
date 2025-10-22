@@ -9,7 +9,6 @@ import { GlobalStyle } from './styles/global';
 import { defaultTheme } from './styles/themes/default';
 import { TitleName } from './components/TitleName';
 import { TitleDescription } from './components/TitleDescription';
-import CadastrarDisciplina from './pages/CadastrarDisciplina';
 
 export default function App() {
   return (
@@ -19,7 +18,6 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/cadastrarDisciplina" element={<CadastrarDisciplina />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
