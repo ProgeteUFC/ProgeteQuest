@@ -1,34 +1,8 @@
 import 'styled-components';
+import { ThemeType } from './styles/themes/default';
 
 declare module 'styled-components' {
-  export interface DefaultTheme {
-    colors: {
-      kingfisherDaisy: string;
-      indigo: string;
-      white: string;
-      primary: string;
-      primaryDark: string;
-      primaryLight: string;
-      secondary: string;
-      muted: string;
-      border: string;
-      xpBlue: string;
-      challengeOrange: string;
-      rewardGold: string;
-      secondaryHover: string;
-    }
-    fontSize: {
-      p10: number;
-      p12: number;
-      p14: number;
-      m16: number;
-      m19: number;
-      g24: number;
-      g34: number;
-      g41: number;
-      g45: number;
-    };
-
+  export interface DefaultTheme extends ThemeType {
     typography: {
       heading: {
         xl: string;
