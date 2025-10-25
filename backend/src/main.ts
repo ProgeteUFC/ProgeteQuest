@@ -10,6 +10,8 @@ async function bootstrap() {
 
   app.useGlobalGuards(new RolesGuard(reflector, jwtService));
 
+  // Habilita validação global dos DTOs
+  app.useGlobalPipes(new (await import('@nestjs/common')).ValidationPipe());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
