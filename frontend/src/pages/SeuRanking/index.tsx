@@ -1,6 +1,6 @@
 import Footer from "../../components/Footer";
 import { HeaderRanking } from "../../components/headerRanking";
-import { MenuRanking } from "../../components/MenuRanking";
+import { ConeinerMenu } from "../../components/ConteinerMenu";
 import { Ranking } from "../../components/Ranking";
 import { Content } from "../SeuRanking/styles";
 import { Container } from "./styles";
@@ -16,7 +16,7 @@ const SeuRanking = () => {
         <HeaderRanking />
         <Content>
           <Title>Olá, Pedro Braga!</Title>
-          <MenuRanking />
+          <ConeinerMenu />
           <Title>Seu Ranking</Title>
           <Ranking />
         </Content>

@@ -2,7 +2,6 @@ import { createGlobalStyle } from 'styled-components';
 
 
 export const GlobalStyle = createGlobalStyle`
-    @import url('https://fonts.googleapis.com/css2?family=Baloo+Paaji+2:wght@400..800&display=swap');
     *   {
         font-family: 'Baloo Paaji 2', sans-serif; 
         margin:0;

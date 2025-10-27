@@ -7,7 +7,7 @@ export function Router() {
 
       <>
         <Routes>
-            <Route path="/ranking" element={<SeuRanking />} />
+            <Route path="/" element={<SeuRanking />} />
         </Routes>
       </>
   )
