@@ -26,26 +26,31 @@ export class CheckinService {
   ) {}
 
   async createCheckin(dto: CreateCheckinDto) {
-    // 1. Verifica se o código existe, está ativo e válido
+    // Verifica se o código existe, está ativo e válido
     const code = await this.codeRepository.findOne({
       where: { codeId: dto.codeId, active: true },
     });
     if (!code) throw new NotFoundException('Código inválido ou inativo');
 
-    // 2. Verifica se a atividade existe
+    // Confirma que o código pertence à atividade informada
+    if (code.activityId !== dto.activityId) {
+      throw new BadRequestException('Código não pertence a essa atividade');
+    }
+
+    // Verifica se a atividade existe
     const activity = await this.activityRepository.findOne({
       where: { activityId: dto.activityId },
     });
     if (!activity) throw new NotFoundException('Atividade não encontrada');
 
-    // 3. Verifica se o aluno está matriculado na turma da atividade
+    // Verifica se o aluno está matriculado na turma da atividade
     const studentClass = await this.studentClassRepository.findOne({
       where: { studentId: dto.studentId, classId: activity.classId },
     });
     if (!studentClass)
       throw new BadRequestException('Aluno não está matriculado na turma');
 
-    // 4. Verifica se já fez check-in nessa atividade
+    // Verifica se já fez check-in nessa atividade
     const alreadyChecked = await this.checkinRepository.findOne({
       where: { activityId: dto.activityId, studentId: dto.studentId },
     });
@@ -54,7 +59,7 @@ export class CheckinService {
         'Check-in já realizado para esta atividade',
       );
 
-    // 5. Cria o check-in
+    // Cria o check-in
     const checkin = this.checkinRepository.create({
       checkinId: generateUuid(),
       activityId: dto.activityId,

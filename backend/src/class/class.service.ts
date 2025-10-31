@@ -180,6 +180,14 @@ export class ClassService {
   }
 
   async getClassRanking(classId: string) {
+    // verifica se a turma existe
+    const classExists = await this.classRepository.findOne({
+      where: { classId },
+    });
+    if (!classExists) {
+      throw new NotFoundException(`Turma com id ${classId} não encontrada`);
+    }
+
     // Busca todos os alunos matriculados na turma
     const students = await this.studentClassRepository
       .createQueryBuilder('student_class')
@@ -210,6 +218,10 @@ export class ClassService {
     // Ordena do maior para o menor
     ranking.sort((a, b) => b.checkins - a.checkins);
 
+    if (ranking.length === 0) {
+      throw new NotFoundException('Ainda não há participantes nessa turma');
+    }
+
     return ranking;
   }
 
@@ -218,6 +230,10 @@ export class ClassService {
       where: { classId },
       relations: ['student', 'student.user'],
     });
+
+    if (!studentClasses || studentClasses.length === 0) {
+      throw new NotFoundException('Ainda não há participantes nessa turma');
+    }
 
     return studentClasses.map((sc) => ({
       studentId: sc.studentId,
