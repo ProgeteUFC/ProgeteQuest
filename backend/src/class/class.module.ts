@@ -8,7 +8,9 @@ import { StudentClass } from 'src/student_class/entities/studentClass.entity';
 import { Assessment } from 'src/assessment/entities/assessment.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Class, Teacher, StudentClass, Assessment])],
+  imports: [
+    TypeOrmModule.forFeature([Class, Teacher, StudentClass, Assessment]),
+  ],
   controllers: [ClassController],
   providers: [ClassService],
 })
