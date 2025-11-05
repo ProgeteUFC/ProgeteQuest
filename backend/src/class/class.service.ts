@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { CreateClassDto } from './dtos/createClass.dto';
 import { generateUuid } from '../utils/generateUuid';
@@ -39,6 +40,22 @@ export class ClassService {
   async getAllClasses(): Promise<Class[]> {
     return this.classRepository.find();
   }
+  private async getUniqueJoinCode(): Promise<string> {
+  
+    let joinCode: string = '';
+    let isUnique = false;
+
+    while (!isUnique) {
+      joinCode = generateJoinCode(10);
+      const existingClass = await this.classRepository.findOne({
+        where: { joinCode },
+      });
+      if (!existingClass) {
+        isUnique = true;
+      }
+    }
+    return joinCode;
+  }
 
   async createClass(newClass: CreateClassDto): Promise<Class> {
     // valida o UUID
@@ -47,7 +64,8 @@ export class ClassService {
       throw new BadRequestException('ID gerado inválido');
     }
 
-    const joinCode = generateJoinCode(10);
+    // Garante que o código é único
+    const joinCode = await this.getUniqueJoinCode();
 
     // verifica se teacher existe
     const teacherEntity = await this.teacherRepository.findOneBy({
@@ -76,7 +94,8 @@ export class ClassService {
     });
     if (!classEntity) throw new NotFoundException('Turma não encontrada');
 
-    classEntity.joinCode = generateJoinCode(10);
+    // Garante que o novo código também é único
+    classEntity.joinCode = await this.getUniqueJoinCode();
     return this.classRepository.save(classEntity);
   }
 
@@ -100,8 +119,7 @@ export class ClassService {
     const exists = await this.studentClassRepository.findOne({
       where: { studentId: student.userId, classId: classEntity.classId },
     });
-    if (exists)
-      throw new BadRequestException('Aluno já matriculado nessa turma');
+    if (exists) throw new ConflictException('Esse registro já existe');
 
     const studentClass = this.studentClassRepository.create({
       studentClassId: generateUuid(),
@@ -129,11 +147,12 @@ export class ClassService {
       where: { studentId: studentId, classId: classEntity.classId },
     });
 
-    if (exists) throw new BadRequestException('Aluno já está na turma');
+    if (exists) throw new ConflictException('Esse registro já existe');
 
     const studentClass = this.studentClassRepository.create({
       studentClassId: generateUuid(),
       studentId,
+      // CORREÇÃO: "classCId" alterado para "classId"
       classId: classEntity.classId,
     });
     return this.studentClassRepository.save(studentClass);
