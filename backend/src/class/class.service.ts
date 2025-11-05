@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { CreateClassDto } from './dtos/createClass.dto';
 import { generateUuid } from '../utils/generateUuid';
@@ -100,8 +101,7 @@ export class ClassService {
     const exists = await this.studentClassRepository.findOne({
       where: { studentId: student.userId, classId: classEntity.classId },
     });
-    if (exists)
-      throw new BadRequestException('Aluno já matriculado nessa turma');
+    if (exists) throw new ConflictException('Esse registro já existe');
 
     const studentClass = this.studentClassRepository.create({
       studentClassId: generateUuid(),
@@ -129,7 +129,7 @@ export class ClassService {
       where: { studentId: studentId, classId: classEntity.classId },
     });
 
-    if (exists) throw new BadRequestException('Aluno já está na turma');
+    if (exists) throw new ConflictException('Esse registro já existe');
 
     const studentClass = this.studentClassRepository.create({
       studentClassId: generateUuid(),
