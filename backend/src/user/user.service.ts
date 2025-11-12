@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { generateUuid } from '../utils/generateUuid';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import * as bcrypt from 'bcrypt';
@@ -33,7 +33,7 @@ export class UserService {
       where: { email },
     });
     if (existingUser) {
-      throw new BadRequestException('Email já está em uso.');
+      throw new ConflictException('Esse registro já existe');
     }
 
     // Validação antecipada da matrícula com verificação cruzada
@@ -43,7 +43,6 @@ export class UserService {
       if (!reg) {
         throw new BadRequestException('registrationStudent é obrigatório');
       }
-
       if (!/^\d{6}$/.test(reg)) {
         throw new BadRequestException(
           'registrationStudent deve conter exatamente 6 dígitos numéricos',
@@ -58,9 +57,7 @@ export class UserService {
       });
 
       if (existingStudent || existingTeacher) {
-        throw new BadRequestException(
-          'Essa matrícula já está em uso por outro usuário',
-        );
+        throw new ConflictException('Esse registro já existe');
       }
     } else if (createUserDto.type === 'teacher') {
       const reg = createUserDto.registrationTeacher?.trim();
@@ -83,9 +80,7 @@ export class UserService {
       });
 
       if (existingTeacher || existingStudent) {
-        throw new BadRequestException(
-          'Essa matrícula já está em uso por outro usuário',
-        );
+        throw new ConflictException('Esse registro já existe');
       }
     }
 
@@ -207,7 +202,7 @@ export class UserService {
         where: { email },
       });
       if (existingUser && existingUser.userId !== userId) {
-        throw new BadRequestException('Email já está em uso.');
+        throw new ConflictException('Esse registro já existe');
       }
       user.email = email;
     }
@@ -242,9 +237,7 @@ export class UserService {
         existingStudent.user &&
         existingStudent.user.userId !== userId
       ) {
-        throw new BadRequestException(
-          'Essa matrícula de estudante já está em uso por outro usuário.',
-        );
+        throw new ConflictException('Esse registro já existe');
       }
 
       const existingTeacher = await this.teacherRepository.findOne({
@@ -257,9 +250,7 @@ export class UserService {
         existingTeacher.user &&
         existingTeacher.user.userId !== userId
       ) {
-        throw new BadRequestException(
-          'Essa matrícula já está em uso por um professor.',
-        );
+        throw new ConflictException('Esse registro já existe');
       }
 
       const student = user.students[0];
@@ -285,9 +276,7 @@ export class UserService {
         existingTeacher.user &&
         existingTeacher.user.userId !== userId
       ) {
-        throw new BadRequestException(
-          'Essa matrícula de professor já está em uso por outro usuário.',
-        );
+        throw new ConflictException('Esse registro já existe');
       }
 
       const existingStudent = await this.studentRepository.findOne({
@@ -300,9 +289,7 @@ export class UserService {
         existingStudent.user &&
         existingStudent.user.userId !== userId
       ) {
-        throw new BadRequestException(
-          'Essa matrícula já está em uso por um estudante.',
-        );
+        throw new ConflictException('Esse registro já existe');
       }
 
       const teacher = user.teachers[0];

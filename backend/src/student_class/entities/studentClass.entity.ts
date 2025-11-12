@@ -6,12 +6,14 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
+  // OneToMany,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from 'typeorm';
 
 @Entity()
+@Unique(['studentId', 'classId'])
 export class StudentClass {
   @PrimaryColumn({
     type: 'varchar',
