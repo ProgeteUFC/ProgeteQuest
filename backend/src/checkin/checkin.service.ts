@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -26,38 +27,58 @@ export class CheckinService {
   ) {}
 
   async createCheckin(dto: CreateCheckinDto) {
-    // Verifica se o código existe, está ativo e válido
-    const code = await this.codeRepository.findOne({
-      where: { codeId: dto.codeId, active: true },
-    });
-    if (!code) throw new NotFoundException('Código inválido ou inativo');
+    const now = new Date();
 
-    // Confirma que o código pertence à atividade informada
+    // Verifica se o código existe e é válido (ativo e data)
+    const code = await this.codeRepository.findOne({
+      where: { codeId: dto.codeId },
+    });
+
+    if (!code) {
+      throw new NotFoundException('Código não encontrado');
+    }
+    if (!code.active) {
+      throw new BadRequestException('Código inativo');
+    }
+
+    // Verifica a data de validade do código
+    const validityDate = new Date(code.validity);
+    if (now > validityDate) {
+      throw new BadRequestException('Código expirado');
+    }
+
+    // Confirma que o código pertence à atividade
     if (code.activityId !== dto.activityId) {
       throw new BadRequestException('Código não pertence a essa atividade');
     }
 
-    // Verifica se a atividade existe
+    // Verifica se a atividade já terminou
     const activity = await this.activityRepository.findOne({
       where: { activityId: dto.activityId },
     });
-    if (!activity) throw new NotFoundException('Atividade não encontrada');
+    if (!activity) {
+      throw new NotFoundException('Atividade não encontrada');
+    }
 
-    // Verifica se o aluno está matriculado na turma da atividade
+    //Verifica se a data/hora da atividade já passou
+    const activityDate = new Date(activity.date);
+    if (now > activityDate) {
+      throw new BadRequestException('Esta atividade já foi encerrada');
+    }
+
+    const alreadyChecked = await this.checkinRepository.findOne({
+      where: { activityId: dto.activityId, studentId: dto.studentId },
+    });
+    if (alreadyChecked)
+      // MODIFICADO: Troca BadRequest por Conflict
+      throw new ConflictException('Check-in já realizado para esta atividade');
+
+    // Validação Bônus (Já existia): Verifica se o aluno está matriculado
     const studentClass = await this.studentClassRepository.findOne({
       where: { studentId: dto.studentId, classId: activity.classId },
     });
     if (!studentClass)
       throw new BadRequestException('Aluno não está matriculado na turma');
-
-    // Verifica se já fez check-in nessa atividade
-    const alreadyChecked = await this.checkinRepository.findOne({
-      where: { activityId: dto.activityId, studentId: dto.studentId },
-    });
-    if (alreadyChecked)
-      throw new BadRequestException(
-        'Check-in já realizado para esta atividade',
-      );
 
     // Cria o check-in
     const checkin = this.checkinRepository.create({
