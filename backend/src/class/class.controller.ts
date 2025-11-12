@@ -13,12 +13,13 @@ import { CreateClassDto } from './dtos/createClass.dto';
 import { Class } from './entities/class.entity';
 import { UpdateClassDto } from './dtos/updateClass.dto';
 import { Roles } from 'src/decorators/roles.decorator';
+import { SearchClassDto } from './dtos/searchClass.dto';
 
 @Controller('class')
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
 
-  @Roles('teacher', 'student') // CONFIGURAR PARA APENAS PROFESSOR VISUALIZAR O JOINCODE
+  @Roles('teacher', 'student')
   @Get()
   getAll(): Promise<Class[]> {
     return this.classService.getAllClasses();
@@ -36,7 +37,7 @@ export class ClassController {
     return this.classService.regenerateJoinCode(id);
   }
 
-  @Roles('student') // PENDENTE
+  @Roles('student')
   @Post('join')
   async joinClass(@Body() body: { studentId: string; joinCode: string }) {
     return this.classService.joinClassByCode(body.studentId, body.joinCode);
@@ -87,8 +88,8 @@ export class ClassController {
   }
 
   @Roles('teacher', 'student')
-  @Get('search')
-  async searchClasses(@Body() body: { name?: string; joinCode?: string }) {
-    return this.classService.searchClasses(body);
+  @Post('search')
+  async searchClasses(@Body() searchDto: SearchClassDto) {
+    return this.classService.searchClasses(searchDto);
   }
 }

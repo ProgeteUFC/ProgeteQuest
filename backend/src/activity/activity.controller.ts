@@ -4,12 +4,13 @@ import { ActivityService } from './activity.service';
 import { CreateActivityDto } from './dtos/createActivity.dto';
 import { Activity } from './entities/activity.entity';
 import { Roles } from 'src/decorators/roles.decorator';
+import { SearchActivityDto } from './dtos/searchActivity.dto';
 
 @Controller('activity')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
-  @Roles('teacher', 'student') //?
+  @Roles('teacher', 'student')
   @Get()
   getAll(): Promise<Activity[]> {
     return this.activityService.getAllActivities();
@@ -38,10 +39,8 @@ export class ActivityController {
 
   @Roles('teacher', 'student')
   @Post('search')
-  async searchActivities(
-    @Body() body: { name?: string; classId?: string; assessmentId?: string },
-  ) {
-    return this.activityService.searchActivities(body);
+  async searchActivities(@Body() searchDto: SearchActivityDto) {
+    return this.activityService.searchActivities(searchDto);
   }
 
   @Roles('teacher', 'student')
