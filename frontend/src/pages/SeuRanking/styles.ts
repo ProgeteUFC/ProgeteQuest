@@ -6,6 +6,7 @@ display:flex;
 flex-direction: column;
 justify-content: space-between;
 height: 100vh;
+width: 100vw;
 `;
 
 export const Content = styled.div`
@@ -23,7 +24,17 @@ export const Image = styled.img`
 position: fixed;
 width: 700px;
 z-index:0;
-bottom: 0;
+bottom: 0; 
 right: 0;
-transform: translate(20%, 20%); 
+transform: translate(20%, 20%);
+
+@media (max-width: 1400px) {
+    width: 500px;
+    transform: translate(10%, 10%);
+}
+
+@media (max-width: 768px) {
+    width: 400px;
+    transform: translate(10%, 10%);
+}
 `

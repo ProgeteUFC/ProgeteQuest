@@ -13,7 +13,7 @@ export function Ranking() {
                     <Position atividade="Disciplina 3" number={'4º'} />
                     <Position atividade="Disciplina 4" number={'9º'} />
                     <Icon>
-                        <RiArrowRightWideLine size={80} />
+                        <RiArrowRightWideLine size={100} />
                     </Icon>
                 </Content>
             </Container>

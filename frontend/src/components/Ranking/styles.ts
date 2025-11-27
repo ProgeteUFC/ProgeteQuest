@@ -4,25 +4,22 @@ export const Container = styled.div`
     background-color: ${props => props.theme.COLORS.indigo};
     display: flex;
     justify-content: center;
-    algn-items: center;
-    border-radius: 50px;
-    align-items: center;
-    padding: 10px;
+    align-items: center; 
+    border-radius: 40px;
 `;
 
 export const Content = styled.div`
     display: flex;
-    gap: 50px;
-    justify-content: center;
+    flex-direction: row;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-left: 30px;
 `;
 
 export const Position = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 0px;
-    margin: 0;
-    padding: 0;
     position: relative;
 `;
 
