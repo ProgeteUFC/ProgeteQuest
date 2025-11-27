@@ -2,7 +2,6 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { CreateClassDto } from './dtos/createClass.dto';
 import { generateUuid } from '../utils/generateUuid';
@@ -11,15 +10,9 @@ import { Repository } from 'typeorm';
 import { Class } from './entities/class.entity';
 import { Teacher } from '../teacher/entities/teacher.entity';
 import { validate as isUuid } from 'uuid';
-
 import { generateJoinCode } from '../utils/generateJoinCode';
-import { Student } from 'src/student/entities/student.entity';
-import { StudentClass } from 'src/student_class/entities/studentClass.entity';
-
 import { UpdateClassDto } from './dtos/updateClass.dto';
 import { Assessment } from '../assessment/entities/assessment.entity';
-
-import { Checkin } from 'src/checkin/entities/checkin.entity';
 
 @Injectable()
 export class ClassService {
@@ -30,9 +23,6 @@ export class ClassService {
     @InjectRepository(Teacher)
     private readonly teacherRepository: Repository<Teacher>,
 
-    @InjectRepository(StudentClass)
-    private readonly studentClassRepository: Repository<StudentClass>,
-
     @InjectRepository(Assessment)
     private readonly assessmentRepository: Repository<Assessment>,
   ) {}
@@ -41,7 +31,6 @@ export class ClassService {
     return this.classRepository.find();
   }
   private async getUniqueJoinCode(): Promise<string> {
-  
     let joinCode: string = '';
     let isUnique = false;
 
@@ -99,64 +88,6 @@ export class ClassService {
     return this.classRepository.save(classEntity);
   }
 
-  async enrollStudentByRegistration(
-    registrationStudent: string,
-    joinCode: string,
-  ) {
-    // Busca o aluno pela matrícula
-    const student = await this.studentClassRepository.manager.findOne(Student, {
-      where: { registrationStudent },
-    });
-    if (!student) throw new NotFoundException('Aluno não encontrado');
-
-    // Busca a turma pelo código
-    const classEntity = await this.classRepository.findOne({
-      where: { joinCode },
-    });
-    if (!classEntity) throw new NotFoundException('Código de turma inválido');
-
-    // Verifica se já está vinculado
-    const exists = await this.studentClassRepository.findOne({
-      where: { studentId: student.userId, classId: classEntity.classId },
-    });
-    if (exists) throw new ConflictException('Esse registro já existe');
-
-    const studentClass = this.studentClassRepository.create({
-      studentClassId: generateUuid(),
-      studentId: student.userId,
-      classId: classEntity.classId,
-    });
-    return this.studentClassRepository.save(studentClass);
-  }
-
-  async joinClassByCode(studentId: string, joinCode: string) {
-    // Busca a turma pelo código
-    const classEntity = await this.classRepository.findOne({
-      where: { joinCode },
-    });
-    if (!classEntity) throw new NotFoundException('Código de turma inválido');
-
-    // Busca o estudante pelo userId
-    const student = await this.studentClassRepository.manager.findOne(Student, {
-      where: { userId: studentId },
-    });
-    if (!student) throw new NotFoundException('Aluno não encontrado');
-
-    // Verifica se já está vinculado
-    const exists = await this.studentClassRepository.findOne({
-      where: { studentId: studentId, classId: classEntity.classId },
-    });
-
-    if (exists) throw new ConflictException('Esse registro já existe');
-
-    const studentClass = this.studentClassRepository.create({
-      studentClassId: generateUuid(),
-      studentId,
-      // CORREÇÃO: "classCId" alterado para "classId"
-      classId: classEntity.classId,
-    });
-    return this.studentClassRepository.save(studentClass);
-  }
   async updateClass(id: string, updateDto: UpdateClassDto): Promise<Class> {
     const existing = await this.classRepository.findOne({
       where: { classId: id },
@@ -174,18 +105,31 @@ export class ClassService {
     }
 
     if (updateDto.classId !== undefined) {
-      const assessmentExists = await this.assessmentRepository.findOne({
-        where: { assessmentId: updateDto.assessmentId },
-      });
-      if (!assessmentExists) {
-        throw new NotFoundException(
-          `Avaliação com id ${updateDto.assessmentId} não encontrada`,
-        );
-      }
+      // Atualização de classId: valida apenas o formato do UUID
       if (!isUuid(updateDto.classId)) {
         throw new BadRequestException('ID inválido fornecido');
       }
       existing.classId = updateDto.classId;
+    }
+
+    // Atualizar teacherId (se informado): valida existência do teacher
+    if (updateDto.teacherId !== undefined) {
+      const teacherExists = await this.teacherRepository.findOne({
+        where: { userId: updateDto.teacherId },
+      });
+      if (!teacherExists) {
+        throw new NotFoundException(
+          `Professor com id ${updateDto.teacherId} não encontrado`,
+        );
+      }
+      existing.teacherId = updateDto.teacherId;
+    }
+
+    // assessmentId não é campo de Class — sinalize erro se enviado
+    if (updateDto.assessmentId !== undefined) {
+      throw new BadRequestException(
+        'O campo assessmentId não é aplicável a Class',
+      );
     }
 
     return await this.classRepository.save(existing);
@@ -196,84 +140,6 @@ export class ClassService {
     if (!result.affected || result.affected === 0) {
       throw new NotFoundException(`Turma com id ${id} não encontrada`);
     }
-  }
-
-  async getClassRanking(classId: string) {
-    // verifica se a turma existe
-    const classExists = await this.classRepository.findOne({
-      where: { classId },
-    });
-    if (!classExists) {
-      throw new NotFoundException(`Turma com id ${classId} não encontrada`);
-    }
-
-    // Busca todos os alunos matriculados na turma
-    const students = await this.studentClassRepository
-      .createQueryBuilder('student_class')
-      .leftJoinAndSelect('student_class.student', 'student')
-      .where('student_class.classId = :classId', { classId })
-      .getMany();
-
-    // Busca todos os check-ins dos alunos dessa turma
-    const checkins = await this.studentClassRepository.manager
-      .getRepository(Checkin)
-      .createQueryBuilder('checkin')
-      .leftJoin('checkin.student', 'student')
-      .leftJoin('checkin.activity', 'activity')
-      .where('activity.classId = :classId', { classId })
-      .getMany();
-
-    // Conta check-ins por aluno
-    const ranking = students.map((sc) => {
-      const count = checkins.filter((c) => c.studentId === sc.studentId).length;
-      return {
-        studentId: sc.studentId,
-        registrationStudent: sc.student.registrationStudent,
-        name: sc.student.user?.name,
-        checkins: count,
-      };
-    });
-
-    // Ordena do maior para o menor
-    ranking.sort((a, b) => b.checkins - a.checkins);
-
-    if (ranking.length === 0) {
-      throw new NotFoundException('Ainda não há participantes nessa turma');
-    }
-
-    return ranking;
-  }
-
-  async getClassParticipants(classId: string) {
-    const studentClasses = await this.studentClassRepository.find({
-      where: { classId },
-      relations: ['student', 'student.user'],
-    });
-
-    if (!studentClasses || studentClasses.length === 0) {
-      throw new NotFoundException('Ainda não há participantes nessa turma');
-    }
-
-    return studentClasses.map((sc) => ({
-      studentId: sc.studentId,
-      registrationStudent: sc.student.registrationStudent,
-      name: sc.student.user?.name,
-      email: sc.student.user?.email,
-    }));
-  }
-
-  async getStudentClasses(studentId: string) {
-    const studentClasses = await this.studentClassRepository.find({
-      where: { studentId },
-      relations: ['class'],
-    });
-
-    return studentClasses.map((sc) => ({
-      classId: sc.class.classId,
-      name: sc.class.name,
-      joinCode: sc.class.joinCode,
-      teacherId: sc.class.teacherId,
-    }));
   }
 
   async searchClasses(query: { name?: string; joinCode?: string }) {
