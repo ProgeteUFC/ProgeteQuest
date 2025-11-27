@@ -38,19 +38,28 @@ export class ActivityService {
       throw new BadRequestException(`Tipo inválido: ${newActivity.type}`);
     }
 
-    // data
+    // valida a data
     const date = new Date(newActivity.date);
     if (isNaN(date.getTime())) {
       throw new BadRequestException('Data inválida');
     }
 
-    // valida o UUID
+    // impedir data no passado
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) {
+      throw new BadRequestException(
+        'A data da atividade não pode estar no passado',
+      );
+    }
+
+    // valida o UUID gerado
     const id = generateUuid();
     if (!isUuid(id)) {
       throw new BadRequestException('ID inválido gerado');
     }
 
-    // verifica se class existe
+    // verifica se a turma existe
     const classEntity = await this.classRepository.findOneBy({
       classId: newActivity.classId,
     });
@@ -60,13 +69,20 @@ export class ActivityService {
       );
     }
 
-    // verifica se assentement existe
+    // verifica se a avaliação existe
     const assessmentEntity = await this.assessmentRepository.findOneBy({
       assessmentId: newActivity.assessmentId,
     });
     if (!assessmentEntity) {
       throw new NotFoundException(
         `Avaliação com ID ${newActivity.assessmentId} não encontrada`,
+      );
+    }
+
+    // garantir que assessment pertence à mesma turma
+    if (assessmentEntity.classId !== newActivity.classId) {
+      throw new BadRequestException(
+        `A avaliação ${newActivity.assessmentId} não pertence à turma ${newActivity.classId}`,
       );
     }
 
@@ -95,12 +111,11 @@ export class ActivityService {
       throw new NotFoundException(`Atividade com id ${id} não encontrada`);
     }
 
-    // Validação e atribuição campo a campo
     if (updateDto.name !== undefined) {
       if (typeof updateDto.name !== 'string' || updateDto.name.trim() === '') {
         throw new BadRequestException('O campo "name" não pode ser vazio.');
       }
-      existing.name = updateDto.name;
+      existing.name = updateDto.name.trim();
     }
 
     if (updateDto.date !== undefined) {
@@ -110,6 +125,16 @@ export class ActivityService {
           'O campo "date" deve ser uma data válida.',
         );
       }
+
+      // impedir data no passado
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (parsedDate < today) {
+        throw new BadRequestException(
+          'A data da atividade não pode estar no passado.',
+        );
+      }
+
       existing.date = parsedDate;
     }
 
@@ -127,11 +152,13 @@ export class ActivityService {
       const classExists = await this.classRepository.findOne({
         where: { classId: updateDto.classId },
       });
+
       if (!classExists) {
         throw new NotFoundException(
-          `Classe com id ${updateDto.classId} não encontrada`,
+          `Turma com id ${updateDto.classId} não encontrada`,
         );
       }
+
       existing.classId = updateDto.classId;
     }
 
@@ -139,15 +166,39 @@ export class ActivityService {
       const assessmentExists = await this.assessmentRepository.findOne({
         where: { assessmentId: updateDto.assessmentId },
       });
+
       if (!assessmentExists) {
         throw new NotFoundException(
           `Avaliação com id ${updateDto.assessmentId} não encontrada`,
         );
       }
+
       existing.assessmentId = updateDto.assessmentId;
     }
+    // --- VALIDATIONS RELACIONADAS ---
+    //assessmentId deve pertencer à turma (CASO UM DOS DOIS TENHA MUDADO)
 
-    // Salva a entidade atualizada
+    if (
+      updateDto.assessmentId !== undefined ||
+      updateDto.classId !== undefined
+    ) {
+      const assessment = await this.assessmentRepository.findOne({
+        where: { assessmentId: existing.assessmentId },
+      });
+
+      if (!assessment) {
+        throw new NotFoundException(
+          `Avaliação com id ${existing.assessmentId} não encontrada`,
+        );
+      }
+
+      if (assessment.classId !== existing.classId) {
+        throw new BadRequestException(
+          `A avaliação ${existing.assessmentId} não pertence à turma ${existing.classId}.`,
+        );
+      }
+    }
+
     return await this.activityRepository.save(existing);
   }
 
