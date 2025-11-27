@@ -37,23 +37,6 @@ export class ClassController {
     return this.classService.regenerateJoinCode(id);
   }
 
-  @Roles('student')
-  @Post('join')
-  async joinClass(@Body() body: { studentId: string; joinCode: string }) {
-    return this.classService.joinClassByCode(body.studentId, body.joinCode);
-  }
-
-  @Roles('teacher')
-  @Post('enroll')
-  async enrollStudent(
-    @Body() body: { registrationStudent: string; joinCode: string },
-  ) {
-    return this.classService.enrollStudentByRegistration(
-      body.registrationStudent,
-      body.joinCode,
-    );
-  }
-
   @Roles('teacher')
   @Put(':id')
   update(
@@ -67,24 +50,6 @@ export class ClassController {
   @Delete(':id')
   delete(@Param('id') id: string): Promise<void> {
     return this.classService.deleteClass(id);
-  }
-
-  @Roles('teacher', 'student')
-  @Get(':id/ranking')
-  async getRanking(@Param('id') classId: string) {
-    return this.classService.getClassRanking(classId);
-  }
-
-  @Roles('teacher', 'student')
-  @Get(':id/participants')
-  async getParticipants(@Param('id') classId: string) {
-    return this.classService.getClassParticipants(classId);
-  }
-
-  @Roles('student')
-  @Get('student/:studentId')
-  async getStudentClasses(@Param('studentId') studentId: string) {
-    return this.classService.getStudentClasses(studentId);
   }
 
   @Roles('teacher', 'student')
