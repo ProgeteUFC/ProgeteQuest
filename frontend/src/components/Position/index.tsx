@@ -1,15 +1,19 @@
-import {Atividade, Container, Number} from "./styles";
+import {Atividade, Container, Number, NumberAndSuffix, Suffix} from "./styles";
 
 interface PositionProps {
     atividade:string;
     number:string | number;
+    suffix?:string;
 }
-export function Position({ atividade, number, ...rest }: PositionProps) {
+export function Position({ atividade, number, suffix, ...rest }: PositionProps) {
     return (
         <>
             <Container {...rest}>
                 <Atividade>{atividade}</Atividade>
-                <Number>{number}</Number>
+                <NumberAndSuffix>
+                    <Number>{number}</Number>
+                    <Suffix>{suffix}</Suffix>
+                </NumberAndSuffix>       
             </Container>
         </>
     )

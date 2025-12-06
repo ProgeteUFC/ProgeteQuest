@@ -39,13 +39,20 @@ export const IconHome = styled.div`
 export const IconExite = styled.div`
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 5px;
     svg {
         color: ${props => props.theme.COLORS.white};
         cursor: pointer;
+    }
+    span {
+        font-family: 'Codec Pro', sans-serif;
+        font-size: 12px;
     }&:hover{
         svg{
         color: ${props => props.theme.COLORS.lightOrange};
+        }
+        span {
+            color: ${props => props.theme.COLORS.lightOrange};
         }
     }
 `;

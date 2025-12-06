@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Router } from './routes/Router';
 import { Helmet } from 'react-helmet'; 
 
-export function App() {  
+export function App() {
   return (
     <>
       <Helmet>

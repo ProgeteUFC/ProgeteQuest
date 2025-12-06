@@ -8,10 +8,10 @@ export function Ranking() {
         <>
             <Container>
                 <Content>
-                    <Position atividade="Disciplina 1" number={'1º'} />
-                    <Position atividade="Disciplina 2" number={'2º'} />
-                    <Position atividade="Disciplina 3" number={'4º'} />
-                    <Position atividade="Disciplina 4" number={'9º'} />
+                    <Position atividade="Turma 1" number={'1º'} suffix="Lugar"/>
+                    <Position atividade="Turma 2" number={'2º'} suffix="Lugar"/>
+                    <Position atividade="Turma 3" number={'4º'} suffix="Lugar"/>
+                    <Position atividade="Turma 4" number={'9º'} suffix="Lugar"/>
                     <Icon>
                         <RiArrowRightWideLine size={100} />
                     </Icon>

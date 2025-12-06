@@ -4,6 +4,7 @@ import { IoExitOutline } from "react-icons/io5";
 import { TiHome } from "react-icons/ti";
 import { IconHome, IconExite, Box } from "./styles";
 
+
 export function HeaderRanking() {
   return (
     <Container>
@@ -14,6 +15,7 @@ export function HeaderRanking() {
       </IconHome>
       <IconExite>
         <IoExitOutline size={30} />
+        <span>Sair</span>
       </IconExite>
       </Box>
     </Container>
