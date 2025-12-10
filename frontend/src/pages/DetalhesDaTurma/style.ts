@@ -20,7 +20,6 @@ export const PageContent = styled.div`
 
 export const SubTituloPagina = styled.h1`
     font-size: 24px;
-    margin-top: 20px;
 `
 
 export const DivSenha = styled.div`
@@ -59,8 +58,12 @@ export const LogoProgete = styled.img`
     left: 40px;
 `
 
-export const PlanetaCadastrar = styled.img`
+export const PlanetaAzulClaro = styled.img`
     position: absolute;
-    bottom: -200px;
+    bottom: -130px;
     right: -110px;
+`
+
+export const InfosProfessor = styled.div`
+    
 `
