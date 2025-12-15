@@ -21,9 +21,12 @@ export const Number = styled.div`
 export const Atividade = styled.div`
     color: ${props => props.theme.COLORS.white};
     font-size: ${props => props.theme.FONT_SIZE.P14}px;
+    transform: translateY(+10px);
 `;
 
 export const Suffix = styled.div`
     color: ${props => props.theme.COLORS.white};
     font-size: ${props => props.theme.FONT_SIZE.P10}px;
+    transform: translateY(+10px);
+    font-weight: bold;
 `;

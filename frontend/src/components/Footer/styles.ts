@@ -12,7 +12,7 @@ export const Container = styled.div`
     z-index:1;
 `
 export const Image = styled.img`
-    width: 220px;
+    width: 200px;
     height: 56px;
     margin-top:20px;
 

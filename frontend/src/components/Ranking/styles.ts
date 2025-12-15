@@ -6,6 +6,7 @@ export const Container = styled.div`
     justify-content: center;
     align-items: center; 
     border-radius: 40px;
+    transform: translateY(-90px);
 `;
 
 export const Content = styled.div`

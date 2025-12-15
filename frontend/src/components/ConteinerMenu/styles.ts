@@ -5,5 +5,6 @@ export const Content = styled.div`
     padding: 20px;
     border-radius: 30px;
     display: inline-block;
+    transform: translateY(-90px);
 `;
 
