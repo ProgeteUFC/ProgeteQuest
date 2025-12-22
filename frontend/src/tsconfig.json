@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "types": ["styled-components/cssprop", "vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@assets/*": ["src/assets/*"],
+    },
+    "esModuleInterop": true,
+    "strict": true
+  },
+  
+}
