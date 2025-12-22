@@ -1,26 +1,49 @@
-import { ThemeProvider } from 'styled-components';
-import { defaultTheme } from './styles/themes/default';
-import { GlobalStyle } from './styles/global';
-import { BrowserRouter } from 'react-router-dom';
-import { Router } from './routes/Router';
-import { Helmet } from 'react-helmet'; 
+import React from "react";
+import { ThemeProvider, useTheme } from "styled-components";
+import { Routes, Route, useLocation } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import { Button } from "./components/Button";
+import image from "./assets/logo.png";
+import { GlobalStyle } from "./styles/global";
+import { defaultTheme } from "./styles/themes/default";
+import { TitleName } from "./components/TitleName";
+import { TitleDescription } from "./components/TitleDescription";
+import CadastrarDisciplina from "./pages/CadastrarDisciplina";
+import DetalhesDaTurma from "./pages/DetalhesDaTurma";
 
-export function App() {
+export default function App() {
   return (
-    <>
-      <Helmet>
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Baloo+Paaji+2:wght@400..800&display=swap" 
-          rel="stylesheet" 
-        />
-      </Helmet>
-      
-      <BrowserRouter>
-        <ThemeProvider theme={defaultTheme}>
-          <Router />
-          <GlobalStyle />
-        </ThemeProvider>
-      </BrowserRouter>
-    </>
-  )
+    <ThemeProvider theme={defaultTheme}>
+      <GlobalStyle />
+      <KeyedRouter>
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/cadastrarDisciplina"
+            element={<CadastrarDisciplina />}
+          />
+          <Route
+            path="/detalhesDaTurma"
+            element={<DetalhesDaTurma />}
+          />
+          <Route
+            path="/seuRanking"
+            element={<SeuRanking />}
+          />
+        </Routes>
+      </KeyedRouter>
+    </ThemeProvider>
+  );
 }
+
+const KeyedRouter = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  return <div key={location.pathname}>{children}</div>;
+};
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>;

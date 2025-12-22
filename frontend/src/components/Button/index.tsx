@@ -1,5 +1,5 @@
+import React from "react";
 import { ButtonContainer, Title, } from './styles';
-
 
 interface ButtonProps {
     title: string;

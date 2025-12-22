@@ -1,6 +1,7 @@
 import { createGlobalStyle } from 'styled-components';
 
 
+
 export const GlobalStyle = createGlobalStyle`
     *   {
         font-family: 'Baloo Paaji 2', sans-serif; 
