@@ -1,4 +1,4 @@
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle } from "styled-components";
 
 export const GlobalStyle = createGlobalStyle`
   *{
@@ -25,4 +25,4 @@ main {
 main p {
   margin-top:2rem;
 }
-`
+`;

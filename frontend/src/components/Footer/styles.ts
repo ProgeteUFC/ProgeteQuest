@@ -1,0 +1,26 @@
+import styled from "styled-components";
+
+export const Container = styled.div`
+  display: flex;
+  padding: 20px;
+  font-size: 14px;
+  margin-top: 30px;
+  bottom: 0px;
+  position: absolute;
+  width: 100%;
+  height: 130px;
+  z-index: 1;
+`;
+export const Image = styled.img`
+  width: 200px;
+  height: 56px;
+  margin-top: 20px;
+`;
+
+export const Text = styled.p`
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  margin-right: 10px;
+  margin-bottom: 5px;
+`;

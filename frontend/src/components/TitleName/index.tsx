@@ -2,15 +2,13 @@ import React from "react";
 import { Container, Title } from "./styles";
 
 interface TitleNameProps {
-    titleName: string;
+  titleName: string;
 }
 
-export function TitleName ( { titleName }: TitleNameProps ) {
-    return(
-        <Container>
-            <Title>
-                {titleName}
-            </Title>
-        </Container>
-    )
-}          
+export function TitleName({ titleName }: TitleNameProps) {
+  return (
+    <Container>
+      <Title>{titleName}</Title>
+    </Container>
+  );
+}

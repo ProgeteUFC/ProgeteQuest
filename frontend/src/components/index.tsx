@@ -1,12 +1,17 @@
 import React from "react";
-import { Container , Login, LoginCard, FormGroup, AboutUs} from "./style";
-import  logo from "../../assets/logo.png";
+import {
+  Container,
+  Login,
+  LoginCard,
+  FormGroup,
+  AboutUs,
+} from "pages/LoginPage/style";
+import logo from "../../assets/logo.png";
 import progete from "../../assets/progete.png";
 import planetOrange from "../../assets/planet_orange.png";
-import {Button} from "../../components/Button";
+import { Button } from "./Button";
 
 export default function LoginPage() {
- 
   return (
     <Container>
       <Login>
@@ -23,16 +28,21 @@ export default function LoginPage() {
         </LoginCard>
       </Login>
 
-      <AboutUs>        
+      <AboutUs>
         <h1>Bem-vindo(a) ao</h1>
         <img className="logo-image" src={logo} alt="Logo" />
-        <img className="planet-image" src={planetOrange} alt="Planeta Laranja" />
-         <h1>Desafie, Supere e Vença!</h1>
+        <img
+          className="planet-image"
+          src={planetOrange}
+          alt="Planeta Laranja"
+        />
+        <h1>Desafie, Supere e Vença!</h1>
         <p>
-          ProgeteQuest é o sistema de Gamificação acadêmica<br/> 
-          desenvolvido por alunos da UFC Campus de Russas! <br/>
-          Aqui, os professores lançam desafios e os alunos <br/>
-          conquistam pontos extras nas disciplinas. <br/>
+          ProgeteQuest é o sistema de Gamificação acadêmica
+          <br />
+          desenvolvido por alunos da UFC Campus de Russas! <br />
+          Aqui, os professores lançam desafios e os alunos <br />
+          conquistam pontos extras nas disciplinas. <br />
           Aprender nunca foi tão divertido!
         </p>
       </AboutUs>
