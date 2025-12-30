@@ -12,6 +12,7 @@ import { TitleDescription } from "./components/TitleDescription";
 import CadastrarDisciplina from "./pages/CadastrarDisciplina";
 import DetalhesDaTurma from "./pages/DetalhesDaTurma";
 import SeuRanking from "./pages/SeuRanking";
+import MeusDados from "./pages/MeusDados";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           />
           <Route path="/detalhesDaTurma" element={<DetalhesDaTurma />} />
           <Route path="/seuRanking" element={<SeuRanking />} />
+          <Route path="/meusDados" element={<MeusDados />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
