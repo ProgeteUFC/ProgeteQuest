@@ -14,6 +14,7 @@ import DetalhesDaTurma from "./pages/DetalhesDaTurma";
 import SeuRanking from "./pages/SeuRanking";
 import MeusDados from "./pages/MeusDados";
 import EntraEmTurma from "./pages/EntrarEmTurma";
+import { MinhasTurmas } from "./pages/MinhasTurmas";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/seuRanking" element={<SeuRanking />} />
           <Route path="/meusDados" element={<MeusDados />} />
           <Route path="/entrarEmTurma" element={<EntraEmTurma />} />
+          <Route path="/minhasTurmas" element={<MinhasTurmas />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
