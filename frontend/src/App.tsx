@@ -3,18 +3,19 @@ import { ThemeProvider, useTheme } from "styled-components";
 import { Routes, Route, useLocation } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import { Button } from "./components/Button";
-import image from "./assets/logo.png";
+// import { Button } from "./components/Button";
+// import image from "./assets/logo.png";
 import { GlobalStyle } from "./styles/global";
 import { defaultTheme } from "./styles/themes/default";
-import { TitleName } from "./components/TitleName";
-import { TitleDescription } from "./components/TitleDescription";
+// import { TitleName } from "./components/TitleName";
+// import { TitleDescription } from "./components/TitleDescription";
 import CadastrarDisciplina from "./pages/CadastrarDisciplina";
 import DetalhesDaTurma from "./pages/DetalhesDaTurma";
 import SeuRanking from "./pages/SeuRanking";
 import MeusDados from "./pages/MeusDados";
 import EntraEmTurma from "./pages/EntrarEmTurma";
 import { MinhasTurmas } from "./pages/MinhasTurmas";
+import { MinhasAtividades } from "./pages/MinhasAtividades";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/meusDados" element={<MeusDados />} />
           <Route path="/entrarEmTurma" element={<EntraEmTurma />} />
           <Route path="/minhasTurmas" element={<MinhasTurmas />} />
+          <Route path="/minhasAtividades" element={<MinhasAtividades />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
