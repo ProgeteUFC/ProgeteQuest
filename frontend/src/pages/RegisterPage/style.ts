@@ -77,21 +77,14 @@ export const HeaderContainer = styled.div`
     gap: 1rem;
     margin-bottom: 0;
 
-    font-family: "Baloo Paaji", cursive;
-
-    & > * {
-      font-family: "Baloo Paaji", cursive !important;
-      font-size: 34px;
-      font-weight: bold;
-      margin: 0;
-    }
+    font-family: "Baloo Paaji 2", sans-serif;
   }
 
   .subtitle {
-    font-family: "Baloo Paaji", cursive !important;
+    font-family: "Baloo Paaji 2", sans-serif;
     color: ${({ theme }) => theme.colors.white};
     font-size: 24px;
-    font-weight: bold;
+    font-weight: 700;
     padding-bottom: 10px;
 
     line-height: 1.2;
@@ -191,7 +184,7 @@ export const InputWrapper = styled.div`
 
   label {
     color: #fff;
-    font-weight: bold;
+    font-weight: 500;
     white-space: nowrap;
     margin-right: 0.5rem;
     font-family: "Codec Pro", sans-serif;
@@ -199,13 +192,14 @@ export const InputWrapper = styled.div`
   }
 
   input {
+    // REFERÊNCIA
     background: transparent;
     border: none;
-    color: #00ffb3;
+    color: ${(props) => props.theme.colors.lightOrange}; //REFERÊCIA
     width: 100%;
     font-family: "Codec Pro", sans-serif;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 300;
     height: 100%;
 
     &:focus {

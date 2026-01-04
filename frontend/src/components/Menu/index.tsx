@@ -8,10 +8,8 @@ export function Menu() {
     <Container>
       <Button title={"Cadastrar Disciplinas"} />
       <Button title={"Disciplinas"} />
-      <Link to={"/ranking"}>
-        <Button title={"Meus Dados"} />
-      </Link>
-      <Button title={"Suporte"} />
+      <Button title={"Meus Dados"} />
+      <Button title={"Fórum"} />
     </Container>
   );
 }

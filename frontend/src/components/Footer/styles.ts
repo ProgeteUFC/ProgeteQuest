@@ -5,7 +5,7 @@ export const Container = styled.div`
   padding: 20px;
   font-size: 14px;
   margin-top: 30px;
-  bottom: 0px;
+  bottom: 0;
   position: absolute;
   width: 100%;
   height: 130px;
@@ -14,10 +14,11 @@ export const Container = styled.div`
 export const Image = styled.img`
   width: 200px;
   height: 56px;
-  margin-top: 20px;
+  margin-top: 50px;
 `;
 
 export const Text = styled.p`
+  color: ${(props) => props.theme.colors.white};
   position: absolute;
   right: 0;
   bottom: 0;

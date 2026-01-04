@@ -10,7 +10,7 @@ import {
   MenuOption,
   MenuContent,
   IconSair,
-  IconCasa
+  IconCasa,
 } from "./style";
 
 export default function Header() {
@@ -22,13 +22,15 @@ export default function Header() {
         </Logo>
         <MenuContent>
           <a href="#">
-            <IconCasa><img src={iconCasa} alt="Ícone que leva para Login" width={40} /></IconCasa>
+            <IconCasa>
+              <img src={iconCasa} alt="Ícone que leva para Login" width={40} />
+            </IconCasa>
           </a>
           <MenuOptions>
             <MenuOption>Cadastrar Disciplina</MenuOption>
             <MenuOption>Disciplinas</MenuOption>
             <MenuOption>Meus Dados</MenuOption>
-            <MenuOption>Suporte</MenuOption>
+            <MenuOption>Fórum</MenuOption>
           </MenuOptions>
           <a href="/">
             <IconSair>

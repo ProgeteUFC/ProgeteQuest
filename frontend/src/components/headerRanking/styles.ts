@@ -40,14 +40,13 @@ export const IconHome = styled.div`
 export const IconExite = styled.div`
   display: flex;
   align-items: center;
+  color: ${(props) => props.theme.colors.white};
   gap: 5px;
-  svg {
-    color: ${(props) => props.theme.colors.white};
-    cursor: pointer;
-  }
+
   span {
     font-family: "Codec Pro", sans-serif;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 400;
   }
   &:hover {
     svg {

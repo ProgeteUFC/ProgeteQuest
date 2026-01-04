@@ -4,7 +4,7 @@ export const ButtonContainer = styled.button`
   display: flex;
   width: 208px;
   height: 27px;
-  // color: white;
+  color: white;
   border-radius: 20px;
   background-color: ${(props) => props.theme.colors.indigo};
   border: 0;
@@ -15,9 +15,9 @@ export const ButtonContainer = styled.button`
   cursor: pointer;
   transition: background 0.2s;
 
-  //   &:hover {
-  //     background-color: ${(props) => props.theme.colors.challengeOrange};
-  //   }
+  &:hover {
+    background-color: ${(props) => props.theme.colors.challengeOrange};
+  }
 `;
 
 export const Title = styled.p`

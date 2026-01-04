@@ -11,20 +11,22 @@ export const Container = styled.div`
 
 export const Content = styled.div`
   width: 100%;
-  padding: 200px;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 54px;
   max-width: 1120px;
 `;
 
 export const Title = styled.h2`
+  margin-left: 180px;
+  font-family: "Baloo Paaji 2", sans-serif;
   color: ${(props) => props.theme.colors.white};
-  font-size: ${(props) => props.theme.fontSize.g34}px;
+  font-size: 34px;
   transform: translateY(-90px);
 `;
 
 export const Image = styled.img`
   position: fixed;
-  width: 700px;
-  z-index: 0;
+  width: 650px;
   bottom: 0;
   right: 0;
   transform: translate(20%, 20%);

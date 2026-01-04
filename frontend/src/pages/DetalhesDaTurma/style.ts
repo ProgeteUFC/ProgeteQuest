@@ -3,55 +3,86 @@ import styled from "styled-components";
 export const Pagina = styled.h1`
   color: white;
   background-color: ${(props) => props.theme.colors.primaryDark};
-  padding: 4% 15%;
+  padding: 80px 220px;
   font-family: "Baloo Paaji 2", sans-serif;
   position: relative;
   overflow: hidden;
-  z-index: -1;
 `;
 
 export const TituloPagina = styled.h1`
   font-size: 34px;
+  margin-top: -10px;
 `;
 
 export const SubTituloPagina = styled.h1`
-  font-size: 20px;
-  margin-bottom: 14px;
+  font-size: 24px;
+  margin-bottom: -20px;
 `;
 
 export const LogoProgete = styled.img`
   position: absolute;
-  bottom: 20px;
+
+  margin-top: 350px;
   left: 40px;
 
-  @media (max-width: 1400px){
+  @media (max-width: 1400px) {
     display: none;
   }
 `;
 
 export const PlanetaAzulClaro = styled.img`
   position: absolute;
-  bottom: -130px;
+  margin-top: 100px;
   right: -110px;
-  z-index: -1; 
+  z-index: 1;
   pointer-events: none;
 
-  @media (max-width: 1400px){
+  @media (max-width: 1400px) {
     display: none;
   }
 `;
 
-export const PageContent = styled.div`
+export const Container = styled.div`
+  width: 100vw;
+  min-height: 100vh;
+  background-color: ${(props) => props.theme.colors.kingfisherDaisy};
   display: flex;
-  gap: 40px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0;
 
-  @media (max-width: 1400px){
-    display: block;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    overflow-y: auto;
+    padding: 0;
+    align-items: flex-start;
+    height: auto;
+  }
+`;
+
+export const PageContent = styled.div`
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  z-index: 1;
+
+  @media (max-width: 1000px) {
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    max-width: 100vw;
   }
 `;
 
 export const InfosProfessor = styled.div`
   display: flex;
+  height: 111px;
   background-color: white;
   align-items: center;
   border-radius: 20px;
@@ -59,20 +90,22 @@ export const InfosProfessor = styled.div`
   gap: 10px;
   padding: 15px 30px 15px 15px;
 
-  @media (max-width: 1400px){
+  @media (max-width: 1400px) {
     width: 108%;
   }
 `;
 
 export const NomeProfessor = styled.p`
-  font-size: 16px;
+  font-family: "Codec Pro", sans-serif;
+  font-size: 14px;
   color: #2c0383;
+  padding-bottom: 10px;
 `;
 
 export const ContatoProfessor = styled.p`
-  font-size: 16px;
+  font-family: "Codec Pro", sans-serif;
+  font-size: 14px;
   color: #2c0383;
-  
 `;
 
 export const QuantAlunos = styled.div`
@@ -87,7 +120,8 @@ export const QuantAlunos = styled.div`
 `;
 
 export const QuantAlunosValor = styled.p`
-  font-size: 16px;
+  font-family: "Codec Pro", sans-serif;
+  font-size: 14px;
   color: #2c0383;
 `;
 
@@ -95,7 +129,6 @@ export const ProfessorEturma = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-
 `;
 
 export const OpcoesTurma = styled.div`
@@ -107,7 +140,7 @@ export const OpcoesTurma = styled.div`
   padding: 15px;
   min-width: 370px;
 
-  @media (max-width: 1400px){
+  @media (max-width: 1400px) {
     margin-top: 20px;
     width: 100%;
   }
@@ -115,13 +148,22 @@ export const OpcoesTurma = styled.div`
 
 export const VizualizarAtividades = styled.button`
   border: none;
-  background-color: #2c0383;
+  background-color: #4a4385;
   color: white;
+  font-family: "Codec Pro", sans-serif;
+  font-size: 14px;
   font-weight: bold;
   border-radius: 20px;
   padding: 8px 15px;
   text-align: left;
   cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.challengeOrange};
+    color: #fff;
+    transition: background 0.2s, color 0.2s;
+    z-index: 100;
+  }
 
   &:active {
     scale: 0.97;
@@ -132,13 +174,22 @@ export const VizualizarAtividades = styled.button`
 
 export const VizualizarMembros = styled.button`
   border: none;
-  background-color: rgba(44, 3, 131, 1);
+  background-color: #4a4385;
   color: white;
+  font-family: "Codec Pro", sans-serif;
+  font-size: 14px;
   font-weight: bold;
   border-radius: 20px;
   padding: 8px 15px;
   text-align: left;
   cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.challengeOrange};
+    color: #fff;
+    transition: background 0.2s, color 0.2s;
+    z-index: 100;
+  }
 
   &:active {
     scale: 0.97;
@@ -149,6 +200,7 @@ export const VizualizarMembros = styled.button`
 
 export const ColocacaoAluno = styled.div`
   display: flex;
+  height: 93px;
   background-color: white;
   align-items: center;
   border-radius: 20px;
@@ -159,19 +211,22 @@ export const ColocacaoAluno = styled.div`
 `;
 
 export const ColocacaoTexto = styled.p`
-  font-size: 16px;
+  font-family: "Codec Pro", sans-serif;
+  font-size: 14px;
   color: #2c0383;
 `;
 
 export const RankingAlunos = styled.div`
   background-color: white;
-  padding: 10px 20px;
+  padding: 20px 20px;
+  margin-top: -60px;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  z-index: 2;
 
-  @media (max-width: 1400px){
+  @media (max-width: 1400px) {
     margin-top: 20px;
     width: 108%;
   }

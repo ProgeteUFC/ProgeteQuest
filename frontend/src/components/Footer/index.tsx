@@ -7,7 +7,7 @@ function Footer() {
     <Container>
       <Image src={image} />
 
-      <Text> Copyright © 2025, ProgeteQuest! All Rights Reserved.</Text>
+      {/* <Text> Copyright © 2025, ProgeteQuest! All Rights Reserved.</Text> */}
     </Container>
   );
 }
