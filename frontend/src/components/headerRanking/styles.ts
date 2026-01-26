@@ -46,7 +46,7 @@ export const IconExite = styled.div`
   span {
     font-family: "Codec Pro", sans-serif;
     font-size: 13px;
-    font-weight: 400;
+    font-weight: 600;
   }
   &:hover {
     svg {

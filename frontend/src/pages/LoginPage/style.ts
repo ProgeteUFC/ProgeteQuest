@@ -108,7 +108,6 @@ export const LoginCard = styled.div`
     text-decoration: none;
     font-family: "Baloo Paaji 2", sans-serif;
     &:hover {
-      // text-decoration: underline;
       color: #f97316;
     }
   }

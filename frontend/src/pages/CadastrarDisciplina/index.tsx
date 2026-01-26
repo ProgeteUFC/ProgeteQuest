@@ -3,7 +3,6 @@ import "./style";
 import Header from "../../components/Header";
 import { Pagina, TituloPagina, SubTituloPagina, DivSenha, InputSenha, LabelSenha, IconEnviarSenha, LogoProgete, PageContent, PlanetaCadastrar} from "./style";
 
-// imagens
 import ProgetePng from "../../assets/progete.png";
 import PlanetaCadastro from "../../../src/assets/planeta-roxo-amarelo.png"
 import IconSenha from "../../assets/icons/icon-enviar-senha.png"

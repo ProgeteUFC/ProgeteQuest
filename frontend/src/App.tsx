@@ -21,10 +21,6 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          {/* <Route
-            path="/cadastrarDisciplina"
-            element={<CadastrarDisciplina />}
-          /> */}
           <Route path="/detalhesDaTurma" element={<DetalhesDaTurma />} />
           <Route path="/seuRanking" element={<SeuRanking />} />
           <Route path="/meusDados" element={<MeusDados />} />

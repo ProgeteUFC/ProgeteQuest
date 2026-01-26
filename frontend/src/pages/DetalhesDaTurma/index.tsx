@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "./style";
 
-// components
 import Header from "../../components/Header";
 import { AlunoRanking } from "../../components/AlunoRanking";
 
@@ -27,7 +26,6 @@ import {
   Estrelas,
 } from "../DetalhesDaTurma/style";
 
-// images
 import ProgetePng from "../../assets/progete.png";
 import ProgeteAzulClaro from "../../assets/planeta-azul-claro.png";
 import userIcon from "../../assets/icons/user-icon.svg";
