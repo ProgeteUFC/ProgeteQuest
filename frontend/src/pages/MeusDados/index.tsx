@@ -1,102 +1,82 @@
 import React from "react";
-import { TitleDescription } from "../../components/TitleDescription";
-import { TitleName } from "../../components/TitleName";
-import { DataProfile } from "../../components/DataProfile";
 import {
-  Content,
   Container,
-  // ButtonWrapper,
-  LogoContainer,
+  LeftColumn,
+  PageContent,
+  InputWrapper,
+  PersonalData,
+  LogoBottom,
+  HeaderContainer,
   SaveButton,
 } from "./styles";
-import { Button } from "../../components/Button";
-import lua from "../../assets/planet_orange.png";
-import logo from "../../assets/image.png";
-import { useState } from "react";
 import Header from "../../components/Header";
 
+import { TitleName } from "../../components/TitleName";
+import { Image } from "./styles";
+
+import logo from "../../assets/progete.png";
+import planet_blue from "../../assets/planet_blue_anel.png";
+
 export default function MeusDados() {
-  const [userData, setUserData] = useState({
-    nome: "",
-    curso: "",
-    matricula: "",
-    email: "",
-    senha: "",
-    confirmasenha: "",
-  });
-
-  const handleDataChange = (field: keyof typeof userData, value: string) => {
-    setUserData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSave = () => {
-    console.log("Dados salvos:", userData);
-    alert("Dados salvos com sucesso!");
-  };
-
   return (
     <>
       <Header />
+      <Container>
+        <LogoBottom src={logo} alt="Progete logo rodapé" />
 
-      <Content className="meusDados">
-        <TitleName titleName="Dados Pessoais" />
-        <TitleDescription
-          titleDescription="Aqui você pode visualizar e editar
-            seus dados pessoais."
-        />
+        <PageContent>
+          <LeftColumn>
+            <HeaderContainer>
+              <div className="title-wrapper">
+                <TitleName titleName="Dados Pessoais" />
+              </div>
 
-        <Container>
-          <DataProfile
-            title="Nome:"
-            value={userData.nome}
-            onValueChange={(value) => handleDataChange("nome", value)}
-          />
+              <p className="subtitle">
+                Aqui você pode visualizar e editar <br /> seus dados pessoais.
+              </p>
+            </HeaderContainer>
 
-          <DataProfile
-            title="Curso:"
-            value={userData.curso}
-            onValueChange={(value) => handleDataChange("curso", value)}
-          />
+            <PersonalData>
+              <form>
+                <InputWrapper>
+                  <label>Nome:</label>
+                  <input type="text" name="nome" required />
+                </InputWrapper>
 
-          <DataProfile
-            title="Matrícula:"
-            value={userData.matricula}
-            onValueChange={(value) => handleDataChange("matricula", value)}
-          />
+                <InputWrapper>
+                  <label>Curso:</label>
+                  <input type="text" name="curso" required />
+                </InputWrapper>
 
-          <DataProfile
-            title="Email:"
-            value={userData.email}
-            type="email"
-            onValueChange={(value) => handleDataChange("email", value)}
-          />
+                <InputWrapper>
+                  <label>Matrícula:</label>
+                  <input type="text" name="matricula" required />
+                </InputWrapper>
 
-          <DataProfile
-            title="Senha:"
-            value={userData.senha}
-            type="password"
-            onValueChange={(value) => handleDataChange("senha", value)}
-          />
+                <InputWrapper>
+                  <label>E-mail:</label>
+                  <input type="email" name="email" required />
+                </InputWrapper>
 
-          <DataProfile
-            title="Repita sua senha:"
-            value={userData.confirmasenha}
-            type="password"
-            onValueChange={(value) => handleDataChange("confirmasenha", value)}
-          />
-        </Container>
+                <InputWrapper>
+                  <label>Senha:</label>
+                  <input type="password" name="senha" required />
+                </InputWrapper>
 
-        <SaveButton onClick={handleSave}>SALVAR</SaveButton>
+                <InputWrapper>
+                  <label>Repita sua senha:</label>
+                  <input type="password" name="senhaConfirm" required />
+                </InputWrapper>
+              </form>
+            </PersonalData>
 
-        <LogoContainer>
-          <img src={logo} alt="Progete Logo" className="logo" />
-        </LogoContainer>
-
-        <img src={lua} alt="planet" className="planet-image" />
-      </Content>
+            <div className="button-group-vertical">
+              <SaveButton type="submit">SALVAR</SaveButton>
+            </div>
+          </LeftColumn>
+        </PageContent>
+        <Image src={planet_blue} alt="Planeta Azul" />
+      </Container>
     </>
   );
 }

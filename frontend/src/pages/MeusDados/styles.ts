@@ -1,160 +1,203 @@
 import styled from "styled-components";
 
-export const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding-left: 250px;
-  padding-top: 50px;
-  overflow: hidden;
-  min-height: 100vh;
-  font-family: "Baloo Paaji 2", sans-serif;
-  position: relative;
-  background-color: ${({ theme }) => theme.colors.kingfisherDaisy};
-
-  .planet-image {
-    width: 1300px;
-    height: auto;
-    position: fixed;
-    bottom: 10px;
-    right: 120px;
-    transform: translate(40%, 40%);
-    // z-index: 10;
-  }
-
-  @media (max-width: 1160px) {
-    margin-top: 180px;
-    margin-left: 30px;
-
-    .planet-image {
-      width: 800px;
-      transform: translate(30%, 30%);
-    }
-  }
-
-  @media (max-width: 650px) {
-    margin-top: 170px;
-    margin-left: 20px;
-
-    .planet-image {
-      width: 500px;
-      transform: translate(20%, 30%);
-    }
-  }
-
-  @media (max-width: 450px) {
-    margin-top: 160px;
-    margin-left: 15px;
-
-    .planet-image {
-      width: 300px;
-      transform: translate(15%, 30%);
-    }
-  }
-`;
-
 export const Container = styled.div`
+  width: 100%;
+  height: 84.3vh; //REFERÊNCIA - JÁ CONTA COM O ESPAÇO DA HEADER
+  background-color: ${(props) => props.theme.colors.kingfisherDaisy};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    overflow-y: auto;
+    padding: 1rem;
+    align-items: flex-start;
+    height: auto;
+  }
+`;
+
+export const PageContent = styled.div`
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  z-index: 1;
+
+  /* RESPONSIVIDADE: TABLET/LAPTOP PEQUENO */
+  @media (max-width: 1000px) {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 4rem;
+  }
+`;
+
+export const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
-  width: 600px;
-  max-width: 90vw;
-  height: 370px;
-  max-height: 80vh;
-  padding: 23px 20px;
-  border-radius: 40px;
-  font-size: 16px;
-  background-color: #ffffff;
-  // margin: 40px 0 0 0;
-  margin-top: 15px;
-  // z-index: 11;
-  font-family: "Booal Paaji 2", sans-serif;
-  // box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  align-self: flex-start;
+  gap: 0.2rem;
+  flex: 1;
+  max-width: 600px;
+  margin-left: 4rem;
 
-  @media (max-width: 650px) {
-    width: 60vw;
+  .button-group-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    align-items: flex-end;
+    width: 100%;
+  }
+
+  /* --- RESPONSIVIDADE: CELULAR --- */
+  @media (max-width: 768px) {
     margin-left: 0;
-    padding: 10px 15px;
-  }
+    max-width: 100%;
+    width: 100%;
 
-  @media (max-width: 450px) {
-    width: 70vw;
-    padding: 8px 12px;
-  }
-
-  @media (max-width: 450px) {
-    width: 70vw;
-    padding: 12px;
+    .button-group-vertical {
+      align-items: center; /* Centraliza botões no mobile */
+    }
   }
 `;
 
-export const LogoContainer = styled.div`
-  position: fixed;
-  bottom: 15px;
-  left: 25px;
-  z-index: 12;
+export const HeaderContainer = styled.div`
+  color: ${({ theme }) => theme.colors.white};
 
-  .logo {
-    width: 200px;
-    height: auto;
+  .title-wrapper {
+    display: flex;
+    align-items: center;
+
+    font-family: "Baloo Paaji 2", sans-serif;
+  }
+
+  .subtitle {
+    font-family: "Baloo Paaji 2", sans-serif;
+    color: ${({ theme }) => theme.colors.white};
+    font-size: 24px;
+    font-weight: 800;
+    padding-top: 1px;
+    padding-bottom: 10px;
+
+    line-height: 1.2;
+    margin-bottom: 0.2rem;
+
+    span {
+      color: #00ffb3;
+      font-weight: bold;
+    }
+  }
+
+  /* RESPONSIVIDADE: CELULAR */
+  @media (max-width: 768px) {
+    text-align: center;
+
+    .title-wrapper {
+      justify-content: center;
+    }
+  }
+`;
+
+export const LogoTop = styled.img`
+  position: absolute;
+  left: 2rem;
+  top: 2rem;
+  height: 48px;
+
+  @media (max-width: 768px) {
+    left: 50%;
+    transform: translateX(-50%); /* Centraliza no topo */
+    top: 1.5rem;
+    height: 40px;
+  }
+`;
+
+export const LogoBottom = styled.img`
+  position: absolute;
+  left: 2rem;
+  bottom: 0.7rem;
+  height: 48px;
+
+  @media (max-width: 768px) {
+    /* No celular, removemos position absolute para não cobrir o formulário */
+    position: relative;
+    left: 0;
+    bottom: 0;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    align-self: center;
     display: block;
-  }
-
-  @media (max-width: 1160px) {
-    left: 30px;
-    bottom: 70px;
-    .logo {
-      width: 110px;
-    }
-  }
-
-  @media (max-width: 650px) {
-    left: 20px;
-    bottom: 60px;
-    .logo {
-      width: 100px;
-    }
-  }
-
-  @media (max-width: 450px) {
-    left: 15px;
-    bottom: 50px;
-    .logo {
-      width: 80px;
-    }
+    margin-left: auto;
+    margin-right: auto;
   }
 `;
 
-export const StyledInput = styled.input`
+export const PersonalData = styled.div`
+  background: ${({ theme }) => theme.colors.white};
+  padding: 0.8rem 1.5rem;
+  border-radius: 1.5rem;
   width: 100%;
-  height: 20px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: #2c0383;
-  font-size: 16px;
-  font-family: "Baloo Paaji 2", sans-serif;
-  outline: none;
-  transition: background 0.2s, border 0.2s;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 
-  &::placeholder {
-    color: #fff;
-    opacity: 0.7;
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+`;
+
+export const InputWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  background: #4a4385;
+  padding: 0 1rem;
+  border-radius: 1rem;
+  height: 36px;
+  width: 100%;
+  border: 2px solid transparent;
+
+  &:focus-within {
+    border-color: ${({ theme }) => theme.colors.secondary || "#00ffb3"};
   }
 
-  &:focus {
-    background: #fff;
-    color: #2c0383;
-    border: 1.5px solid #2c0383;
+  label {
+    color: #fff;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-right: 0.5rem;
+    font-family: "Codec Pro", sans-serif;
+    font-size: 14px;
+  }
+
+  input {
+    background: transparent;
+    border: none;
+    color: ${(props) => props.theme.colors.lightOrange};
+    width: 100%;
+    font-family: "Codec Pro", sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    height: 100%;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: red;
+      font-family: "Codec Pro", sans-serif;
+    }
   }
 `;
 
 export const SaveButton = styled.button`
-  width: 160px;
-  padding: 8px 0;
-  margin: 10px 0 0 440px;
-  display: block;
-  background: #fff;
-  color: ${({ theme }) => theme.colors.kingfisherDaisy};
+  background-color: ${(props) => props.theme.colors.white};
+  color: ${(props) => props.theme.colors.kingfisherDaisy};
   border: none;
   border-radius: 20px;
   font-size: 16px;
@@ -162,11 +205,32 @@ export const SaveButton = styled.button`
   font-weight: bold;
   letter-spacing: 1px;
   cursor: pointer;
+  padding: 4px 0;
+  width: 160px;
+  margin-top: 10px;
   transition: background 0.2s, color 0.2s;
-  z-index: 2;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.challengeOrange};
+    background-color: ${(props) => props.theme.colors.challengeOrange};
     color: #fff;
+  }
+`;
+
+export const Image = styled.img`
+  // REFERÊNCIA - IMAGEM DO PLANETA AZUL CLARO
+  position: fixed;
+  width: 650px;
+  bottom: 0;
+  right: 0;
+  transform: translate(20%, 20%);
+
+  @media (max-width: 1400px) {
+    width: 500px;
+    transform: translate(10%, 10%);
+  }
+
+  @media (max-width: 768px) {
+    width: 400px;
+    transform: translate(10%, 10%);
   }
 `;

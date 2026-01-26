@@ -11,8 +11,8 @@ import {
   RightArtwork,
   HeaderContainer,
   CadastrarButton,
-} from "./style";
-import { Button } from "../../components/Button";
+} from "./styles";
+
 import { TitleName } from "../../components/TitleName";
 
 import logo from "../../assets/progete.png";

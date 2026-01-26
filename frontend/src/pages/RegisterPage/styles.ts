@@ -84,7 +84,7 @@ export const HeaderContainer = styled.div`
     font-family: "Baloo Paaji 2", sans-serif;
     color: ${({ theme }) => theme.colors.white};
     font-size: 24px;
-    font-weight: 700;
+    font-weight: 800;
     padding-bottom: 10px;
 
     line-height: 1.2;
@@ -123,7 +123,7 @@ export const LogoTop = styled.img`
 export const LogoBottom = styled.img`
   position: absolute;
   left: 2rem;
-  bottom: 2rem;
+  bottom: 0.7rem;
   height: 48px;
 
   @media (max-width: 768px) {
@@ -144,7 +144,8 @@ export const Planet = styled.img`
   position: absolute;
   right: 2rem;
   top: 2rem;
-  height: 150px;
+  height: 200px;
+  width: 380px;
 
   @media (max-width: 768px) {
     height: 90px;
@@ -207,7 +208,7 @@ export const InputWrapper = styled.div`
     }
 
     &::placeholder {
-      color: rgba(255, 255, 255, 0.3);
+      color: red;
       font-family: "Codec Pro", sans-serif;
     }
   }

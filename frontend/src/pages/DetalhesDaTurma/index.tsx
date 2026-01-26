@@ -53,8 +53,8 @@ export default function DetalhesDaTurma() {
           Aqui você vizualiza suas atividades e informações <br />
           sobre a turma.
         </SubTituloPagina>
-        <LogoProgete src={ProgetePng} width={200} alt="Logo Progete" />
-        <PlanetaAzulClaro src={ProgeteAzulClaro} width={600} alt="" />
+        <LogoProgete src={ProgetePng} alt="Logo Progete" />
+        <PlanetaAzulClaro src={ProgeteAzulClaro} alt="" />
         <PageContent>
           <ProfessorEturma>
             <InfosProfessor>

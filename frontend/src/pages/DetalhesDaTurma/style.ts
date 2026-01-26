@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const Pagina = styled.h1`
   color: white;
   background-color: ${(props) => props.theme.colors.primaryDark};
-  padding: 80px 220px;
+  height: 84.3vh; //REFERÊNCIA - JÁ CONTA COM O ESPAÇO DA HEADER
   font-family: "Baloo Paaji 2", sans-serif;
   position: relative;
   overflow: hidden;
@@ -11,19 +11,25 @@ export const Pagina = styled.h1`
 
 export const TituloPagina = styled.h1`
   font-size: 34px;
-  margin-top: -10px;
+  font-weight: 800;
+  margin-left: 150px;
+  margin-top: 80px;
+  margin-bottom: 1px;
 `;
 
 export const SubTituloPagina = styled.h1`
   font-size: 24px;
-  margin-bottom: -20px;
+  font-weight: 800;
+  margin-left: 150px;
+  margin-bottom: 1px;
 `;
 
 export const LogoProgete = styled.img`
   position: absolute;
 
-  margin-top: 350px;
-  left: 40px;
+  left: 2rem;
+  bottom: 0.7rem;
+  height: 48px;
 
   @media (max-width: 1400px) {
     display: none;
@@ -31,11 +37,12 @@ export const LogoProgete = styled.img`
 `;
 
 export const PlanetaAzulClaro = styled.img`
-  position: absolute;
-  margin-top: 100px;
-  right: -110px;
-  z-index: 1;
-  pointer-events: none;
+  // REFERÊNCIA - IMAGEM DO PLANETA AZUL CLARO
+  position: fixed;
+  width: 650px;
+  bottom: 0;
+  right: 0;
+  transform: translate(20%, 20%);
 
   @media (max-width: 1400px) {
     display: none;
@@ -65,6 +72,8 @@ export const Container = styled.div`
 export const PageContent = styled.div`
   width: 100%;
   max-width: 900px;
+  margin-left: 150px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;

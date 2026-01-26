@@ -12,9 +12,10 @@ export const Container = styled.div`
   z-index: 1;
 `;
 export const Image = styled.img`
-  width: 200px;
-  height: 56px;
-  margin-top: 50px;
+  position: absolute;
+  left: 2rem;
+  bottom: 0.7rem;
+  height: 48px;
 `;
 
 export const Text = styled.p`
