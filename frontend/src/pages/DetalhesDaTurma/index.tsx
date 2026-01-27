@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./style";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Header from "../../components/Header";
 import { AlunoRanking } from "../../components/AlunoRanking";
@@ -34,6 +35,9 @@ import medalIcon from "../../assets/icons/medal-icon.svg";
 import starIcon from "../../assets/icons/star-icon.svg";
 
 export default function DetalhesDaTurma() {
+  const navigate = useNavigate();
+  const { id } = useParams(); // id da turma
+
   const [alunos] = useState([
     { id: 1, nome: "Aluno 1" },
     { id: 2, nome: "Aluno 2" },
@@ -79,7 +83,11 @@ export default function DetalhesDaTurma() {
             style={{ display: "flex", flexDirection: "column", gap: "20px" }}
           >
             <OpcoesTurma>
-              <VizualizarAtividades>Visualizar atividades</VizualizarAtividades>
+              <VizualizarAtividades
+                onClick={() => navigate(`/minhasAtividades?turma=${id}`)}
+              >
+                Visualizar atividades
+              </VizualizarAtividades>
               <VizualizarMembros>Visualizar membros</VizualizarMembros>
             </OpcoesTurma>
             <ColocacaoAluno>

@@ -16,12 +16,16 @@ export const Content = styled.div`
 
 export const Title = styled.h2`
   color: ${(props) => props.theme.colors.white};
-  font-size: ${(props) => props.theme.fontSize.g45}px;
+  font-size: ${(props) => props.theme.fontSize.g34}px;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-weight: 700;
+
 `;
 export const Text = styled.h2`
   color: ${(props) => props.theme.colors.white};
-  font-size: ${(props) => props.theme.fontSize.g34}px;
-  padding-bottom: 20px;
+  font-size: ${(props) => props.theme.fontSize.g24}px;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-weight: 700;
 `;
 
 export const Image = styled.img`
@@ -37,15 +41,15 @@ export const Pesquisa = styled.input`
   width: 600px;
   height: 60px;
   border-radius: 40px;
-  font-size: 24px;
+  font-size: 18px;
+  background: #fff;
+  color: #2c0383;
+  font-family: "Codec Pro", sans-serif;
   padding: 20px;
 
   &::placeholder {
-    color: ${(props) => props.theme.colors.indigo};
+    color: #4f4192;
     opacity: 1;
-  }
-  &:focus::placeholder {
-    color: transparent;
   }
 `;
 

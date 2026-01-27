@@ -34,7 +34,7 @@ export const Login = styled.div`
     width: 120px;
     height: auto;
   }
-
+ 
   @media (max-width: 1024px) {
     max-width: 100%;
   }

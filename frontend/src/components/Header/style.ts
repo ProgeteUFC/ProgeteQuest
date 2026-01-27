@@ -35,6 +35,7 @@ export const Button = styled.button`
   transition: background 0.2s, color 0.2s;
 
   &:hover {
+    transition: background 0.2s, color 0.2s;
     background: ${(props) => props.theme.colors.challengeOrange};
     color: #fff;
   }
@@ -51,6 +52,7 @@ export const MenuContent = styled.div`
 export const MenuOption = styled.a`
   display: flex;
   background-color: ${(props) => props.theme.colors.indigo};
+  color: white;
   align-items: center;
   border-radius: 50px;
   padding: 1px 0px;
@@ -59,6 +61,7 @@ export const MenuOption = styled.a`
   gap: 30px;
   font-weight: bold;
   cursor: pointer;
+  text-decoration: none;
 
   &:active {
     scale: 0.97;

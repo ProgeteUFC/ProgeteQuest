@@ -11,8 +11,16 @@ import {
   RightBox,
 } from "./style";
 import { IconHome, IconExite, Box } from "../headerRanking/styles";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Header() {
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    // Adicione aqui a lógica de logout se necessário
+    navigate("/");
+  }
+
   return (
     <MenuContainer>
       <Logo>
@@ -21,18 +29,28 @@ export default function Header() {
       <MenuContent>
         <Box>
           <IconHome>
-            <TiHome size={30} />
+            <Link to="/">
+              <TiHome size={30} />
+            </Link>
           </IconHome>
         </Box>
         <MenuOptions>
-          <MenuOption>Entrar em uma turma</MenuOption>
-          <MenuOption>Minhas Turmas</MenuOption>
-          <MenuOption>Meus dados</MenuOption>
-          <MenuOption>Fórum</MenuOption>
+          <MenuOption as={Link} to="/entrarEmTurma">
+            Entrar em uma turma
+          </MenuOption>
+          <MenuOption as={Link} to="/minhasTurmas">
+            Minhas Turmas
+          </MenuOption>
+          <MenuOption as={Link} to="/meusDados">
+            Meus dados
+          </MenuOption>
+          <MenuOption as={Link} to="/forum">
+            Fórum
+          </MenuOption>
         </MenuOptions>
       </MenuContent>
       <RightBox>
-        <IconExite>
+        <IconExite onClick={handleLogout}>
           <IoExitOutline size={30} />
           <span>Sair</span>
         </IconExite>

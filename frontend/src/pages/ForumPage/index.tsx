@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import { TitleDescription } from "../../components/TitleDescription";
@@ -7,13 +6,11 @@ import { TitleName } from "../../components/TitleName";
 import {
   Container,
   Content,
-  Disciplinas,
-  PlanetImage,
   ListaTurmas,
+  ListaTurmasScroll,
   TurmaCard,
   TurmaNome,
-  TurmaInfo,
-  ListaTurmasScroll,
+  PlanetImage,
 } from "./styles";
 import planet_blue_anel from "../../assets/planet_blue_anel.png";
 
@@ -32,27 +29,18 @@ const turmas = [
   { id: "12", nome: "Compiladores" },
 ];
 
-export function MinhasTurmas() {
-  const navigate = useNavigate();
-  const [selected, setSelected] = useState<number | null>(null);
-
+export default function ForumPage() {
   return (
     <Container>
       <Header />
       <Content>
-        <TitleName titleName="Minhas turmas" />
-        <TitleDescription titleDescription="Aqui você pode consultar as turmas em que você está matriculado(a)" />
+        <TitleName titleName="Fórum" />
+        <TitleDescription titleDescription="Escolha o fórum da turma desejada para conversar e tirar dúvidas com seus colegas." />
         <ListaTurmas>
           <ListaTurmasScroll>
-            {turmas.map((turma, idx) => (
-              <TurmaCard
-                key={turma.id}
-                tabIndex={0}
-                onClick={() => navigate(`/detalhesDaTurma/${turma.id}`)}
-              >
-                <TurmaNome>
-                  {turma.nome}
-                </TurmaNome>
+            {turmas.map((turma) => (
+              <TurmaCard key={turma.id} tabIndex={0}>
+                <TurmaNome>{turma.nome}</TurmaNome>
               </TurmaCard>
             ))}
           </ListaTurmasScroll>

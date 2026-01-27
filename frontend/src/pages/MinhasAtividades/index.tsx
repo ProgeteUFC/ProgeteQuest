@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import Header from "../../components/Header";
 import { TitleDescription } from "../../components/TitleDescription";
 import { TitleName } from "../../components/TitleName";
@@ -44,6 +45,13 @@ const atividades = [
 ];
 
 export function MinhasAtividades() {
+  const location = useLocation();
+  const turmaId = new URLSearchParams(location.search).get("turma");
+
+  // Aqui você pode filtrar as atividades pelo turmaId
+  // Exemplo:
+  // const atividadesFiltradas = atividades.filter(a => a.turmaId === turmaId);
+
   return (
     <Container>
       <Header />

@@ -12,6 +12,7 @@ import MeusDados from "./pages/MeusDados";
 import EntraEmTurma from "./pages/EntrarEmTurma";
 import { MinhasTurmas } from "./pages/MinhasTurmas";
 import { MinhasAtividades } from "./pages/MinhasAtividades";
+import ForumPage from "./pages/ForumPage";
 
 export default function App() {
   return (
@@ -21,12 +22,13 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/detalhesDaTurma" element={<DetalhesDaTurma />} />
+          <Route path="/detalhesDaTurma/:id" element={<DetalhesDaTurma />} />
           <Route path="/seuRanking" element={<SeuRanking />} />
           <Route path="/meusDados" element={<MeusDados />} />
           <Route path="/entrarEmTurma" element={<EntraEmTurma />} />
           <Route path="/minhasTurmas" element={<MinhasTurmas />} />
           <Route path="/minhasAtividades" element={<MinhasAtividades />} />
+          <Route path="/forum" element={<ForumPage />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>

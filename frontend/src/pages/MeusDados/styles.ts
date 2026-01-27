@@ -219,7 +219,7 @@ export const SaveButton = styled.button`
 export const Image = styled.img`
   // REFERÊNCIA - IMAGEM DO PLANETA AZUL CLARO
   position: fixed;
-  width: 650px;
+  width: 700px;
   bottom: 0;
   right: 0;
   transform: translate(20%, 20%);

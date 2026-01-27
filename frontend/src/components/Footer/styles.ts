@@ -12,6 +12,7 @@ export const Container = styled.div`
   z-index: 1;
 `;
 export const Image = styled.img`
+  // REFERÊNCIA - IMAGEM DA LOGO DO PROGETE
   position: absolute;
   left: 2rem;
   bottom: 0.7rem;
