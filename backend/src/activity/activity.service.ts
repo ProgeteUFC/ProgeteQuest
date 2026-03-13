@@ -13,6 +13,9 @@ import { ActivityType } from '../Enums/activity.enum';
 import { validate as isUuid } from 'uuid';
 import { Class } from 'src/class/entities/class.entity';
 import { Assessment } from 'src/assessment/entities/assessment.entity';
+import { User, UserPayload } from 'src/decorators/user.decorator';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Checkin } from 'src/checkin/entities/checkin.entity';
 
 @Injectable()
 export class ActivityService {
@@ -25,6 +28,9 @@ export class ActivityService {
 
     @InjectRepository(Assessment)
     private readonly assessmentRepository: Repository<Assessment>,
+
+    @InjectRepository(Checkin)
+    private readonly checkinRepository: Repository<Checkin>,
   ) {}
 
   async getAllActivities(): Promise<Activity[]> {
@@ -243,10 +249,38 @@ export class ActivityService {
     classId: string,
     orderBy: 'name' | 'date' = 'date',
     order: 'ASC' | 'DESC' = 'ASC',
+    studentId?: string
   ) {
-    return this.activityRepository.find({
+    const atividades = await this.activityRepository.find({
       where: { classId },
       order: { [orderBy]: order },
+      select: [
+        'activityId',
+        'name',
+        'date',
+        'type',
+        'classId',
+        'assessmentId',
+        'createdAt', // adicione este campo
+        'updatedAt', // se quiser também
+      ],
+    });
+
+    let checkins: Checkin[] = [];
+    if (studentId) {
+      checkins = await this.checkinRepository.find({
+        where: { studentId },
+      });
+    }
+
+    return atividades.map(a => {
+      const checkin = checkins.find(c => c.activityId === a.activityId);
+      return {
+        ...a,
+        status: checkin ? "ok" : "pending",
+        createdAt: a.createdAt,
+        concludedAt: checkin ? checkin.createdAt : null,
+      };
     });
   }
 }

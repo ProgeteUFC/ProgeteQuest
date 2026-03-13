@@ -156,4 +156,10 @@ export class ClassService {
 
     return qb.getMany();
   }
+
+  async getClassById(id: string): Promise<Class> {
+    const turma = await this.classRepository.findOne({ where: { classId: id } });
+    if (!turma) throw new NotFoundException('Turma não encontrada');
+    return turma;
+  }
 }

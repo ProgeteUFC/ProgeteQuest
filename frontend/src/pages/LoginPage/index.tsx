@@ -1,21 +1,44 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { alunoService } from "../../services/alunoService";
 import {
   Container,
+  LogoTopLeft,
   Login,
   LoginCard,
-  AboutUs,
-  LogoTopLeft,
   Astronaut,
+  AboutUs,
   SmokeRight,
 } from "./style";
 import progete from "../../assets/progete.png";
-import planetOrange from "../../assets/planet_orange.png";
-import logo from "../../assets/logo.png";
 import astronaut from "../../assets/astronaut.png";
 import smoke from "../../assets/smoke.png";
+import planetOrange from "../../assets/planet_orange.png";
+import logo from "../../assets/logo.png";
 
 export default function LoginPage() {
-  const [userType, setUserType] = useState<"student" | "teacher">("student");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+  const navigate = useNavigate();
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setErro("");
+    try {
+      const res = await alunoService.login(email, senha);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userId", res.data.user.userId);
+      localStorage.setItem("userType", res.data.user.type);
+      // Redireciona para Minhas Turmas
+      navigate("/minhasTurmas");
+    } catch (err: any) {
+      setErro(
+        err?.response?.data?.message ||
+          "Erro ao fazer login. Verifique suas credenciais."
+      );
+    }
+  }
 
   return (
     <Container>
@@ -24,39 +47,29 @@ export default function LoginPage() {
       </LogoTopLeft>
       <Login>
         <LoginCard>
-          <div className="user-type-row">
-            <button
-              type="button"
-              className={userType === "student" ? "active" : ""}
-              onClick={() => setUserType("student")}
-            >
-              Sou aluno(a)
-            </button>
-            <button
-              type="button"
-              className={userType === "teacher" ? "active" : ""}
-              onClick={() => setUserType("teacher")}
-            >
-              Sou professor(a)
-            </button>
-          </div>
-          <input type="email" placeholder="E-mail:" />
-          <input type="password" placeholder="Senha:" />
-          <a className="forgot" href="#">
-            Esqueci minha senha
-          </a>
-          <div className="actions-row">
-            <button className="login-btn" type="submit">
-              LOGIN
-            </button>
-            <button
-              className="register-btn"
-              type="button"
-              onClick={() => (window.location.href = "/register")}
-            >
-              CRIAR CONTA
-            </button>
-          </div>
+          <form onSubmit={handleLogin}>
+            <input
+              type="email"
+              placeholder="E-mail:"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Senha:"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
+            />
+            <a className="forgot" href="#">
+              Esqueci minha senha
+            </a>
+            <div className="actions-row">
+              <button type="submit">Entrar</button>
+            </div>
+            {erro && <div style={{ color: "red", marginTop: 8 }}>{erro}</div>}
+          </form>
         </LoginCard>
       </Login>
 

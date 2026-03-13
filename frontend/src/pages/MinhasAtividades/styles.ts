@@ -27,18 +27,19 @@ export const Disciplina = styled.div`
 export const AtividadesContainer = styled.div`
   background: #fff;
   border-radius: 40px;
-  padding: 1.2rem 0.5rem;
+  padding: 20px 20px;
   margin-top: 1.2rem;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
-  width: 750px;
+  width: 900px;
   max-width: 95%;
   min-height: 180px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: ${(props) => props.theme.colors.indigo} #eee;
+  z-index: 1;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -61,7 +62,7 @@ export const AtividadeCard = styled.div`
   color: #fff;
   font-size: 1.05rem;
   font-family: "Baloo Paaji 2", sans-serif;
-  z-index: 1;
+  z-index: 2;
 `;
 
 export const AtividadeNome = styled.div`
@@ -93,7 +94,7 @@ export const StatusIcon = styled.span<{ status: string }>`
 export const PlanetImage = styled.img`
   position: fixed;
   width: 700px;
-  // z-index: 2;
+  z-index: 0;
   bottom: 0;
   right: 0;
   transform: translate(20%, 20%);

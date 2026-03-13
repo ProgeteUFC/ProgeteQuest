@@ -45,7 +45,7 @@ export class AuthService {
         count: attempts.count + 1,
         lastAttempt: now,
       };
-      throw new UnauthorizedException('E-mail ou senha incorretos');
+      throw new UnauthorizedException('Não existe cadastro com esse e-mail.');
     }
 
     const passwordValid = await bcrypt.compare(password, user.password);
@@ -91,6 +91,12 @@ export class AuthService {
     const token = this.jwtService.sign(payload);
     return {
       token: token,
+      user: {
+        userId: user.userId,
+        email: user.email,
+        name: user.name,
+        type: role,
+      },
     };
   }
 }

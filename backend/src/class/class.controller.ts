@@ -53,6 +53,12 @@ export class ClassController {
   }
 
   @Roles('teacher', 'student')
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    return this.classService.getClassById(id);
+  }
+
+  @Roles('teacher', 'student')
   @Post('search')
   async searchClasses(@Body() searchDto: SearchClassDto) {
     return this.classService.searchClasses(searchDto);

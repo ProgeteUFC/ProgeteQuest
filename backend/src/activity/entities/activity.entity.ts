@@ -5,6 +5,8 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Assessment } from '../../assessment/entities/assessment.entity';
 import { Class } from 'src/class/entities/class.entity';
@@ -54,6 +56,12 @@ export class Activity {
     name: 'assessment_id',
   })
   assessmentId: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 
   // Relação com Class (1,1)
   @ManyToOne(() => Class, (cls) => cls.activities)

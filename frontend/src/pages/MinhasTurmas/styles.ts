@@ -34,7 +34,8 @@ export const Container = styled.div`
 export const Content = styled.div`
   padding: 40px 0 0 0;
   max-width: 900px;
-  margin: 0 auto;
+  margin-top: 25px;
+  // margin: 0 auto;
 
   @media (max-width: 320px) {
     width: 80%;
@@ -116,6 +117,7 @@ export const PlanetImage = styled.img`
 `;
 
 export const ListaTurmas = styled.div`
+  margin: 0 0 0 25px;
   background: #fff;
   border-radius: 32px;
   padding: 22px 16px;

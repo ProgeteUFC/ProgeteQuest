@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
@@ -7,34 +7,33 @@ import { TitleName } from "../../components/TitleName";
 import {
   Container,
   Content,
-  Disciplinas,
   PlanetImage,
   ListaTurmas,
   TurmaCard,
   TurmaNome,
-  TurmaInfo,
   ListaTurmasScroll,
 } from "./styles";
 import planet_blue_anel from "../../assets/planet_blue_anel.png";
-
-const turmas = [
-  { id: "1", nome: "Processos de Software" },
-  { id: "2", nome: "Gerência de Projetos" },
-  { id: "3", nome: "Qualidade de Software" },
-  { id: "4", nome: "Requisitos de Software" },
-  { id: "5", nome: "Banco de Dados" },
-  { id: "6", nome: "Engenharia de Software" },
-  { id: "7", nome: "Redes de Computadores" },
-  { id: "8", nome: "Estruturas de Dados" },
-  { id: "9", nome: "Algoritmos" },
-  { id: "10", nome: "Sistemas Operacionais" },
-  { id: "11", nome: "Inteligência Artificial" },
-  { id: "12", nome: "Compiladores" },
-];
+import { alunoService } from "../../services/alunoService";
 
 export function MinhasTurmas() {
   const navigate = useNavigate();
-  const [selected, setSelected] = useState<number | null>(null);
+  const [turmas, setTurmas] = useState<any[]>([]);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    async function fetchTurmas() {
+      try {
+        const token = localStorage.getItem("token") || "";
+        const studentId = localStorage.getItem("userId") || "";
+        const res = await alunoService.listarTurmas(studentId, token);
+        setTurmas(res.data);
+      } catch (err: any) {
+        setErro("Erro ao buscar turmas.");
+      }
+    }
+    fetchTurmas();
+  }, []);
 
   return (
     <Container>
@@ -44,17 +43,21 @@ export function MinhasTurmas() {
         <TitleDescription titleDescription="Aqui você pode consultar as turmas em que você está matriculado(a)" />
         <ListaTurmas>
           <ListaTurmasScroll>
+            {turmas.length === 0 && !erro && (
+              <div style={{ color: "#2c0383", fontWeight: "bold", padding: "24px", textAlign: "center" }}>
+                Você ainda não está matriculado em nenhuma turma.
+              </div>
+            )}
             {turmas.map((turma, idx) => (
               <TurmaCard
-                key={turma.id}
+                key={turma.classId}
                 tabIndex={0}
-                onClick={() => navigate(`/detalhesDaTurma/${turma.id}`)}
+                onClick={() => navigate(`/detalhesDaTurma/${turma.classId}`)}
               >
-                <TurmaNome>
-                  {turma.nome}
-                </TurmaNome>
+                <TurmaNome>{turma.name}</TurmaNome>
               </TurmaCard>
             ))}
+            {erro && <div style={{ color: "red" }}>{erro}</div>}
           </ListaTurmasScroll>
         </ListaTurmas>
       </Content>

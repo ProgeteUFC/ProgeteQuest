@@ -5,6 +5,7 @@ import { CreateActivityDto } from './dtos/createActivity.dto';
 import { Activity } from './entities/activity.entity';
 import { Roles } from 'src/decorators/roles.decorator';
 import { SearchActivityDto } from './dtos/searchActivity.dto';
+import { User, UserPayload } from 'src/decorators/user.decorator';
 
 @Controller('activity')
 export class ActivityController {
@@ -47,12 +48,8 @@ export class ActivityController {
   @Get('class/:classId')
   async listByClass(
     @Param('classId') classId: string,
-    @Body() body: { orderBy?: 'name' | 'date'; order?: 'ASC' | 'DESC' },
-  ) {
-    return this.activityService.listActivitiesByClass(
-      classId,
-      body.orderBy ?? 'date',
-      body.order ?? 'ASC',
-    );
+    @User() user: UserPayload,
+  ): Promise<Activity[]> {
+    return this.activityService.listActivitiesByClass(classId, 'date', 'ASC', user.userId);
   }
 }

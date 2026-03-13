@@ -9,6 +9,7 @@ import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import * as bcrypt from 'bcrypt';
+import { UnauthorizedException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -143,13 +144,19 @@ export class UserService {
     });
   }
 
-  async remove(userId: string) {
+  async remove(userId: string, password: string) {
     const user = await this.userRepository.findOne({
       where: { userId },
       relations: ['students', 'teachers'],
     });
     if (!user) {
       throw new BadRequestException('Usuário não encontrado');
+    }
+
+    // Valida senha
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid) {
+      throw new UnauthorizedException('Senha incorreta');
     }
 
     // Remove registros de estudante, se existirem

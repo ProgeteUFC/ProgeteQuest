@@ -17,7 +17,9 @@ export default function Header() {
   const navigate = useNavigate();
 
   function handleLogout() {
-    // Adicione aqui a lógica de logout se necessário
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userType");
     navigate("/");
   }
 

@@ -5,6 +5,13 @@ import { JwtService } from '@nestjs/jwt';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // HABILITAR CORS PARA O FRONTEND
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  });
+
   const reflector = app.get(Reflector);
   const jwtService = app.get(JwtService);
 

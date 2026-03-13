@@ -10,7 +10,7 @@ export const Container = styled.div`
 export const Content = styled.div`
   padding: 40px 0 0 0;
   max-width: 900px;
-  margin: 0 auto;
+  // margin: 0 auto;
 `;
 
 export const ListaTurmas = styled.div`
@@ -24,7 +24,10 @@ export const ListaTurmas = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: 32px;
+  margin-left: 180px;
 `;
+
+
 
 export const ListaTurmasScroll = styled.div`
   overflow-y: auto;
@@ -93,4 +96,21 @@ export const PlanetImage = styled.img`
     width: 350px;
     transform: translate(10%, 10%);
   }
+`;
+
+export const ForumTitle = styled.h1`
+  color: #fff;
+  font-size: 34px;
+  font-weight: 800;
+  font-family: "Baloo Paaji 2", sans-serif;
+  margin-left:180px;
+`;
+
+export const ForumDescription = styled.p`
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  font-family: "Baloo Paaji 2", sans-serif;
+  margin-left:180px;
+  line-height: 1.2;
 `;

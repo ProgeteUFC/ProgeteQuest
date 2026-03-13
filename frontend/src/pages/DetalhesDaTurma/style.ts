@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const Pagina = styled.h1`
+export const Pagina = styled.div`
   color: white;
   background-color: ${(props) => props.theme.colors.primaryDark};
   height: 84.3vh; //REFERÊNCIA - JÁ CONTA COM O ESPAÇO DA HEADER

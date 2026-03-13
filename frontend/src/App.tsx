@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ThemeProvider, useTheme } from "styled-components";
 import { Routes, Route, useLocation } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
@@ -13,8 +13,12 @@ import EntraEmTurma from "./pages/EntrarEmTurma";
 import { MinhasTurmas } from "./pages/MinhasTurmas";
 import { MinhasAtividades } from "./pages/MinhasAtividades";
 import ForumPage from "./pages/ForumPage";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
 
 export default function App() {
+  const [count, setCount] = useState(0);
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <GlobalStyle />

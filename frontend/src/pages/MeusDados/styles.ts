@@ -21,12 +21,14 @@ export const Container = styled.div`
 
 export const PageContent = styled.div`
   width: 100%;
-  max-width: 1200px;
+  // max-width: 1200px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 4rem;
   z-index: 1;
+  margin-bottom: 45px;
+
 
   /* RESPONSIVIDADE: TABLET/LAPTOP PEQUENO */
   @media (max-width: 1000px) {
@@ -40,16 +42,19 @@ export const PageContent = styled.div`
 export const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  // gap: 0.2rem;
   flex: 1;
   max-width: 600px;
-  margin-left: 4rem;
+  
+
+
 
   .button-group-vertical {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 1rem;
+    margin-left: 180px;
     align-items: flex-end;
     width: 100%;
   }
@@ -66,42 +71,29 @@ export const LeftColumn = styled.div`
   }
 `;
 
-export const HeaderContainer = styled.div`
-  color: ${({ theme }) => theme.colors.white};
-
-  .title-wrapper {
-    display: flex;
-    align-items: center;
-
-    font-family: "Baloo Paaji 2", sans-serif;
-  }
-
-  .subtitle {
-    font-family: "Baloo Paaji 2", sans-serif;
-    color: ${({ theme }) => theme.colors.white};
-    font-size: 24px;
-    font-weight: 800;
-    padding-top: 1px;
-    padding-bottom: 10px;
-
-    line-height: 1.2;
-    margin-bottom: 0.2rem;
-
-    span {
-      color: #00ffb3;
-      font-weight: bold;
-    }
-  }
-
-  /* RESPONSIVIDADE: CELULAR */
-  @media (max-width: 768px) {
-    text-align: center;
-
-    .title-wrapper {
-      justify-content: center;
-    }
-  }
+export const DadosTitle = styled.h1`
+  font-size: 34px;
+  font-weight: 800;
+  color: ${(props) => props.theme.colors.white};
+  font-family: "Baloo Paaji 2", sans-serif;
+  margin-left: 180px;
+  margin-top: 80px;
+  margin-bottom: 1px;
+  margin-left: 180px;
 `;
+
+export const DadosDescricao = styled.p`
+  font-size: 24px;
+  font-weight: 800;
+  color: ${(props) => props.theme.colors.white};
+  font-family: "Baloo Paaji 2", sans-serif;
+  margin-left: 180px;
+  margin-bottom: 24px;
+  margin-left: 180px;
+
+  line-height: 1.2;
+`;
+
 
 export const LogoTop = styled.img`
   position: absolute;
@@ -139,7 +131,8 @@ export const LogoBottom = styled.img`
 
 export const PersonalData = styled.div`
   background: ${({ theme }) => theme.colors.white};
-  padding: 0.8rem 1.5rem;
+  padding: 26px 24px;
+  margin: 0 0 0 180px;
   border-radius: 1.5rem;
   width: 100%;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);

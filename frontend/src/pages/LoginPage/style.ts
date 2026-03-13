@@ -13,11 +13,15 @@ export const Container = styled.div`
   box-sizing: border-box;
   overflow: hidden;
 
+  
   @media (max-width: 1024px) {
     flex-direction: column;
     height: auto;
     padding: 1rem;
   }
+
+ 
+
 `;
 
 export const Login = styled.div`
@@ -29,11 +33,12 @@ export const Login = styled.div`
   width: 100%;
   max-width: 500px;
   gap: 2rem;
+  
 
-  > img:first-child {
-    width: 120px;
-    height: auto;
-  }
+  // > img:first-child {
+  //   width: 120px;
+  //   height: auto;    
+  // }
  
   @media (max-width: 1024px) {
     max-width: 100%;

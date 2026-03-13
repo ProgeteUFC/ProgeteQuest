@@ -34,7 +34,10 @@ export class RolesGuard implements CanActivate {
       .verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       })
-      .catch(() => undefined);
+      .catch(err => {
+        console.error("Erro ao buscar atividades:", err);
+        throw err;
+      });
 
     if (!loginPayload) {
       return false;

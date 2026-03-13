@@ -9,5 +9,5 @@ export const Title = styled.p`
   font-size: 34px;
   font-weight: 800;
   font-family: "Baloo Paaji 2", sans-serif;
-  
+  margin: 0 0 0 25px;
 `;

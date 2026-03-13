@@ -1,8 +1,6 @@
 import React from "react";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
-import { TitleDescription } from "../../components/TitleDescription";
-import { TitleName } from "../../components/TitleName";
 import {
   Container,
   Content,
@@ -11,6 +9,8 @@ import {
   TurmaCard,
   TurmaNome,
   PlanetImage,
+  ForumTitle,
+  ForumDescription,
 } from "./styles";
 import planet_blue_anel from "../../assets/planet_blue_anel.png";
 
@@ -34,8 +34,10 @@ export default function ForumPage() {
     <Container>
       <Header />
       <Content>
-        <TitleName titleName="Fórum" />
-        <TitleDescription titleDescription="Escolha o fórum da turma desejada para conversar e tirar dúvidas com seus colegas." />
+        <ForumTitle>Fórum</ForumTitle>
+        <ForumDescription>
+          Escolha o fórum da turma desejada para conversar e tirar dúvidas com seus colegas.
+        </ForumDescription>
         <ListaTurmas>
           <ListaTurmasScroll>
             {turmas.map((turma) => (
