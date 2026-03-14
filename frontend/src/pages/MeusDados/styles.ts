@@ -51,12 +51,14 @@ export const LeftColumn = styled.div`
 
   .button-group-vertical {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    margin-left: 180px;
-    align-items: flex-end;
+    flex-direction: row;
+    gap: 1rem;
+    margin-top: 0.3rem;
+    margin-left: 0;
+    align-items: center;
     width: 100%;
+    justify-content: space-between;
+    flex-direction: row-reverse;
   }
 
   /* --- RESPONSIVIDADE: CELULAR --- */
@@ -182,15 +184,17 @@ export const InputWrapper = styled.div`
     }
 
     &::placeholder {
-      color: red;
+        color: ${(props) => props.theme.colors.muted};
+
       font-family: "Codec Pro", sans-serif;
+      // font-weight: bold;
     }
   }
 `;
 
 export const SaveButton = styled.button`
-  background-color: ${(props) => props.theme.colors.white};
-  color: ${(props) => props.theme.colors.kingfisherDaisy};
+  background-color: ${(props) => props.theme.colors.secondary};
+  color: ${(props) => props.theme.colors.white};
   border: none;
   border-radius: 20px;
   font-size: 16px;
@@ -206,6 +210,27 @@ export const SaveButton = styled.button`
   &:hover {
     background-color: ${(props) => props.theme.colors.challengeOrange};
     color: #fff;
+  }
+`;
+
+export const ExcluirButton = styled.button`
+  background-color: ${(props) => props.theme.colors.secondary};
+  color: ${(props) => props.theme.colors.white};
+  border: none;
+  border-radius: 24px;
+  // padding: 10px 24px;
+   padding: 4px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: "Baloo Paaji 2", sans-serif;
+  max-width: 260px;
+  transition: background 0.2s, color 0.2s;
+
+  &:hover {
+    background: #e74c3c;
+      color: ${(props) => props.theme.colors.white};
+
   }
 `;
 

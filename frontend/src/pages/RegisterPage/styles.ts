@@ -157,7 +157,7 @@ export const Planet = styled.img`
 
 export const Register = styled.div`
   background: ${({ theme }) => theme.colors.white};
-  padding: 0.8rem 1.5rem;
+  padding: 1.7rem 1.5rem;
   border-radius: 1.5rem;
   width: 100%;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
@@ -226,8 +226,8 @@ export const RightArtwork = styled.img`
 `;
 
 export const CadastrarButton = styled.button`
-  background-color: ${(props) => props.theme.colors.white};
-  color: ${(props) => props.theme.colors.kingfisherDaisy};
+  background-color: ${(props) => props.theme.colors.secondary};
+  color: ${(props) => props.theme.colors.white};
   border: none;
   border-radius: 20px;
   font-size: 16px;
@@ -237,11 +237,52 @@ export const CadastrarButton = styled.button`
   cursor: pointer;
   padding: 4px 0;
   width: 160px;
-  margin-top: 10px;
+  margin-top: 5px;
   transition: background 0.2s, color 0.2s;
 
   &:hover {
     background-color: ${(props) => props.theme.colors.challengeOrange};
+    color: #fff;
+  }
+`;
+
+export const UserTypeRow = styled.div`
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  background: #4f4192;
+  border-radius: 24px;
+  padding: 6px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+export const UserTypeButton = styled.button<{ active: boolean }>`
+  flex: 1;
+  border: none;
+  border-radius: 24px;
+  background: ${({ active }) => (active ? "#fff" : "transparent")};
+  color: ${({ active }) => (active ? "#2c0383" : "#fff")};
+  font-weight: bold;
+  font-size: 1.1rem;
+  padding: 4px 0;
+  cursor: ${({ active }) => (active ? "default" : "pointer")};
+  box-shadow: none;
+  transition: background 0.2s, color 0.2s;
+  outline: none;
+  margin: 0;
+  font-family: "Baloo Paaji 2", sans-serif;
+  letter-spacing: 0.01em;
+  &:not(:last-child) {
+    border-right: 2px solid transparent;
+  }
+  &.active {
+    background: #fff;
+    color: #2c0383;
+    font-weight: 700;
+  }
+  &:hover:not(.active) {
+    background: rgba(255,255,255,0.18);
     color: #fff;
   }
 `;

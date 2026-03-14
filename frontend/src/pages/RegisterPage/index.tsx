@@ -18,27 +18,7 @@ import logo from "../../assets/progete.png";
 import planet from "../../assets/planet_orange.png";
 import artwork from "../../assets/logo.png";
 import styled from "styled-components";
-
-const UserTypeRow = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-`;
-
-const UserTypeButton = styled.button<{ active: boolean }>`
-  flex: 1;
-  border: none;
-  border-radius: 24px;
-  background: ${({ active }) => (active ? "#fff" : "transparent")};
-  color: ${({ active }) => (active ? "#2c0383" : "#fff")};
-  font-weight: bold;
-  font-size: 1.3rem;
-  padding: 8px 0;
-  cursor: ${({ active }) => (active ? "default" : "pointer")};
-  box-shadow: ${({ active }) =>
-    active ? "0 2px 8px rgba(44, 3, 131, 0.08)" : "none"};
-  transition: background 0.2s, color 0.2s;
-`;
+import { UserTypeRow, UserTypeButton } from "./styles";
 
 export default function RegisterPage() {
   const [nome, setNome] = useState("");
@@ -67,7 +47,14 @@ export default function RegisterPage() {
         registrationStudent: tipo === "student" ? matricula : undefined,
         registrationTeacher: tipo === "teacher" ? matricula : undefined,
       });
-      setSucesso("Cadastro realizado com sucesso! Faça login.");
+      // Realiza login automático após cadastro
+      const res = await alunoService.login(email, senha);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userId", res.data.user.userId);
+      localStorage.setItem("userType", res.data.user.type);
+      setSucesso("Cadastro realizado com sucesso! Você foi logado.");
+      // Redireciona para Minhas Turmas
+      window.location.href = "/minhasTurmas";
     } catch (err: any) {
       setErro(
         err?.response?.data?.message ||
@@ -95,6 +82,7 @@ export default function RegisterPage() {
             <UserTypeRow>
               <UserTypeButton
                 type="button"
+                className={tipo === "student" ? "active" : ""}
                 active={tipo === "student"}
                 onClick={() => setTipo("student")}
               >
@@ -102,6 +90,7 @@ export default function RegisterPage() {
               </UserTypeButton>
               <UserTypeButton
                 type="button"
+                className={tipo === "teacher" ? "active" : ""}
                 active={tipo === "teacher"}
                 onClick={() => setTipo("teacher")}
               >

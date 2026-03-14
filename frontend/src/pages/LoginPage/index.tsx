@@ -66,7 +66,14 @@ export default function LoginPage() {
               Esqueci minha senha
             </a>
             <div className="actions-row">
-              <button type="submit">Entrar</button>
+                <button type="submit" className="login-btn">LOGIN</button>
+                <button
+                  type="button"
+                  className="register-btn"
+                  onClick={() => navigate("/register")}
+                >
+                  CRIAR CONTA
+                </button>
             </div>
             {erro && <div style={{ color: "red", marginTop: 8 }}>{erro}</div>}
           </form>

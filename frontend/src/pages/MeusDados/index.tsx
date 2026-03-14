@@ -6,7 +6,7 @@ import {
   InputWrapper,
   PersonalData,
   LogoBottom,
-  HeaderContainer,
+  ExcluirButton,
   SaveButton,
   DadosTitle,
   DadosDescricao,
@@ -181,26 +181,15 @@ export default function MeusDados() {
                 <div className="button-group-vertical">
                   <SaveButton type="submit">SALVAR</SaveButton>
                   {!mostrarConfirmacao ? (
-                    <button
+                    <ExcluirButton
                       type="button"
-                      style={{
-                        marginTop: 12,
-                        background: "#e74c3c",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 24,
-                        padding: "10px 24px",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        maxWidth: 260,
-                      }}
                       onClick={handleConfirmarExclusao}
                     >
                       EXCLUIR CONTA
-                    </button>
+                    </ExcluirButton>
                   ) : (
                     <>
-                      <div style={{ marginTop: 12, marginBottom: 8, color: "#e74c3c", fontWeight: "bold" }}>
+                      <div className="placeholder-alert">
                         Essa ação é <u>permanente</u>! Digite sua senha para confirmar:
                       </div>
                       <input
@@ -208,51 +197,21 @@ export default function MeusDados() {
                         placeholder="Digite sua senha para excluir"
                         value={senhaExcluir}
                         onChange={(e) => setSenhaExcluir(e.target.value)}
-                        style={{
-                          borderRadius: 24,
-                          padding: "10px 24px",
-                          fontWeight: "bold",
-                          border: "1px solid #e74c3c",
-                          width: "100%",
-                          maxWidth: 260,
-                        }}
                       />
-                      <button
+                      <ExcluirButton
                         type="button"
-                        style={{
-                          marginTop: 12,
-                          background: "#e74c3c",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: 24,
-                          padding: "10px 24px",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                          maxWidth: 260,
-                        }}
                         onClick={handleExcluirConta}
                       >
                         CONFIRMAR EXCLUSÃO
-                      </button>
+                      </ExcluirButton>
                       <button
                         type="button"
-                        style={{
-                          marginTop: 8,
-                          background: "#fff",
-                          color: "#2c0383",
-                          border: "1px solid #2c0383",
-                          borderRadius: 24,
-                          padding: "8px 24px",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                          maxWidth: 260,
-                        }}
                         onClick={() => {
                           setMostrarConfirmacao(false);
                           setSenhaExcluir("");
                         }}
                       >
-                        Cancelar
+                        CANCELAR
                       </button>
                     </>
                   )}

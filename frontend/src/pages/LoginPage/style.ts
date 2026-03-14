@@ -98,7 +98,7 @@ export const LoginCard = styled.div`
     background: #fff;
     color: #2c0383;
     font-family: "Baloo Paaji 2", sans-serif;
-    margin-bottom: 0;
+    margin-bottom: 15px;
     margin-top: 0;
     &::placeholder {
       color: #4f4192;
