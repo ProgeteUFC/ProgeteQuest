@@ -1,6 +1,7 @@
 import { User } from 'src/user/entities/user.entity';
 import { Forum } from './forum.entity';
 import { Post } from './post.entity';
+import { TopicStatus } from 'src/Enums/topicStatus.enum';
 import {
   Entity,
   PrimaryColumn,
@@ -54,13 +55,13 @@ export class Topic {
   descricao: string | null;
 
   @Column({
-    type: 'varchar',
+    type: 'enum',
+    enum: TopicStatus,
     nullable: false,
     name: 'status',
-    length: 20,
-    default: 'ativo',
+    default: TopicStatus.OPEN,
   })
-  status: string;
+  status: TopicStatus;
 
   @CreateDateColumn({ name: 'created_at' })
   criadoEm: Date;
