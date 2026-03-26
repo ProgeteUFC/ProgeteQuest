@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { ActivityModule } from './activity/activity.module';
 import { AssessmentModule } from './assessment/assessment.module';
 import { ClassModule } from './class/class.module';
+import { ForumModule } from './forum/forum.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -37,6 +38,7 @@ import { ClassModule } from './class/class.module';
     ActivityModule,
     AssessmentModule,
     ClassModule,
+    ForumModule,
   ],
 })
 export class AppModule {}
