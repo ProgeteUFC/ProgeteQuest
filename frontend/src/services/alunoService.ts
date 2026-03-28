@@ -6,14 +6,15 @@ export const alunoService = {
   async cadastrar(dados: any) {
     return axios.post(`${API_URL}/user`, dados);
   },
-  async login(email: string, password: string) {
-    return axios.post(`${API_URL}/auth/login`, { email, password });
-  },
+async login(email: string, password: string) {
+  return axios.post(`${API_URL}/auth/login`, { email, password });
+
+},
   async listarTurmas(studentId: string, token: string) {
     return axios.get(`${API_URL}/student-class/student/${studentId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
     });
-  },
+},
   async entrarEmTurma(studentId: string, joinCode: string, token: string) {
     return axios.post(
       `${API_URL}/student-class/join`,

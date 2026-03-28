@@ -5,62 +5,28 @@ export const Container = styled.div`
   min-height: 100vh;
   width: 100vw;
   position: relative;
-  
-  @media (max-width: 320px) {
-    justify-content: center;
-  }
-
-  @media (min-width: 321px) and (max-width: 480px) {
-    justify-content: center;
-  }
-
-  @media (min-width: 481px) and (max-width: 768px) {
-    justify-content: center;
-  }
-
-  @media (min-width: 769px) and (max-width: 1024px) {
-    justify-content: center;
-  }
-
-  @media (min-width: 1025px) and (max-width: 1280px) {
-    flex-direction: column;
-  }
-
-  @media (min-width: 1281px) {
-    flex-direction: column;
-  }
+  display: flex;         
+  flex-direction: column; 
+  overflow-x: hidden;      
 `;
 
 export const Content = styled.div`
-  padding: 40px 0 0 0;
+  padding: 40px 20px 0 20px;
   max-width: 900px;
   margin-top: 25px;
   // margin: 0 auto;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 60px;
 
-  @media (max-width: 320px) {
+  @media (min-width: 1024px) {
+    align-items: flex-start;
+    margin-left: 10%;
     width: 80%;
-  }
-
-  @media (min-width: 321px) and (max-width: 480px) {
-    width: 80%;
-  }
-
-  @media (min-width: 481px) and (max-width: 768px) {
-    width: 80%;
-  }
-
-  @media (min-width: 769px) and (max-width: 1024px) {
-    width: 80%;
-  }
-
-  @media (min-width: 1025px) and (max-width: 1280px) {
-    width: 80%;
-    margin-left: 120px;
-  }
-
-  @media (min-width: 1281px) {
-    width: 80%;
-    margin-left: 160px;
+    max-width: 1200px;
   }
 `;
 
@@ -100,33 +66,36 @@ export const Content = styled.div`
 
 export const PlanetImage = styled.img`
   position: fixed;
-  width: 700px;
-  z-index: 2;
   bottom: 0;
   right: 0;
-  transform: translate(20%, 20%);
+  pointer-events: none;
+  z-index: 0;           
 
-  @media (max-width: 1400px) {
-    width: 500px;
-    transform: translate(10%, 10%);
+  /* MOBILE E TABLET (Até 768px) */
+  @media (max-width: 768px) {
+    display: none;
   }
-  @media (max-width: 900px) {
-    width: 350px;
-    transform: translate(10%, 10%);
+
+  /* DESKTOP (Acima de 1024px) */
+  @media (min-width: 1025px) {
+    display: block;
+    width: 450px;
+    transform: translate(15%, 15%); 
   }
 `;
 
 export const ListaTurmas = styled.div`
-  margin: 0 0 0 25px;
   background: #fff;
   border-radius: 32px;
   padding: 22px 16px;
-  width: 400px;
-  max-height: 342px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  overflow: hidden; /* Importante para esconder a barra fora do card */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 95%;
+  max-width: 450px;
+  margin: 20px 0;
+  max-height: 400px;  
 `;
 
 export const ListaTurmasScroll = styled.div`
@@ -156,7 +125,8 @@ export const ListaTurmasScroll = styled.div`
 export const TurmaCard = styled.div`
   background: ${(props) => props.theme.colors.indigo};
   border-radius: 20px;
-  padding: 8px 18px;
+  padding: 16px 20px
+  min-height: 60px;
   display: flex;
   align-items: center;
   color: #fff;
@@ -172,6 +142,11 @@ export const TurmaCard = styled.div`
     background: ${(props) => props.theme.colors.challengeOrange};
     color: #fff;
     outline: none;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px 16px;
+    font-size: 0.95rem;
   }
 `;
 
