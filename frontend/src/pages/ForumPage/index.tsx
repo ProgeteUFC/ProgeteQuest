@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import {
@@ -30,6 +31,7 @@ const turmas = [
 ];
 
 export default function ForumPage() {
+  const navigate = useNavigate();
   return (
     <Container>
       <Header />
@@ -41,7 +43,12 @@ export default function ForumPage() {
         <ListaTurmas>
           <ListaTurmasScroll>
             {turmas.map((turma) => (
-              <TurmaCard key={turma.id} tabIndex={0}>
+              <TurmaCard
+                key={turma.id}
+                tabIndex={0}
+                onClick={() => navigate(`/forum/${turma.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <TurmaNome>{turma.nome}</TurmaNome>
               </TurmaCard>
             ))}

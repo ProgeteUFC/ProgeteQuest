@@ -13,6 +13,7 @@ import EntraEmTurma from "./pages/EntrarEmTurma";
 import { MinhasTurmas } from "./pages/MinhasTurmas";
 import { MinhasAtividades } from "./pages/MinhasAtividades";
 import ForumPage from "./pages/ForumPage";
+import ForumTurmaPage from "./pages/ForumTurmaPage";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/minhasTurmas" element={<MinhasTurmas />} />
           <Route path="/minhasAtividades" element={<MinhasAtividades />} />
           <Route path="/forum" element={<ForumPage />} />
+          <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
