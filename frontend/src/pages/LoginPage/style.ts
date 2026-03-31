@@ -5,30 +5,35 @@ export const Container = styled.div`
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
-  height: 100vh;
-  width: 100vw; 
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
   background-color: ${({ theme }) => theme.colors.kingfisherDaisy || 'var(--kingfisherDaisy)'};
   padding: 2rem;
   box-sizing: border-box;
+
 
   @media (max-width: 1440px) {
     flex-direction: column;
     justify-content: flex-start;
     overflow-y: auto;
+    
   }
 `;
+
 
 export const Login = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 40%; /* ocupa 40% da largura na horizontal */
+  width: 40%;
   max-width: 500px;
   z-index: 1;
+  
 
   .astronauta {
-    position: fixed;
+    position: static;
     width: 400px;
     height: auto;
     z-index: 0;
@@ -37,12 +42,19 @@ export const Login = styled.div`
     margin-left: -200px;
   }
 
+  @media (max-width: 768px) {
+  .astronauta {
+  position: static;
+  width: 100%;
+  margin-left: 0;
+  left: 0;
+    }
+  }
+
   @media (max-width: 1440px) {
-    order: 2; /* login vem depois */
+    order: 2;
     width: 100%;
     margin: 2rem 0;
-
-    
   }
 `;
 
@@ -98,7 +110,7 @@ export const AboutUs = styled.div`
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  width: 55%; /* ocupa mais espaço que o login */
+  width: 55%; 
   z-index: 1;
 
   .logo-image {
@@ -109,17 +121,24 @@ export const AboutUs = styled.div`
   }
 
   .about-header {
+    position: relative
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     width: 100%;
-    margin-bottom: 2rem;
+    gap: 1rem;
+    
   }
 
+  @media (max-width: 768px) {
+  .about-header {
+    justify-content: center; 
+    padding-right:0;
+  }
+}
+
   .planet-image {
-    width: 300px;
-    height: auto;
-    max-width: 100%;
+    display: none;
   }
 
   .about-content {
@@ -139,7 +158,7 @@ export const AboutUs = styled.div`
     }
 
     .planet-image {
-      width: 600px;
+      width: 70px;
     }
   }
 
@@ -150,7 +169,7 @@ export const AboutUs = styled.div`
     }
 
     .planet-image {
-      width: 100%;
+      display:none;
     }
   }
 `;

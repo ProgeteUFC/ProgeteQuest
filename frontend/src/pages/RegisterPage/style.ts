@@ -6,7 +6,7 @@ export const Container = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   background-color: ${({ theme }) => theme.colors.kingfisherDaisy || 'var(--kingfisherDaisy)'};
   padding: 2rem;
   box-sizing: border-box;
@@ -17,7 +17,6 @@ export const Register = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-right: 10rem;
   width: 100%;
   max-width: 500px;
   padding: 2rem;
