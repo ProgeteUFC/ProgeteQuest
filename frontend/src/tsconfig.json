@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "jsx": "react",
+    "jsx": "react-jsx",
     "types": ["styled-components/cssprop", "vite/client"],
     "baseUrl": ".",
     "paths": {

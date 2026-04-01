@@ -16,6 +16,7 @@ import ForumPage from "./pages/ForumPage";
 import ForumTurmaPage from "./pages/ForumTurmaPage";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
+import CriarTurma from "./pages/CriarTurma";
 
 export default function App() {
   const [count, setCount] = useState(0);
@@ -35,6 +36,8 @@ export default function App() {
           <Route path="/minhasAtividades" element={<MinhasAtividades />} />
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
+          <Route path="/criar-turma" element={<CriarTurma />} />
+          
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
