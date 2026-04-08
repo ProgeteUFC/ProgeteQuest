@@ -22,23 +22,33 @@ export default function LoginPage() {
   const [erro, setErro] = useState("");
   const navigate = useNavigate();
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setErro("");
-    try {
-      const res = await alunoService.login(email, senha);
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userId", res.data.user.userId);
-      localStorage.setItem("userType", res.data.user.type);
-      // Redireciona para Minhas Turmas
-      navigate("/minhasTurmas");
-    } catch (err: any) {
-      setErro(
-        err?.response?.data?.message ||
-          "Erro ao fazer login. Verifique suas credenciais."
-      );
+async function handleLogin(e: React.FormEvent) {
+  e.preventDefault();
+  setErro("");
+  try {
+    const res = await alunoService.login(email, senha);
+    
+    // Armazena os dados
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("userId", res.data.user.userId);
+    localStorage.setItem("userType", res.data.user.type);
+
+    //Lógica de Redirecionamento Dinâmico
+    const userType = res.data.user.type; // Pega o tipo que veio da API
+
+    if (userType === "teacher") {
+      navigate("/PaginaInicialProfessor"); // Rota para professores
+    } else {
+      navigate("/minhasTurmas"); // Rota padrão dos alunos
     }
+
+  } catch (err: any) {
+    setErro(
+      err?.response?.data?.message ||
+        "Erro ao fazer login. Verifique suas credenciais."
+    );
   }
+}
 
   return (
     <Container>

@@ -10,6 +10,7 @@ import DetalhesDaTurma from "./pages/DetalhesDaTurma";
 import SeuRanking from "./pages/SeuRanking";
 import MeusDados from "./pages/MeusDados";
 import EntraEmTurma from "./pages/EntrarEmTurma";
+import PaginaInicialProfessor from "./pages/PaginaInicialProfessor";
 import { MinhasTurmas } from "./pages/MinhasTurmas";
 import { MinhasAtividades } from "./pages/MinhasAtividades";
 import ForumPage from "./pages/ForumPage";
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/minhasAtividades" element={<MinhasAtividades />} />
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
+          <Route path="/PaginaInicialProfessor" element={<PaginaInicialProfessor />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
