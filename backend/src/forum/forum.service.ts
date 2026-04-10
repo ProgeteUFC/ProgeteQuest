@@ -1,11 +1,23 @@
 // backend/src/forum/forum.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Forum, Topic, Post } from './entities/index';
 import { CreateTopicDto, CreatePostDto } from './dtos/index';
 import { Class } from 'src/class/entities/class.entity';
 import { generateUuid } from 'src/utils/generateUuid';
+import {
+  canClose,
+  ForumContextUser,
+  TopicContext,
+  canCreateTopic,
+  canAnswer,
+} from 'src/utils/forumPermissions';
+import { TopicStatus } from 'src/Enums/topicStatus.enum';
 
 @Injectable()
 export class ForumService {
@@ -46,29 +58,55 @@ export class ForumService {
   async createTopic(
     forumId: string,
     createTopicDto: CreateTopicDto,
+    user: ForumContextUser,
   ): Promise<Topic> {
     const forum = await this.forumRepository.findOne({ where: { forumId } });
     if (!forum) {
       throw new NotFoundException(`Fórum com ID ${forumId} não encontrado`);
     }
 
+    const isStudentInClass = await this.classRepository.exists({
+      where: {
+        classId: forum.turmaId,
+        studentClasses: {
+          studentId: user.id,
+        },
+      },
+    });
+
+    if (!canCreateTopic(user, isStudentInClass)) {
+      throw new ForbiddenException(
+        `Você não tem permissão para criar tópicos nesse fórum`,
+      );
+    }
+
     const topic = this.topicRepository.create({
       ...createTopicDto,
       topicId: generateUuid(),
       forumId: forumId,
+      status: TopicStatus.OPEN,
     });
 
     return this.topicRepository.save(topic);
   }
 
-  async listTopicsByForum(forumId: string): Promise<Topic[]> {
+  async listTopicsByForum(
+    forumId: string,
+    status?: TopicStatus,
+  ): Promise<Topic[]> {
     const forum = await this.forumRepository.findOne({ where: { forumId } });
     if (!forum) {
       throw new NotFoundException(`Fórum não encontrado`);
     }
 
+    const whereCondition: any = { forumId };
+
+    if (status) {
+      whereCondition.status = status;
+    }
+
     return this.topicRepository.find({
-      where: { forumId },
+      where: whereCondition,
       relations: ['autor'],
       order: { criadoEm: 'DESC' },
     });
@@ -90,10 +128,35 @@ export class ForumService {
   async createPost(
     topicId: string,
     createPostDto: CreatePostDto,
+    user: ForumContextUser,
   ): Promise<Post> {
-    const topic = await this.topicRepository.findOne({ where: { topicId } });
+    const topic = await this.topicRepository.findOne({
+      where: { topicId },
+      relations: ['forum'],
+    });
+
     if (!topic) {
       throw new NotFoundException(`Tópico não encontrado`);
+    }
+
+    const topicContext: TopicContext = {
+      authorId: topic.autorId,
+      status: topic.status,
+    };
+
+    const isUserInClass = await this.classRepository.exists({
+      where: {
+        classId: topic.forum.turmaId,
+        studentClasses: {
+          studentId: user.id,
+        },
+      },
+    });
+
+    if (!canAnswer(user, topicContext, isUserInClass)) {
+      throw new ForbiddenException(
+        'Você não pode responder a este tópico. Ele pode estar fechado ou você não pertence a essa turma.',
+      );
     }
 
     const post = this.postRepository.create({
@@ -103,5 +166,33 @@ export class ForumService {
     });
 
     return this.postRepository.save(post);
+  }
+
+  async closeTopic(topicId: string, user: ForumContextUser): Promise<Topic> {
+    const topic = await this.topicRepository.findOne({
+      where: { topicId },
+      relations: ['autor'],
+    });
+
+    if (!topic) {
+      throw new NotFoundException(`Tópico não encontrado`);
+    }
+
+    const topicContext: TopicContext = {
+      authorId: topic.autorId,
+      status: topic.status,
+    };
+
+    const isAllowed = canClose(user, topicContext);
+
+    if (!isAllowed) {
+      throw new ForbiddenException(
+        `Você não tem permissão para fechar esse tópico.`,
+      );
+    }
+
+    topic.status = TopicStatus.CLOSED;
+
+    return this.topicRepository.save(topic);
   }
 }

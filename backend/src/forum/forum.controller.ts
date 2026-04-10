@@ -6,14 +6,28 @@ import {
   Param,
   UsePipes,
   ValidationPipe,
+  Req,
+  Query,
+  Patch,
 } from '@nestjs/common';
 import { ForumService } from './forum.service';
 import { CreateTopicDto, CreatePostDto } from './dtos/index';
+import { TopicStatus } from 'src/Enums/topicStatus.enum';
+import { ForumContextUser } from 'src/utils/forumPermissions';
+import { User, UserPayload } from 'src/decorators/user.decorator';
 
 @Controller()
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
+
+  private mapToForumUser(payload: UserPayload): ForumContextUser {
+    return {
+      id: payload.userId,
+      isTeacher: payload.type === 'Teacher',
+      isStudent: payload.type === 'Student',
+    };
+  }
 
   @Post('turmas/:id/forum')
   async createForum(@Param('id') turmaId: string) {
@@ -24,13 +38,18 @@ export class ForumController {
   async createTopic(
     @Param('forumId') forumId: string,
     @Body() createTopicDto: CreateTopicDto,
+    @User() userPayload: UserPayload,
   ) {
-    return this.forumService.createTopic(forumId, createTopicDto);
+    const forumUser = this.mapToForumUser(userPayload);
+    return this.forumService.createTopic(forumId, createTopicDto, forumUser);
   }
 
   @Get('forum/:forumId/topics')
-  async getTopics(@Param('forumId') forumId: string) {
-    return this.forumService.listTopicsByForum(forumId);
+  async getTopics(
+    @Param('forumId') forumId: string,
+    @Query('status') status?: TopicStatus,
+  ) {
+    return this.forumService.listTopicsByForum(forumId, status);
   }
 
   @Get('topic/:topicId/posts')
@@ -42,7 +61,18 @@ export class ForumController {
   async createPost(
     @Param('topicId') topicId: string,
     @Body() createPostDto: CreatePostDto,
+    @User() userPayload: UserPayload,
   ) {
-    return this.forumService.createPost(topicId, createPostDto);
+    const forumUser = this.mapToForumUser(userPayload);
+    return this.forumService.createPost(topicId, createPostDto, forumUser);
+  }
+
+  @Patch('topic/:topicId/close')
+  async closeTopic(
+    @Param('topicId') topicId: string,
+    @User() userPayload: UserPayload,
+  ) {
+    const forumUser = this.mapToForumUser(userPayload);
+    return this.forumService.closeTopic(topicId, forumUser);
   }
 }
