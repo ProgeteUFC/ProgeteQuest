@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 import { ThemeProvider, useTheme } from "styled-components";
 import { Routes, Route, useLocation } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
@@ -14,12 +15,49 @@ import PaginaInicialProfessor from "./pages/PaginaInicialProfessor";
 import { MinhasTurmas } from "./pages/MinhasTurmas";
 import { MinhasAtividades } from "./pages/MinhasAtividades";
 import ForumPage from "./pages/ForumPage";
+
 import ForumTurmaPage from "./pages/ForumTurmaPage";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
+import ViewClasses from './pages/VisualizarTurmasProfessor';
 
 export default function App() {
   const [count, setCount] = useState(0);
+  const userType = localStorage.getItem("userType");
+
+  // Rotas protegidas para professor
+  function PrivateRouteProfessor({ children }: { children: React.ReactElement }) {
+    const [negado, setNegado] = useState(false);
+    useEffect(() => {
+      if (userType !== "teacher") {
+        setNegado(true);
+        setTimeout(() => {
+          window.location.href = "/minhasTurmas";
+        }, 2000);
+      }
+    }, []);
+    if (userType !== "teacher") {
+      return <div style={{color: 'red', fontWeight: 'bold', textAlign: 'center', marginTop: 40}}>Acesso negado: apenas professores podem acessar esta página.</div>;
+    }
+    return children;
+  }
+
+  // Rotas protegidas para aluno
+  function PrivateRouteAluno({ children }: { children: React.ReactElement }) {
+    const [negado, setNegado] = useState(false);
+    useEffect(() => {
+      if (userType !== "student") {
+        setNegado(true);
+        setTimeout(() => {
+          window.location.href = "/paginaInicialProfessor";
+        }, 2000);
+      }
+    }, []);
+    if (userType !== "student") {
+      return <div style={{color: 'red', fontWeight: 'bold', textAlign: 'center', marginTop: 40}}>Acesso negado: apenas alunos podem acessar esta página.</div>;
+    }
+    return children;
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -29,14 +67,15 @@ export default function App() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/detalhesDaTurma/:id" element={<DetalhesDaTurma />} />
-          <Route path="/seuRanking" element={<SeuRanking />} />
+          <Route path="/seuRanking" element={<PrivateRouteAluno><SeuRanking /></PrivateRouteAluno>} />
           <Route path="/meusDados" element={<MeusDados />} />
-          <Route path="/entrarEmTurma" element={<EntraEmTurma />} />
-          <Route path="/minhasTurmas" element={<MinhasTurmas />} />
-          <Route path="/minhasAtividades" element={<MinhasAtividades />} />
+          <Route path="/entrarEmTurma" element={<PrivateRouteProfessor><EntraEmTurma /></PrivateRouteProfessor>} />
+          <Route path="/minhasTurmas" element={<PrivateRouteAluno><MinhasTurmas /></PrivateRouteAluno>} />
+          <Route path="/minhasAtividades" element={<PrivateRouteAluno><MinhasAtividades /></PrivateRouteAluno>} />
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
-          <Route path="/PaginaInicialProfessor" element={<PaginaInicialProfessor />} />
+          <Route path="/paginaInicialProfessor" element={<PrivateRouteProfessor><PaginaInicialProfessor /></PrivateRouteProfessor>} />
+          <Route path="/visualizarTurmasProfessor" element={<PrivateRouteProfessor><ViewClasses /></PrivateRouteProfessor>} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>

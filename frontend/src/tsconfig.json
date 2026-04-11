@@ -8,7 +8,7 @@
       "@assets/*": ["src/assets/*"],
     },
     "esModuleInterop": true,
-    "strict": true
-  },
-  
+    "strict": true,
+    "ignoreDeprecations": "6.0"
+  }
 }

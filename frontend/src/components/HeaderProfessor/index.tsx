@@ -31,7 +31,7 @@ export default function HeaderProfessor() {
       <MenuContent>
         <Box>
           <IconHome>
-            <Link to="/">
+            <Link to="/paginaInicialProfessor">
               <TiHome size={30} />
             </Link>
           </IconHome>
@@ -40,7 +40,7 @@ export default function HeaderProfessor() {
           <MenuOption as={Link} to="/entrarEmTurma">
             Criar uma Turma
           </MenuOption>
-          <MenuOption as={Link} to="/minhasTurmas">
+          <MenuOption as={Link} to="/visualizarTurmasProfessor">
             Visualizar Turmas
           </MenuOption>
           <MenuOption as={Link} to="/meusDados">
