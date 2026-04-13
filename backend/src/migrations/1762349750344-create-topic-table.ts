@@ -16,6 +16,8 @@ export class CreateTopicTable1762349750344 implements MigrationInterface {
         FOREIGN KEY (forum_id) REFERENCES public.forum(forum_id) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (autor_id) REFERENCES public.user(user_id) ON DELETE CASCADE ON UPDATE CASCADE
       );
+      CREATE INDEX idx_topic_forum_id ON public.topic(forum_id);
+      CREATE INDEX idx_topic_autor_id ON public.topic(autor_id);
     `);
   }
 
