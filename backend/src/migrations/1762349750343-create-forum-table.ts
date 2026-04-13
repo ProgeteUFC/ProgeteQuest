@@ -5,7 +5,7 @@ export class CreateForumTable1762349750343 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE public.forum (
         forum_id VARCHAR(36) NOT NULL,
-        turma_id VARCHAR(36) NOT NULL,
+        turma_id VARCHAR(36) NOT NULL UNIQUE,
         created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW() NOT NULL,
         updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW() NOT NULL,
         PRIMARY KEY (forum_id),
