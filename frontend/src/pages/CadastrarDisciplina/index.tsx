@@ -28,5 +28,5 @@ export default function CadastrarDisciplina() {
         <PlanetaCadastrar src={PlanetaCadastro} width={700} alt="" />
       </Pagina>
     </>
-  );
+  ); //teste
 }
