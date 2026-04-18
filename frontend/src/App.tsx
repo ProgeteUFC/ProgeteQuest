@@ -25,22 +25,6 @@ export default function App() {
   const [count, setCount] = useState(0);
   const userType = localStorage.getItem("userType");
 
-  // Rotas protegidas para professor
-  function PrivateRouteProfessor({ children }: { children: React.ReactElement }) {
-    const [negado, setNegado] = useState(false);
-    useEffect(() => {
-      if (userType !== "teacher") {
-        setNegado(true);
-        setTimeout(() => {
-          window.location.href = "/minhasTurmas";
-        }, 2000);
-      }
-    }, []);
-    if (userType !== "teacher") {
-      return <div style={{color: 'red', fontWeight: 'bold', textAlign: 'center', marginTop: 40}}>Acesso negado: apenas professores podem acessar esta página.</div>;
-    }
-    return children;
-  }
 
   // Rotas protegidas para aluno
   function PrivateRouteAluno({ children }: { children: React.ReactElement }) {
@@ -69,13 +53,13 @@ export default function App() {
           <Route path="/detalhesDaTurma/:id" element={<DetalhesDaTurma />} />
           <Route path="/seuRanking" element={<PrivateRouteAluno><SeuRanking /></PrivateRouteAluno>} />
           <Route path="/meusDados" element={<MeusDados />} />
-          <Route path="/entrarEmTurma" element={<PrivateRouteProfessor><EntraEmTurma /></PrivateRouteProfessor>} />
+          <Route path="/entrarEmTurma" element={<EntraEmTurma />} />
           <Route path="/minhasTurmas" element={<PrivateRouteAluno><MinhasTurmas /></PrivateRouteAluno>} />
           <Route path="/minhasAtividades" element={<PrivateRouteAluno><MinhasAtividades /></PrivateRouteAluno>} />
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
-          <Route path="/paginaInicialProfessor" element={<PrivateRouteProfessor><PaginaInicialProfessor /></PrivateRouteProfessor>} />
-          <Route path="/visualizarTurmasProfessor" element={<PrivateRouteProfessor><ViewClasses /></PrivateRouteProfessor>} />
+          <Route path="/paginaInicialProfessor" element={<PaginaInicialProfessor />} />
+          <Route path="/visualizarTurmasProfessor" element={<ViewClasses />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
