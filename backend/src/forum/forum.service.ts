@@ -1,5 +1,8 @@
-// backend/src/forum/forum.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Forum, Topic, Post } from './entities/index';
@@ -12,6 +15,14 @@ import {
 } from './dtos/responses/index';
 import { Class } from 'src/class/entities/class.entity';
 import { generateUuid } from 'src/utils/generateUuid';
+import {
+  canClose,
+  ForumContextUser,
+  TopicContext,
+  canCreateTopic,
+  canAnswer,
+} from 'src/utils/forumPermissions';
+import { TopicStatus } from 'src/Enums/topicStatus.enum';
 
 @Injectable()
 export class ForumService {
@@ -52,18 +63,34 @@ export class ForumService {
   async createTopic(
     forumId: string,
     createTopicDto: CreateTopicDto,
-    userId: string,
+    user: ForumContextUser,
   ): Promise<TopicResponseDto> {
     const forum = await this.forumRepository.findOne({ where: { forumId } });
     if (!forum) {
       throw new NotFoundException(`Fórum com ID ${forumId} não encontrado`);
     }
 
+    const isStudentInClass = await this.classRepository.exists({
+      where: {
+        classId: forum.turmaId,
+        studentClasses: {
+          studentId: user.id,
+        },
+      },
+    });
+
+    if (!canCreateTopic(user, isStudentInClass)) {
+      throw new ForbiddenException(
+        `Você não tem permissão para criar tópicos nesse fórum`,
+      );
+    }
+
     const topic = this.topicRepository.create({
       ...createTopicDto,
       topicId: generateUuid(),
       forumId: forumId,
-      autorId: userId,
+      autorId: user.id,
+      status: TopicStatus.OPEN,
     });
 
     const savedTopic = await this.topicRepository.save(topic);
@@ -74,8 +101,9 @@ export class ForumService {
 
   async listTopicsByForum(
     forumId: string,
-    page: number,
-    limit: number,
+    status?: TopicStatus,
+    page: number = 1,
+    limit: number = 10,
   ): Promise<TopicListResponseDto> {
     const forum = await this.forumRepository.findOne({ where: { forumId } });
 
@@ -83,8 +111,13 @@ export class ForumService {
       throw new NotFoundException(`Fórum não encontrado`);
     }
 
+    const whereCondition: any = { forumId };
+    if (status) {
+      whereCondition.status = status;
+    }
+
     const [topics, total] = await this.topicRepository.findAndCount({
-      where: { forumId },
+      where: whereCondition,
       relations: ['autor'],
       order: { criadoEm: 'DESC' },
       skip: (page - 1) * limit,
@@ -109,18 +142,42 @@ export class ForumService {
   async createPost(
     topicId: string,
     createPostDto: CreatePostDto,
-    userId: string,
+    user: ForumContextUser,
   ): Promise<PostResponseDto> {
-    const topic = await this.topicRepository.findOne({ where: { topicId } });
+    const topic = await this.topicRepository.findOne({
+      where: { topicId },
+      relations: ['forum'],
+    });
+
     if (!topic) {
       throw new NotFoundException(`Tópico não encontrado`);
+    }
+
+    const topicContext: TopicContext = {
+      authorId: topic.autorId,
+      status: topic.status,
+    };
+
+    const isUserInClass = await this.classRepository.exists({
+      where: {
+        classId: topic.forum.turmaId,
+        studentClasses: {
+          studentId: user.id,
+        },
+      },
+    });
+
+    if (!canAnswer(user, topicContext, isUserInClass)) {
+      throw new ForbiddenException(
+        'Você não pode responder a este tópico. Ele pode estar fechado ou você não pertence a essa turma.',
+      );
     }
 
     const post = this.postRepository.create({
       ...createPostDto,
       postId: generateUuid(),
       topicId: topicId,
-      autorId: userId,
+      autorId: user.id,
     });
 
     const savedPost = await this.postRepository.save(post);
@@ -130,8 +187,8 @@ export class ForumService {
 
   async listPostsByTopic(
     topicId: string,
-    page: number,
-    limit: number,
+    page: number = 1,
+    limit: number = 15,
   ): Promise<PostListResponseDto> {
     const topic = await this.topicRepository.findOne({ where: { topicId } });
 
@@ -240,5 +297,33 @@ export class ForumService {
     };
 
     return dto;
+  }
+
+  async closeTopic(topicId: string, user: ForumContextUser): Promise<Topic> {
+    const topic = await this.topicRepository.findOne({
+      where: { topicId },
+      relations: ['autor'],
+    });
+
+    if (!topic) {
+      throw new NotFoundException(`Tópico não encontrado`);
+    }
+
+    const topicContext: TopicContext = {
+      authorId: topic.autorId,
+      status: topic.status,
+    };
+
+    const isAllowed = canClose(user, topicContext);
+
+    if (!isAllowed) {
+      throw new ForbiddenException(
+        `Você não tem permissão para fechar esse tópico.`,
+      );
+    }
+
+    topic.status = TopicStatus.CLOSED;
+
+    return this.topicRepository.save(topic);
   }
 }
