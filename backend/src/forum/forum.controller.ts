@@ -6,14 +6,18 @@ import {
   Param,
   UsePipes,
   ValidationPipe,
-  Req,
   Query,
   Patch,
 } from '@nestjs/common';
 import { ForumService } from './forum.service';
 import { CreateTopicDto, CreatePostDto } from './dtos/index';
+import {
+  TopicListResponseDto,
+  PostListResponseDto,
+} from './dtos/responses/index';
 import { TopicStatus } from 'src/Enums/topicStatus.enum';
 import { ForumContextUser } from 'src/utils/forumPermissions';
+import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
 
 @Controller()
@@ -34,6 +38,7 @@ export class ForumController {
     return this.forumService.createForum(turmaId);
   }
 
+  @Roles('teacher', 'student')
   @Post('forum/:forumId/topic')
   async createTopic(
     @Param('forumId') forumId: string,
@@ -44,19 +49,28 @@ export class ForumController {
     return this.forumService.createTopic(forumId, createTopicDto, forumUser);
   }
 
+  @Roles('teacher', 'student')
   @Get('forum/:forumId/topics')
   async getTopics(
     @Param('forumId') forumId: string,
     @Query('status') status?: TopicStatus,
-  ) {
-    return this.forumService.listTopicsByForum(forumId, status);
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<TopicListResponseDto> {
+    return this.forumService.listTopicsByForum(forumId, status, page, limit);
   }
 
+  @Roles('teacher', 'student')
   @Get('topic/:topicId/posts')
-  async getPosts(@Param('topicId') topicId: string) {
-    return this.forumService.listPostsByTopic(topicId);
+  async getPosts(
+    @Param('topicId') topicId: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 15,
+  ): Promise<PostListResponseDto> {
+    return this.forumService.listPostsByTopic(topicId, page, limit);
   }
 
+  @Roles('teacher', 'student')
   @Post('topic/:topicId/post')
   async createPost(
     @Param('topicId') topicId: string,
@@ -67,6 +81,7 @@ export class ForumController {
     return this.forumService.createPost(topicId, createPostDto, forumUser);
   }
 
+  @Roles('teacher', 'student')
   @Patch('topic/:topicId/close')
   async closeTopic(
     @Param('topicId') topicId: string,
