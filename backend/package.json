@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "clean": "rmdir /s /q dist & del /q tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo",
+    "build": "npm run clean && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
