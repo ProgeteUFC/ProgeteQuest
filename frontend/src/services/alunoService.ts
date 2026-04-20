@@ -2,6 +2,7 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+
 export const alunoService = {
   async cadastrar(dados: any) {
     return axios.post(`${API_URL}/user`, dados);
