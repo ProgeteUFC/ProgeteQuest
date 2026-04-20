@@ -17,14 +17,14 @@ export const PageWrapper = styled.div`
 
 export const Planet = styled.img`
 position: fixed;
-  width: 1500px;
+  width: 1300px;
   bottom: -100px;
-  right: -80px;
+  right: -130px;
   transform: translate(20%, 20%);
 `;
 
 export const Logo = styled.img`
-  width: 180px;
+  width: 120px;
   position: absolute;
   bottom: 130px;
   left: 2rem;
@@ -32,8 +32,8 @@ export const Logo = styled.img`
 `;
 
 export const Container = styled.div`
-font-size: 24px;
-  font-weight: 800;
+font-size: 18px;
+  font-weight: 400;
   color: ${({ theme }) => theme.colors.white};
   font-family: "Baloo Paaji 2", sans-serif;
   
