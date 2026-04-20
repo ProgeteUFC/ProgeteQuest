@@ -14,6 +14,8 @@ export class CreatePostTable1762349750345 implements MigrationInterface {
         FOREIGN KEY (topic_id) REFERENCES public.topic(topic_id) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY (autor_id) REFERENCES public.user(user_id) ON DELETE CASCADE ON UPDATE CASCADE
       );
+      CREATE INDEX idx_post_topic_id ON public.post(topic_id);
+      CREATE INDEX idx_post_autor_id ON public.post(autor_id);
     `);
   }
 
