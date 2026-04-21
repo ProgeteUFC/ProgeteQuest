@@ -1,6 +1,6 @@
 import React from "react";
 import { Container, Image } from "./styles";
-import logo from "../../assets/Logo.png";
+import logo from "../../assets/logo.png";
 import { IoExitOutline } from "react-icons/io5";
 import { TiHome } from "react-icons/ti";
 import { IconHome, IconExite, Box } from "./styles";
