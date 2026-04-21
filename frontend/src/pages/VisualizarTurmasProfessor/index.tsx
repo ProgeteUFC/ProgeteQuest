@@ -1,5 +1,5 @@
 import HeaderProfessor from '../../components/HeaderProfessor';
-
+import { useNavigate } from 'react-router-dom';
 
 import React from 'react';
 import {
@@ -27,6 +27,14 @@ const classes = [
 
 
 const ViewClasses = () => {
+
+  const navigate = useNavigate();
+
+  const handleCardClick = (id: string) => {
+  // Navega para a rota definida no App.tsx passando o ID da turma
+  navigate(`/VisualizandoTurmasProfessor/${id}`);
+  };
+
   return (
     <>
       <HeaderProfessor />
@@ -37,7 +45,7 @@ const ViewClasses = () => {
           <ListaTurmas>
             <ListaTurmasScroll>
               {classes.map((className) => (
-                <TurmaCard tabIndex={0} key={className}>
+                <TurmaCard tabIndex={0} key={className} onClick={() => handleCardClick(className)}>
                   <TurmaNome>{className}</TurmaNome>
                 </TurmaCard>
               ))}

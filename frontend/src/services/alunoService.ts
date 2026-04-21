@@ -8,7 +8,19 @@ export const alunoService = {
     return axios.post(`${API_URL}/user`, dados);
   },
 async login(email: string, password: string) {
-  return axios.post(`${API_URL}/auth/login`, { email, password });
+  //return axios.post(`${API_URL}/auth/login`, { email, password });
+
+  return{
+    data: {
+      token: "teste",
+      user: {
+        userId: "1",
+        email: email,
+        name: "Usuário Teste",
+        type: "teacher",
+      },
+    },
+  }
 },
 
 async listarTurmas(studentId: string, token: string) {
