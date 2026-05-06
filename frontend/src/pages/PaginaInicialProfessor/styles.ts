@@ -5,16 +5,15 @@ export const Container = styled.div`
   min-height: 100vh;
   width: 100vw;
   position: relative;
-  display: flex;         
-  flex-direction: column; 
-  overflow-x: hidden;      
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
 `;
 
 export const Content = styled.div`
   padding: 40px 20px 0 20px;
   max-width: 900px;
   margin-top: 25px;
-  // margin: 0 auto;
   flex: 1;
   width: 100%;
   display: flex;
@@ -28,6 +27,13 @@ export const Content = styled.div`
     width: 80%;
     max-width: 1200px;
   }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    padding: 30px 20px 120px 20px;
+    margin-top: 10px;
+    align-items: flex-start;
+  }
 `;
 
 export const MenuContainer = styled.div`
@@ -38,22 +44,39 @@ export const MenuContainer = styled.div`
   justify-content: flex-start;
   font-family: "Baloo Paaji 2", sans-serif;
   user-select: none;
-  padding: 0 8px; 
-  gap: 12px; 
+  padding: 0 8px;
+  gap: 12px;
   height: 120px;
   border-radius: 20px;
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    background: transparent;
+    padding: 0;
+    height: auto;
+    width: 100%;
+  }
 `;
 
 export const MenuOptions = styled.div`
   display: flex;
   background-color: white;
-  padding: 8px 12px; 
+  padding: 8px 12px;
   border-radius: 20px;
   align-items: center;
   justify-content: center;
-  gap: 20px; 
-`;
+  gap: 20px;
 
+  /* MOBILE */
+  @media (max-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    background: transparent;
+    padding: 0;
+    width: 100%;
+  }
+`;
 
 export const MenuOption = styled.a`
   display: flex;
@@ -70,15 +93,26 @@ export const MenuOption = styled.a`
   cursor: pointer;
   text-decoration: none;
   font-size: 18px;
+  text-align: center;
 
   &:active {
     scale: 0.97;
     transition-duration: 100ms;
   }
-  
+
   &:hover {
     background-color: ${(props) => props.theme.colors.challengeOrange};
     color: #fff;
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 80px;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 1.2;
+    padding: 10px;
   }
 `;
 
@@ -87,36 +121,40 @@ export const PlanetImage = styled.img`
   bottom: 0;
   right: 0;
   pointer-events: none;
-  z-index: 0;           
+  z-index: 0;
 
-  /* MOBILE E TABLET (Até 768px) */
+  /* MOBILE */
   @media (max-width: 768px) {
-    display: none;
-    width: 300px;
+    display: block;
+    width: 220px;
+    bottom: -20px;
+    right: -60px;
+    position: fixed;
   }
 
-/* DESKTOP (Acima de 1024px) */
-@media (min-width: 1025px) {
-  display: block;
-  /* Aumenta o tamanho consideravelmente */
-  width: 1200px;
-  
-  /* Ajusta a ancoragem para cobrir mais o canto */
-  bottom: -150px; 
-  right: -300px;
-
-  /* Move o planeta mais para DENTRO da tela (menos para fora) */
-  /* Reduzido de 15% para 5%, o que traz a maior parte dele para visibilidade */
-  transform: translate(5%, 5%); 
-}
+  /* DESKTOP */
+  @media (min-width: 1025px) {
+    display: block;
+    width: 1200px;
+    bottom: -150px;
+    right: -300px;
+    transform: translate(5%, 5%);
+  }
 `;
 
 export const DescriptionContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-top: 30px; // Espaço entre o menu e o texto
-  max-width: 600px;  // Limita a largura para o texto quebrar como na imagem
+  margin-top: 30px;
+  max-width: 600px;
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    margin-top: 30px;
+    max-width: 320px;
+    gap: 16px;
+  }
 `;
 
 export const DescriptionText = styled.p`
@@ -126,4 +164,10 @@ export const DescriptionText = styled.p`
   line-height: 1.4;
   font-weight: 500;
   margin: 0;
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    font-size: 16px;
+    line-height: 1.3;
+  }
 `;

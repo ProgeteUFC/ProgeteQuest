@@ -12,12 +12,15 @@ import { Menu } from 'components/Menu'
 const PaginaInicialProfessor = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-  const type = localStorage.getItem("userType");
-  if (type !== "teacher") {
-    navigate("/minhasTurmas"); // Manda o aluno de volta se ele tentar entrar aqui
-  }
-}, []);
+ //useEffect(() => {
+ // const type = localStorage.getItem("userType");
+//
+//  console.log("TIPO:", type);
+//
+  //if (type !== "teacher") {
+    //navigate("/minhasTurmas");
+  //}
+//}, []);
 
   return (
       <Container>
