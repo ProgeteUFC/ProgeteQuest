@@ -16,22 +16,13 @@ import {
   PostListResponseDto,
 } from './dtos/responses/index';
 import { TopicStatus } from 'src/Enums/topicStatus.enum';
-import { ForumContextUser } from 'src/utils/forumPermissions';
 import { Roles } from 'src/decorators/roles.decorator';
-import { User, UserPayload } from 'src/decorators/user.decorator';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller()
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
-
-  private mapToForumUser(payload: UserPayload): ForumContextUser {
-    return {
-      id: payload.userId,
-      isTeacher: payload.type === 'Teacher',
-      isStudent: payload.type === 'Student',
-    };
-  }
 
   @Post('turmas/:id/forum')
   async createForum(@Param('id') turmaId: string) {
@@ -43,10 +34,9 @@ export class ForumController {
   async createTopic(
     @Param('forumId') forumId: string,
     @Body() createTopicDto: CreateTopicDto,
-    @User() userPayload: UserPayload,
+    @User() user: any,
   ) {
-    const forumUser = this.mapToForumUser(userPayload);
-    return this.forumService.createTopic(forumId, createTopicDto, forumUser);
+    return this.forumService.createTopic(forumId, createTopicDto, user);
   }
 
   @Roles('teacher', 'student')
@@ -75,19 +65,17 @@ export class ForumController {
   async createPost(
     @Param('topicId') topicId: string,
     @Body() createPostDto: CreatePostDto,
-    @User() userPayload: UserPayload,
+    @User() user: any,
   ) {
-    const forumUser = this.mapToForumUser(userPayload);
-    return this.forumService.createPost(topicId, createPostDto, forumUser);
+    return this.forumService.createPost(topicId, createPostDto, user);
   }
 
   @Roles('teacher', 'student')
   @Patch('topic/:topicId/close')
   async closeTopic(
     @Param('topicId') topicId: string,
-    @User() userPayload: UserPayload,
+    @User() user: any,
   ) {
-    const forumUser = this.mapToForumUser(userPayload);
-    return this.forumService.closeTopic(topicId, forumUser);
+    return this.forumService.closeTopic(topicId, user);
   }
 }

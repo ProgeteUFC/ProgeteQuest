@@ -7,7 +7,7 @@ import { CreateActivityDto } from './dtos/createActivity.dto';
 import { UpdateActivityDto } from './dtos/updateActivity.dto';
 import { generateUuid } from '../utils/generateUuid';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Activity } from './entities/activity.entity';
 import { ActivityType } from '../Enums/activity.enum';
 import { validate as isUuid } from 'uuid';
@@ -33,11 +33,26 @@ export class ActivityService {
     private readonly checkinRepository: Repository<Checkin>,
   ) {}
 
-  async getAllActivities(): Promise<Activity[]> {
-    return this.activityRepository.find();
+  async getAllActivities(user: any): Promise<Activity[]> {
+    if (user.isAdmin) {
+      return this.activityRepository.find();
+    }
+
+    const myClasses = await this.classRepository.find({
+      where: { teacherId: user.userId },
+      select: ['classId'],
+    });
+    
+    const classIds = myClasses.map((c) => c.classId);
+
+    if (classIds.length === 0) return [];
+
+    return this.activityRepository.find({
+      where: { classId: In(classIds) },
+    });
   }
 
-  async createActivity(newActivity: CreateActivityDto): Promise<Activity> {
+  async createActivity(newActivity: CreateActivityDto, user: any): Promise<Activity> {
     // tipo da atividade
     const validTypes = Object.values(ActivityType);
     if (!validTypes.includes(newActivity.type)) {
@@ -75,6 +90,12 @@ export class ActivityService {
       );
     }
 
+    if (!user.isAdmin && classEntity.teacherId !== user.userId) {
+      throw new NotFoundException(
+        `Turma com ID ${newActivity.classId} não encontrada ou acesso negado`,
+      );
+    }
+
     // verifica se a avaliação existe
     const assessmentEntity = await this.assessmentRepository.findOneBy({
       assessmentId: newActivity.assessmentId,
@@ -108,6 +129,7 @@ export class ActivityService {
   async updateActivity(
     id: string,
     updateDto: UpdateActivityDto,
+    user: any,
   ): Promise<Activity> {
     const existing = await this.activityRepository.findOne({
       where: { activityId: id },
@@ -115,6 +137,15 @@ export class ActivityService {
 
     if (!existing) {
       throw new NotFoundException(`Atividade com id ${id} não encontrada`);
+    }
+
+    if (!user.isAdmin) {
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: existing.classId, teacherId: user.userId },
+      });
+      if (!classEntity) {
+        throw new NotFoundException(`Atividade com id ${id} não encontrada ou acesso negado`);
+      }
     }
 
     if (updateDto.name !== undefined) {
@@ -156,12 +187,14 @@ export class ActivityService {
 
     if (updateDto.classId !== undefined) {
       const classExists = await this.classRepository.findOne({
-        where: { classId: updateDto.classId },
+        where: user.isAdmin 
+          ? { classId: updateDto.classId } 
+          : { classId: updateDto.classId, teacherId: user.userId },
       });
 
       if (!classExists) {
         throw new NotFoundException(
-          `Turma com id ${updateDto.classId} não encontrada`,
+          `Turma com id ${updateDto.classId} não encontrada ou acesso negado`,
         );
       }
 
@@ -208,7 +241,7 @@ export class ActivityService {
     return await this.activityRepository.save(existing);
   }
 
-  async deleteActivity(id: string): Promise<Activity[]> {
+  async deleteActivity(id: string, user: any): Promise<Activity[]> {
     const existing = await this.activityRepository.findOne({
       where: { activityId: id },
     });
@@ -217,16 +250,36 @@ export class ActivityService {
       throw new NotFoundException(`Atividade com id ${id} não encontrada`);
     }
 
+    if (!user.isAdmin) {
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: existing.classId, teacherId: user.userId },
+      });
+      if (!classEntity) {
+        throw new NotFoundException(`Atividade com id ${id} não encontrada ou acesso negado`);
+      }
+    }
+
     await this.activityRepository.remove(existing);
-    return this.getAllActivities(); // retorna a lista atualizada
+    return this.getAllActivities(user); // retorna a lista atualizada
   }
 
   async searchActivities(query: {
     name?: string;
     classId?: string;
     assessmentId?: string;
-  }) {
+  }, user: any) {
     const qb = this.activityRepository.createQueryBuilder('activity');
+
+    if (!user.isAdmin) {
+      const myClasses = await this.classRepository.find({
+        where: { teacherId: user.userId },
+        select: ['classId'],
+      });
+      const classIds = myClasses.map((c) => c.classId);
+      
+      if (classIds.length === 0) return [];
+      qb.andWhere('activity.classId IN (:...classIds)', { classIds });
+    }
 
     if (query.name) {
       qb.andWhere('LOWER(activity.name) LIKE :name', {
@@ -249,8 +302,18 @@ export class ActivityService {
     classId: string,
     orderBy: 'name' | 'date' = 'date',
     order: 'ASC' | 'DESC' = 'ASC',
-    studentId?: string
+    studentId?: string,
+    user?: any
   ) {
+    if (user && !user.isAdmin && user.type === 'teacher') {
+      const classEntity = await this.classRepository.findOne({
+        where: { classId, teacherId: user.userId },
+      });
+      if (!classEntity) {
+        throw new NotFoundException('Turma não encontrada ou acesso negado');
+      }
+    }
+
     const atividades = await this.activityRepository.find({
       where: { classId },
       order: { [orderBy]: order },

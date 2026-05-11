@@ -13,14 +13,17 @@ export class ActivityController {
 
   @Roles('teacher', 'student')
   @Get()
-  getAll(): Promise<Activity[]> {
-    return this.activityService.getAllActivities();
+  getAll(@User() user: any): Promise<Activity[]> {
+    return this.activityService.getAllActivities(user);
   }
 
   @Roles('teacher')
   @Post()
-  create(@Body() newActivity: CreateActivityDto): Promise<Activity> {
-    return this.activityService.createActivity(newActivity);
+  create(
+    @Body() newActivity: CreateActivityDto,
+    @User() user: any,
+  ): Promise<Activity> {
+    return this.activityService.createActivity(newActivity, user);
   }
 
   @Roles('teacher')
@@ -28,28 +31,41 @@ export class ActivityController {
   update(
     @Param('id') id: string,
     @Body() updatedActivity: CreateActivityDto,
+    @User() user: any,
   ): Promise<Activity> {
-    return this.activityService.updateActivity(id, updatedActivity);
+    return this.activityService.updateActivity(id, updatedActivity, user);
   }
 
   @Roles('teacher')
   @Delete(':id')
-  delete(@Param('id') id: string): Promise<Activity[]> {
-    return this.activityService.deleteActivity(id);
+  delete(
+    @Param('id') id: string,
+    @User() user: any,
+  ): Promise<Activity[]> {
+    return this.activityService.deleteActivity(id, user);
   }
 
   @Roles('teacher', 'student')
   @Post('search')
-  async searchActivities(@Body() searchDto: SearchActivityDto) {
-    return this.activityService.searchActivities(searchDto);
+  async searchActivities(
+    @Body() searchDto: SearchActivityDto,
+    @User() user: any,
+  ) {
+    return this.activityService.searchActivities(searchDto, user);
   }
 
   @Roles('teacher', 'student')
   @Get('class/:classId')
   async listByClass(
     @Param('classId') classId: string,
-    @User() user: UserPayload,
+    @User() user: any,
   ): Promise<Activity[]> {
-    return this.activityService.listActivitiesByClass(classId, 'date', 'ASC', user.userId);
+    return this.activityService.listActivitiesByClass(
+      classId,
+      'date',
+      'ASC',
+      user.userId,
+      user,
+    );
   }
 }

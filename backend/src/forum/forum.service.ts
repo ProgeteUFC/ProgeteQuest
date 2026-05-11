@@ -63,33 +63,41 @@ export class ForumService {
   async createTopic(
     forumId: string,
     createTopicDto: CreateTopicDto,
-    user: ForumContextUser,
+    user: any,
   ): Promise<TopicResponseDto> {
     const forum = await this.forumRepository.findOne({ where: { forumId } });
     if (!forum) {
       throw new NotFoundException(`Fórum com ID ${forumId} não encontrado`);
     }
 
-    const isStudentInClass = await this.classRepository.exists({
-      where: {
-        classId: forum.turmaId,
-        studentClasses: {
-          studentId: user.id,
+    if (!user.isAdmin) {
+      const isStudentInClass = await this.classRepository.exists({
+        where: {
+          classId: forum.turmaId,
+          studentClasses: {
+            studentId: user.userId,
+          },
         },
-      },
-    });
+      });
 
-    if (!canCreateTopic(user, isStudentInClass)) {
-      throw new ForbiddenException(
-        `Você não tem permissão para criar tópicos nesse fórum`,
-      );
+      const forumUser: ForumContextUser = {
+        id: user.userId,
+        isTeacher: user.type === 'Teacher' || user.type === 'teacher',
+        isStudent: user.type === 'Student' || user.type === 'student',
+      };
+
+      if (!canCreateTopic(forumUser, isStudentInClass)) {
+        throw new ForbiddenException(
+          `Você não tem permissão para criar tópicos nesse fórum`,
+        );
+      }
     }
 
     const topic = this.topicRepository.create({
       ...createTopicDto,
       topicId: generateUuid(),
       forumId: forumId,
-      autorId: user.id,
+      autorId: user.userId,
       status: TopicStatus.OPEN,
     });
 
@@ -142,7 +150,7 @@ export class ForumService {
   async createPost(
     topicId: string,
     createPostDto: CreatePostDto,
-    user: ForumContextUser,
+    user: any,
   ): Promise<PostResponseDto> {
     const topic = await this.topicRepository.findOne({
       where: { topicId },
@@ -158,26 +166,34 @@ export class ForumService {
       status: topic.status,
     };
 
-    const isUserInClass = await this.classRepository.exists({
-      where: {
-        classId: topic.forum.turmaId,
-        studentClasses: {
-          studentId: user.id,
+    if (!user.isAdmin) {
+      const isUserInClass = await this.classRepository.exists({
+        where: {
+          classId: topic.forum.turmaId,
+          studentClasses: {
+            studentId: user.userId,
+          },
         },
-      },
-    });
+      });
 
-    if (!canAnswer(user, topicContext, isUserInClass)) {
-      throw new ForbiddenException(
-        'Você não pode responder a este tópico. Ele pode estar fechado ou você não pertence a essa turma.',
-      );
+      const forumUser: ForumContextUser = {
+        id: user.userId,
+        isTeacher: user.type === 'Teacher' || user.type === 'teacher',
+        isStudent: user.type === 'Student' || user.type === 'student',
+      };
+
+      if (!canAnswer(forumUser, topicContext, isUserInClass)) {
+        throw new ForbiddenException(
+          'Você não pode responder a este tópico. Ele pode estar fechado ou você não pertence a essa turma.',
+        );
+      }
     }
 
     const post = this.postRepository.create({
       ...createPostDto,
       postId: generateUuid(),
       topicId: topicId,
-      autorId: user.id,
+      autorId: user.userId,
     });
 
     const savedPost = await this.postRepository.save(post);
@@ -299,7 +315,7 @@ export class ForumService {
     return dto;
   }
 
-  async closeTopic(topicId: string, user: ForumContextUser): Promise<Topic> {
+  async closeTopic(topicId: string, user: any): Promise<Topic> {
     const topic = await this.topicRepository.findOne({
       where: { topicId },
       relations: ['autor'],
@@ -309,17 +325,25 @@ export class ForumService {
       throw new NotFoundException(`Tópico não encontrado`);
     }
 
-    const topicContext: TopicContext = {
-      authorId: topic.autorId,
-      status: topic.status,
-    };
+    if (!user.isAdmin) {
+      const topicContext: TopicContext = {
+        authorId: topic.autorId,
+        status: topic.status,
+      };
 
-    const isAllowed = canClose(user, topicContext);
+      const forumUser: ForumContextUser = {
+        id: user.userId,
+        isTeacher: user.type === 'Teacher' || user.type === 'teacher',
+        isStudent: user.type === 'Student' || user.type === 'student',
+      };
 
-    if (!isAllowed) {
-      throw new ForbiddenException(
-        `Você não tem permissão para fechar esse tópico.`,
-      );
+      const isAllowed = canClose(forumUser, topicContext);
+
+      if (!isAllowed) {
+        throw new ForbiddenException(
+          `Você não tem permissão para fechar esse tópico.`,
+        );
+      }
     }
 
     topic.status = TopicStatus.CLOSED;

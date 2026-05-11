@@ -26,7 +26,7 @@ export class CheckinService {
     private readonly studentClassRepository: Repository<StudentClass>,
   ) {}
 
-  async createCheckin(dto: CreateCheckinDto) {
+  async createCheckin(dto: CreateCheckinDto, user: any) {
     const now = new Date();
 
     // Verifica se o código existe e é válido (ativo e data)
@@ -37,13 +37,15 @@ export class CheckinService {
     if (!code) {
       throw new NotFoundException('Código não encontrado');
     }
-    if (!code.active) {
+    
+    // Admin ignora se o código já foi desativado
+    if (!user.isAdmin && !code.active) {
       throw new BadRequestException('Código inativo');
     }
 
-    // Verifica a data de validade do código
+    // Verifica a data de validade do código (Admin ignora expiração)
     const validityDate = new Date(code.validity);
-    if (now > validityDate) {
+    if (!user.isAdmin && now > validityDate) {
       throw new BadRequestException('Código expirado');
     }
 
@@ -60,9 +62,9 @@ export class CheckinService {
       throw new NotFoundException('Atividade não encontrada');
     }
 
-    //Verifica se a data/hora da atividade já passou
+    // Verifica se a data/hora da atividade já passou (Admin ignora)
     const activityDate = new Date(activity.date);
-    if (now > activityDate) {
+    if (!user.isAdmin && now > activityDate) {
       throw new BadRequestException('Esta atividade já foi encerrada');
     }
 
@@ -73,11 +75,11 @@ export class CheckinService {
       // MODIFICADO: Troca BadRequest por Conflict
       throw new ConflictException('Check-in já realizado para esta atividade');
 
-    // Validação Bônus (Já existia): Verifica se o aluno está matriculado
+    // Validação Bônus (Já existia): Verifica se o aluno está matriculado (Admin ignora)
     const studentClass = await this.studentClassRepository.findOne({
       where: { studentId: dto.studentId, classId: activity.classId },
     });
-    if (!studentClass)
+    if (!user.isAdmin && !studentClass)
       throw new BadRequestException('Aluno não está matriculado na turma');
 
     // Cria o check-in

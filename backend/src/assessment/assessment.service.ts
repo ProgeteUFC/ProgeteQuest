@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Assessment } from './entities/assessment.entity';
 import { CreateAssessmentDto } from './dtos/createAssessment.dto';
 import { generateUuid } from '../utils/generateUuid';
@@ -22,12 +22,28 @@ export class AssessmentService {
     private readonly classRepository: Repository<Class>,
   ) {}
 
-  getAllAssessments(): Promise<Assessment[]> {
-    return this.assessmentRepository.find();
+  async getAllAssessments(user: any): Promise<Assessment[]> {
+    if (user.isAdmin) {
+      return this.assessmentRepository.find();
+    }
+
+    const myClasses = await this.classRepository.find({
+      where: { teacherId: user.userId },
+      select: ['classId'],
+    });
+
+    const classIds = myClasses.map((c) => c.classId);
+
+    if (classIds.length === 0) return [];
+
+    return this.assessmentRepository.find({
+      where: { classId: In(classIds) },
+    });
   }
 
   async createAssessment(
     newAssessment: CreateAssessmentDto,
+    user: any,
   ): Promise<Assessment> {
     const id = generateUuid();
     if (!isUuid(id)) {
@@ -44,6 +60,12 @@ export class AssessmentService {
       );
     }
 
+    if (!user.isAdmin && classEntity.teacherId !== user.userId) {
+      throw new NotFoundException(
+        `Turma com ID ${newAssessment.classId} não encontrada ou acesso negado`,
+      );
+    }
+
     // Cria avaliação
     const assessment = this.assessmentRepository.create({
       assessmentId: id,
@@ -57,6 +79,7 @@ export class AssessmentService {
   async updateAssessment(
     id: string,
     updateDto: UpdateAssessmentDto,
+    user: any,
   ): Promise<Assessment> {
     const existing = await this.assessmentRepository.findOne({
       where: { assessmentId: id },
@@ -64,6 +87,15 @@ export class AssessmentService {
 
     if (!existing) {
       throw new NotFoundException(`Avaliação com id ${id} não encontrada`);
+    }
+
+    if (!user.isAdmin) {
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: existing.classId, teacherId: user.userId },
+      });
+      if (!classEntity) {
+        throw new NotFoundException(`Avaliação com id ${id} não encontrada ou acesso negado`);
+      }
     }
 
     if (updateDto.name !== undefined) {
@@ -75,11 +107,13 @@ export class AssessmentService {
 
     if (updateDto.classId !== undefined) {
       const classExists = await this.classRepository.findOne({
-        where: { classId: updateDto.classId },
+        where: user.isAdmin
+          ? { classId: updateDto.classId }
+          : { classId: updateDto.classId, teacherId: user.userId },
       });
       if (!classExists) {
         throw new NotFoundException(
-          `Classe com id ${updateDto.classId} não encontrada`,
+          `Classe com id ${updateDto.classId} não encontrada ou acesso negado`,
         );
       }
       existing.classId = updateDto.classId;
@@ -88,7 +122,24 @@ export class AssessmentService {
     return await this.assessmentRepository.save(existing);
   }
 
-  async deleteAssessment(id: string): Promise<void> {
+  async deleteAssessment(id: string, user: any): Promise<void> {
+    const existing = await this.assessmentRepository.findOne({
+      where: { assessmentId: id },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Avaliação com id ${id} não encontrada`);
+    }
+
+    if (!user.isAdmin) {
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: existing.classId, teacherId: user.userId },
+      });
+      if (!classEntity) {
+        throw new NotFoundException(`Avaliação com id ${id} não encontrada ou acesso negado`);
+      }
+    }
+
     const result = await this.assessmentRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Avaliação com id ${id} não encontrada`);

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Patch,
+  Req,
 } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { CreateClassDto } from './dtos/createClass.dto';
@@ -21,8 +22,8 @@ export class ClassController {
 
   @Roles('teacher', 'student')
   @Get()
-  getAll(): Promise<Class[]> {
-    return this.classService.getAllClasses();
+  getAll(@Req() req: any): Promise<Class[]> {
+    return this.classService.getAllClasses(req.user);
   }
 
   @Roles('teacher')
@@ -33,8 +34,11 @@ export class ClassController {
 
   @Roles('teacher')
   @Patch(':id/join-code')
-  async regenerateJoinCode(@Param('id') id: string): Promise<Class> {
-    return this.classService.regenerateJoinCode(id);
+  async regenerateJoinCode(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<Class> {
+    return this.classService.regenerateJoinCode(id, req.user);
   }
 
   @Roles('teacher')
@@ -42,25 +46,29 @@ export class ClassController {
   update(
     @Param('id') id: string,
     @Body() updatedClass: UpdateClassDto,
+    @Req() req: any,
   ): Promise<Class> {
-    return this.classService.updateClass(id, updatedClass);
+    return this.classService.updateClass(id, updatedClass, req.user);
   }
 
   @Roles('teacher')
   @Delete(':id')
-  delete(@Param('id') id: string): Promise<void> {
-    return this.classService.deleteClass(id);
+  delete(@Param('id') id: string, @Req() req: any): Promise<void> {
+    return this.classService.deleteClass(id, req.user);
   }
 
   @Roles('teacher', 'student')
   @Get(':id')
-  async getById(@Param('id') id: string) {
-    return this.classService.getClassById(id);
+  async getById(@Param('id') id: string, @Req() req: any) {
+    return this.classService.getClassById(id, req.user);
   }
 
   @Roles('teacher', 'student')
   @Post('search')
-  async searchClasses(@Body() searchDto: SearchClassDto) {
-    return this.classService.searchClasses(searchDto);
+  async searchClasses(
+    @Body() searchDto: SearchClassDto,
+    @Req() req: any,
+  ) {
+    return this.classService.searchClasses(searchDto, req.user);
   }
 }

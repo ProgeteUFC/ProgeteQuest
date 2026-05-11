@@ -43,6 +43,13 @@ export class User {
   })
   password: string;
 
+  @Column({
+    type: 'boolean',
+    default: false,
+    name: 'isAdmin',
+  })
+  isAdmin: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

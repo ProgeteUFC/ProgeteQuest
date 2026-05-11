@@ -27,8 +27,11 @@ export class ClassService {
     private readonly assessmentRepository: Repository<Assessment>,
   ) {}
 
-  async getAllClasses(): Promise<Class[]> {
-    return this.classRepository.find();
+  async getAllClasses(user: any): Promise<Class[]> {
+    const whereCondition = user.isAdmin ? {} : { teacherId: user.userId };
+    return this.classRepository.find({
+      where: whereCondition,
+    });
   }
   private async getUniqueJoinCode(): Promise<string> {
     let joinCode: string = '';
@@ -77,9 +80,10 @@ export class ClassService {
     return this.classRepository.save(classEntity);
   }
 
-  async regenerateJoinCode(classId: string): Promise<Class> {
+  async regenerateJoinCode(classId: string, user: any): Promise<Class> {
+    const whereCondition = user.isAdmin ? {classId} : { classId, teacherId: user.userId}
     const classEntity = await this.classRepository.findOne({
-      where: { classId },
+      where: whereCondition,
     });
     if (!classEntity) throw new NotFoundException('Turma não encontrada');
 
@@ -88,9 +92,10 @@ export class ClassService {
     return this.classRepository.save(classEntity);
   }
 
-  async updateClass(id: string, updateDto: UpdateClassDto): Promise<Class> {
+  async updateClass(id: string, updateDto: UpdateClassDto, user: any): Promise<Class> {
+    const whereCondition = user.isAdmin ? {classId: id} : {classId: id, teacherId: user.userId}
     const existing = await this.classRepository.findOne({
-      where: { classId: id },
+      where: whereCondition,
     });
 
     if (!existing) {
@@ -135,16 +140,21 @@ export class ClassService {
     return await this.classRepository.save(existing);
   }
 
-  async deleteClass(id: string): Promise<void> {
-    const result = await this.classRepository.delete(id);
-    if (!result.affected || result.affected === 0) {
-      throw new NotFoundException(`Turma com id ${id} não encontrada`);
+  async deleteClass(id: string, user: any): Promise<void> {
+    const whereCondition = user.isAdmin ? {classId: id} : {classId: id, teacherId: user.userId}
+    const existing = await this.classRepository.findOne({where: whereCondition})
+    if (!existing) {
+      throw new NotFoundException(`Turma com id ${id} não encontrada ou acesso negado.`)
     }
+    await this.classRepository.delete(id);
   }
 
-  async searchClasses(query: { name?: string; joinCode?: string }) {
+  async searchClasses(query: { name?: string; joinCode?: string }, user: any) {
     const qb = this.classRepository.createQueryBuilder('class');
 
+    if (!user.isAdmin){
+      qb.andWhere('class.teacherId = :teacherId', {teacherId: user.userId});
+    }
     if (query.name) {
       qb.andWhere('LOWER(class.name) LIKE :name', {
         name: `%${query.name.toLowerCase()}%`,
@@ -157,8 +167,11 @@ export class ClassService {
     return qb.getMany();
   }
 
-  async getClassById(id: string): Promise<Class> {
-    const turma = await this.classRepository.findOne({ where: { classId: id } });
+  async getClassById(id: string, user: any): Promise<Class> {
+    const whereCondition = user.isAdmin ? { classId: id} : {classId: id, teacherId: user.userId}
+    const turma = await this.classRepository.findOne({
+      where: whereCondition,
+    });
     if (!turma) throw new NotFoundException('Turma não encontrada');
     return turma;
   }

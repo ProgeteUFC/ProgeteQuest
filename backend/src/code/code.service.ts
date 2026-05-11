@@ -23,7 +23,21 @@ export class CodeService {
     private readonly classRepository: Repository<Class>,
   ) {}
 
-  async createCode(dto: CreateCodeDto) {
+  async createCode(dto: CreateCodeDto, user: any) {
+    if (!user.isAdmin) {
+      const activity = await this.activityRepository.findOne({
+        where: { activityId: dto.activityId },
+      });
+      if (!activity) throw new NotFoundException('Atividade não encontrada');
+
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: activity.classId },
+      });
+      if (!classEntity || classEntity.teacherId !== user.userId) {
+        throw new BadRequestException('Acesso negado para criar código nesta atividade');
+      }
+    }
+
     const code = this.codeRepository.create({
       codeId: generateUuid(),
       code: generateJoinCode(10),
@@ -35,14 +49,29 @@ export class CodeService {
     return this.codeRepository.save(code);
   }
 
-  async invalidateCode(id: string) {
+  async invalidateCode(id: string, user: any) {
     const code = await this.codeRepository.findOne({ where: { codeId: id } });
     if (!code) throw new NotFoundException('Código não encontrado');
+
+    if (!user.isAdmin) {
+      const activity = await this.activityRepository.findOne({
+        where: { activityId: code.activityId },
+      });
+      if (!activity) throw new NotFoundException('Atividade não encontrada');
+
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: activity.classId },
+      });
+      if (!classEntity || classEntity.teacherId !== user.userId) {
+        throw new NotFoundException('Acesso negado para invalidar este código');
+      }
+    }
+
     code.active = false;
     return this.codeRepository.save(code);
   }
 
-  async renewCode(id: string, teacherId?: string) {
+  async renewCode(id: string, user: any) {
     const code = await this.codeRepository.findOne({ where: { codeId: id } });
     if (!code) throw new NotFoundException('Código não encontrado');
 
@@ -57,7 +86,7 @@ export class CodeService {
     });
     if (!classEntity) throw new NotFoundException('Turma não encontrada');
 
-    if (teacherId && classEntity.teacherId !== teacherId) {
+    if (!user.isAdmin && classEntity.teacherId !== user.userId) {
       throw new BadRequestException('Código não pertence ao professor logado');
     }
 
@@ -77,7 +106,21 @@ export class CodeService {
     return this.codeRepository.save(newCode);
   }
 
-  async listCodesByActivity(activityId: string) {
+  async listCodesByActivity(activityId: string, user: any) {
+    if (!user.isAdmin) {
+      const activity = await this.activityRepository.findOne({
+        where: { activityId },
+      });
+      if (!activity) throw new NotFoundException('Atividade não encontrada');
+
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: activity.classId },
+      });
+      if (!classEntity || classEntity.teacherId !== user.userId) {
+        throw new NotFoundException('Acesso negado para listar códigos desta atividade');
+      }
+    }
+
     return this.codeRepository.find({ where: { activityId } });
   }
 }
