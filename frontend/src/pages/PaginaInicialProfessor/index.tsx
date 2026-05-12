@@ -12,6 +12,14 @@ import { Menu } from 'components/Menu'
 const PaginaInicialProfessor = () => {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
  //useEffect(() => {
  // const type = localStorage.getItem("userType");
 //
@@ -22,40 +30,51 @@ const PaginaInicialProfessor = () => {
   //}
 //}, []);
 
-  return (
-      <Container>
-        <HeaderProfessor/>
-        <Content>
-          <TitleName titleName="Olá, Professor! O que você deseja fazer ?" />
-          <MenuContainer>
-            <MenuOptions>
-              <MenuOption as={Link} to="/entrarEmTurma">
-                Criar Turma
-              </MenuOption>
-              <MenuOption as={Link} to="/minhasTurmas">
-                Visualizar Turmas
-              </MenuOption>
-              <MenuOption as={Link} to="/meusDados">
-                Meus dados
-              </MenuOption>
-              <MenuOption as={Link} to="/forum">
-                Fórum
-              </MenuOption>
-            </MenuOptions>
-          </MenuContainer>
-          <DescriptionContainer>
-            <DescriptionText style={{ fontWeight: 'bold' }}>
-              Gerencie suas turmas e crie desafios interativos de forma simples e rápida.
-            </DescriptionText>
-            <DescriptionText style={{ fontWeight: 'bold' }}>
-              A ferramenta que você precisava para conectar o conteúdo ao coração dos seus alunos.
-            </DescriptionText>
-          </DescriptionContainer>
-        </Content>
-        <Footer />
-        <PlanetImage src={planetOrange} alt="Planeta Laranja" />
-      </Container>
-      )
+return (
+  <>
+    <PlanetImage src={planetOrange} alt="Planeta Laranja" />
+
+    <Container>
+      <HeaderProfessor />
+
+      <Content>
+        <TitleName titleName="Olá, Professor! O que você deseja fazer ?" />
+
+        <MenuContainer>
+          <MenuOptions>
+            <MenuOption as={Link} to="/entrarEmTurma">
+              Criar Turma
+            </MenuOption>
+
+            <MenuOption as={Link} to="/minhasTurmas">
+              Visualizar Turmas
+            </MenuOption>
+
+            <MenuOption as={Link} to="/meusDados">
+              Meus dados
+            </MenuOption>
+
+            <MenuOption as={Link} to="/forum">
+              Fórum
+            </MenuOption>
+          </MenuOptions>
+        </MenuContainer>
+
+        <DescriptionContainer>
+          <DescriptionText style={{ fontWeight: "bold" }}>
+            Gerencie suas turmas e crie desafios interativos de forma simples e rápida.
+          </DescriptionText>
+
+          <DescriptionText style={{ fontWeight: "bold" }}>
+            A ferramenta que você precisava para conectar o conteúdo ao coração dos seus alunos.
+          </DescriptionText>
+        </DescriptionContainer>
+      </Content>
+
+      <Footer />
+    </Container>
+  </>
+);
 }
 
 export default PaginaInicialProfessor

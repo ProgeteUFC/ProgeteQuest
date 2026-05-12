@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const Container = styled.div`
   background-color: ${(props) => props.theme.colors.kingfisherDaisy};
   min-height: 100vh;
-  width: 100vw;
+  width: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -21,6 +21,13 @@ export const Content = styled.div`
   align-items: center;
   padding-bottom: 60px;
 
+  position: relative;
+  z-index: 2;
+  & > h1, 
+  & [class*="Title"] {
+    font-family: "Baloo Paaji 2", sans-serif !important;
+  }
+
   @media (min-width: 1024px) {
     align-items: flex-start;
     margin-left: 10%;
@@ -30,9 +37,10 @@ export const Content = styled.div`
 
   /* MOBILE */
   @media (max-width: 768px) {
-    padding: 30px 20px 120px 20px;
-    margin-top: 10px;
+    padding: 5px 50px 30px 20px;
+    margin-top: 5px;
     align-items: flex-start;
+    
   }
 `;
 
@@ -55,6 +63,7 @@ export const MenuContainer = styled.div`
     padding: 0;
     height: auto;
     width: 100%;
+    font-family: "Baloo Paaji 2", sans-serif;
   }
 `;
 
@@ -94,6 +103,7 @@ export const MenuOption = styled.a`
   text-decoration: none;
   font-size: 18px;
   text-align: center;
+  font-family: "Baloo Paaji 2", sans-serif;
 
   &:active {
     scale: 0.97;
@@ -109,8 +119,8 @@ export const MenuOption = styled.a`
   @media (max-width: 768px) {
     width: 100%;
     height: 80px;
-    border-radius: 12px;
-    font-size: 16px;
+    border-radius: 20px;
+    font-size: 20px;
     line-height: 1.2;
     padding: 10px;
   }
@@ -118,27 +128,21 @@ export const MenuOption = styled.a`
 
 export const PlanetImage = styled.img`
   position: fixed;
-  bottom: 0;
-  right: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 
   /* MOBILE */
   @media (max-width: 768px) {
-    display: block;
-    width: 220px;
+    width: 250px;
     bottom: -20px;
     right: -60px;
-    position: fixed;
   }
 
   /* DESKTOP */
   @media (min-width: 1025px) {
-    display: block;
     width: 1200px;
     bottom: -150px;
     right: -300px;
-    transform: translate(5%, 5%);
   }
 `;
 
@@ -148,6 +152,7 @@ export const DescriptionContainer = styled.div`
   gap: 20px;
   margin-top: 30px;
   max-width: 600px;
+  font-family: "Baloo Paaji 2", sans-serif;
 
   /* MOBILE */
   @media (max-width: 768px) {
