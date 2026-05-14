@@ -24,12 +24,13 @@ import { User } from 'src/decorators/user.decorator';
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 
+  @Roles('teacher', 'admin')
   @Post('turmas/:id/forum')
   async createForum(@Param('id') turmaId: string) {
     return this.forumService.createForum(turmaId);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Post('forum/:forumId/topic')
   async createTopic(
     @Param('forumId') forumId: string,
@@ -39,7 +40,7 @@ export class ForumController {
     return this.forumService.createTopic(forumId, createTopicDto, user);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Get('forum/:forumId/topics')
   async getTopics(
     @Param('forumId') forumId: string,
@@ -50,7 +51,7 @@ export class ForumController {
     return this.forumService.listTopicsByForum(forumId, status, page, limit);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Get('topic/:topicId/posts')
   async getPosts(
     @Param('topicId') topicId: string,
@@ -60,7 +61,7 @@ export class ForumController {
     return this.forumService.listPostsByTopic(topicId, page, limit);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Post('topic/:topicId/post')
   async createPost(
     @Param('topicId') topicId: string,
@@ -70,12 +71,9 @@ export class ForumController {
     return this.forumService.createPost(topicId, createPostDto, user);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Patch('topic/:topicId/close')
-  async closeTopic(
-    @Param('topicId') topicId: string,
-    @User() user: any,
-  ) {
+  async closeTopic(@Param('topicId') topicId: string, @User() user: any) {
     return this.forumService.closeTopic(topicId, user);
   }
 }

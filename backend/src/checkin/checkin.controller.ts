@@ -8,7 +8,7 @@ import { User } from 'src/decorators/user.decorator';
 export class CheckinController {
   constructor(private readonly checkinService: CheckinService) {}
 
-  @Roles('student', 'teacher')
+  @Roles('student', 'teacher', 'admin')
   @Post()
   async create(@Body() dto: CreateCheckinDto, @User() user: any) {
     return this.checkinService.createCheckin(dto, user);

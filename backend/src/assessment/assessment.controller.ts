@@ -18,13 +18,13 @@ import { User } from 'src/decorators/user.decorator';
 export class AssessmentController {
   constructor(private readonly assessmentService: AssessmentService) {}
 
-  @Roles('teacher') //
+  @Roles('teacher', 'admin')
   @Get()
   getAll(@User() user: any): Promise<Assessment[]> {
     return this.assessmentService.getAllAssessments(user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Post()
   create(
     @Body() newAssessment: CreateAssessmentDto,
@@ -33,7 +33,7 @@ export class AssessmentController {
     return this.assessmentService.createAssessment(newAssessment, user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Put(':id')
   update(
     @Param('id') id: string,
@@ -43,12 +43,9 @@ export class AssessmentController {
     return this.assessmentService.updateAssessment(id, updatedAssessment, user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Delete(':id')
-  delete(
-    @Param('id') id: string,
-    @User() user: any,
-  ): Promise<void> {
+  delete(@Param('id') id: string, @User() user: any): Promise<void> {
     return this.assessmentService.deleteAssessment(id, user);
   }
 }

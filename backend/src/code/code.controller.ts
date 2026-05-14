@@ -8,23 +8,25 @@ import { User } from 'src/decorators/user.decorator';
 export class CodeController {
   constructor(private readonly codeService: CodeService) {}
 
+  @Roles('teacher', 'admin')
   @Post()
   async create(@Body() dto: CreateCodeDto, @User() user: any) {
     return this.codeService.createCode(dto, user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Patch(':id/invalidate')
   async invalidate(@Param('id') id: string, @User() user: any) {
     return this.codeService.invalidateCode(id, user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Patch(':id/renew')
   async renew(@Param('id') id: string, @User() user: any) {
     return this.codeService.renewCode(id, user);
   }
 
+  @Roles('teacher', 'admin', 'student')
   @Get('activity/:activityId')
   async listByActivity(
     @Param('activityId') activityId: string,

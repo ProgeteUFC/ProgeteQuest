@@ -20,19 +20,19 @@ import { SearchClassDto } from './dtos/searchClass.dto';
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Get()
   getAll(@Req() req: any): Promise<Class[]> {
     return this.classService.getAllClasses(req.user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Post()
   create(@Body() newClass: CreateClassDto): Promise<Class> {
     return this.classService.createClass(newClass);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Patch(':id/join-code')
   async regenerateJoinCode(
     @Param('id') id: string,
@@ -41,7 +41,7 @@ export class ClassController {
     return this.classService.regenerateJoinCode(id, req.user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Put(':id')
   update(
     @Param('id') id: string,
@@ -51,24 +51,21 @@ export class ClassController {
     return this.classService.updateClass(id, updatedClass, req.user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Delete(':id')
   delete(@Param('id') id: string, @Req() req: any): Promise<void> {
     return this.classService.deleteClass(id, req.user);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Get(':id')
   async getById(@Param('id') id: string, @Req() req: any) {
     return this.classService.getClassById(id, req.user);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Post('search')
-  async searchClasses(
-    @Body() searchDto: SearchClassDto,
-    @Req() req: any,
-  ) {
+  async searchClasses(@Body() searchDto: SearchClassDto, @Req() req: any) {
     return this.classService.searchClasses(searchDto, req.user);
   }
 }

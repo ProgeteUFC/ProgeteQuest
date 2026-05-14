@@ -11,13 +11,13 @@ import { User, UserPayload } from 'src/decorators/user.decorator';
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Get()
   getAll(@User() user: any): Promise<Activity[]> {
     return this.activityService.getAllActivities(user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Post()
   create(
     @Body() newActivity: CreateActivityDto,
@@ -26,7 +26,7 @@ export class ActivityController {
     return this.activityService.createActivity(newActivity, user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Put(':id')
   update(
     @Param('id') id: string,
@@ -36,7 +36,7 @@ export class ActivityController {
     return this.activityService.updateActivity(id, updatedActivity, user);
   }
 
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Delete(':id')
   delete(
     @Param('id') id: string,
@@ -45,7 +45,7 @@ export class ActivityController {
     return this.activityService.deleteActivity(id, user);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Post('search')
   async searchActivities(
     @Body() searchDto: SearchActivityDto,
@@ -54,7 +54,7 @@ export class ActivityController {
     return this.activityService.searchActivities(searchDto, user);
   }
 
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Get('class/:classId')
   async listByClass(
     @Param('classId') classId: string,
