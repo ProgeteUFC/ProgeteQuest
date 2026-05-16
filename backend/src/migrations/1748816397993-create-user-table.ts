@@ -3,6 +3,14 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class CreateUserTable1748816397993 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
+      CREATE TYPE user_type_enum AS ENUM (
+        'student',
+        'teacher',
+        'admin'
+      );
+    `);
+    
+    await queryRunner.query(`
       CREATE TABLE public.user (
         user_id VARCHAR(36) NOT NULL,
         
@@ -21,5 +29,6 @@ export class CreateUserTable1748816397993 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('DROP TABLE public.user;');
+    await queryRunner.query('DROP TYPE user_type_enum;');
   }
 }
