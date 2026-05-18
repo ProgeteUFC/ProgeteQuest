@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import logoProgeteQuest from "../../assets/logo.png";
 import { TiHome } from "react-icons/ti";
 import { IoExitOutline } from "react-icons/io5";
@@ -12,9 +12,13 @@ import {
 } from "./style";
 import { IconHome, IconExite, Box } from "../headerRanking/styles";
 import { Link, useNavigate } from "react-router-dom";
+import { GiHamburgerMenu } from "react-icons/gi";
+import { HamburgerButton, MobileMenu } from "./style";
 
 export default function HeaderProfessor() {
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   function handleLogout() {
     localStorage.removeItem("token");
@@ -23,8 +27,19 @@ export default function HeaderProfessor() {
     navigate("/");
   }
 
+  const toggleMenu = () => {
+    setIsOpen((prev) => !prev);
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen((prev) => !prev);
+  };
+
   return (
     <MenuContainer>
+      <HamburgerButton onClick={() => setMobileMenuOpen((open) => !open)}>
+        <GiHamburgerMenu size={30} />
+      </HamburgerButton>
       <Logo>
         <img src={logoProgeteQuest} alt="Logo do Progete Quest" width={200} />
       </Logo>
@@ -51,6 +66,22 @@ export default function HeaderProfessor() {
           </MenuOption>
         </MenuOptions>
       </MenuContent>
+      <MobileMenu open={mobileMenuOpen}>
+        <MenuOptions style={{ flexDirection: "column", gap: 24 }}>
+          <MenuOption as={Link} to="/entrarEmTurma" onClick={() => setMobileMenuOpen(false)}>
+            Criar uma Turma
+          </MenuOption>
+          <MenuOption as={Link} to="/visualizarTurmasProfessor" onClick={() => setMobileMenuOpen(false)}>
+            Visualizar Turmas
+          </MenuOption>
+          <MenuOption as={Link} to="/meusDados" onClick={() => setMobileMenuOpen(false)}>
+            Meus dados
+          </MenuOption>
+          <MenuOption as={Link} to="/forum" onClick={() => setMobileMenuOpen(false)}>
+            Fórum
+          </MenuOption>
+        </MenuOptions>
+      </MobileMenu>
       <RightBox>
         <IconExite onClick={handleLogout}>
           <IoExitOutline size={30} />

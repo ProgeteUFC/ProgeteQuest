@@ -1,5 +1,7 @@
 import styled from "styled-components";
 
+const mobilePrototype = `@media ((max-width: 410px) and (max-height: 900px)), (min-width: 1024px) and (max-width: 1024px) and (max-height: 900px)`;
+
 export const Container = styled.div`
   display: flex;
   padding: 20px;
@@ -17,6 +19,13 @@ export const Image = styled.img`
   left: 2rem;
   bottom: 0.7rem;
   height: 48px;
+
+  ${mobilePrototype} {
+    left: 1rem;
+    bottom: 0.5rem;
+    height: 30px;
+    margin-left: -5px;
+  }
 `;
 
 export const Text = styled.p`
