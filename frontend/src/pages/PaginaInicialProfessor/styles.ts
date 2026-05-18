@@ -1,5 +1,7 @@
 import styled from "styled-components";
 
+const mobilePrototype = `@media ((max-width: 410px) and (max-height: 900px)), (min-width: 1024px) and (max-width: 1024px) and (max-height: 900px)`;
+
 export const Container = styled.div`
   background-color: ${(props) => props.theme.colors.kingfisherDaisy};
   min-height: 100vh;
@@ -8,12 +10,18 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  
+  ${mobilePrototype} {
+    padding: 0;
+    min-height: 874px;
+    height: 100vh;
+  }
 `;
 
 export const Content = styled.div`
-  padding: 40px 20px 0 20px;
-  max-width: 900px;
-  margin-top: 25px;
+  padding: 40px 4vw 0 4vw;
+  max-width: 1000px;
+  margin-top: 2.5vw;
   flex: 1;
   width: 100%;
   display: flex;
@@ -30,17 +38,30 @@ export const Content = styled.div`
 
   @media (min-width: 1024px) {
     align-items: flex-start;
-    margin-left: 10%;
-    width: 80%;
+    margin-left: 8vw;
+    width: 84vw;
     max-width: 1200px;
   }
 
+  /* TABLET */
+  @media (max-width: 1024px) {
+    padding: 24px 2vw 24px 2vw;
+    margin-top: 12px;
+    align-items: center;
+  }
   /* MOBILE */
   @media (max-width: 768px) {
-    padding: 5px 50px 30px 20px;
+    padding: 5px 5vw 30px 5vw;
     margin-top: 5px;
     align-items: flex-start;
-    
+  }
+  
+  ${mobilePrototype} {
+    padding: 0 0 0 0;
+    margin-top: 0;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 700px;
   }
 `;
 
@@ -49,7 +70,15 @@ export const MenuContainer = styled.div`
   color: white;
   background-color: ${(props) => props.theme.colors.indigo};
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  position: relative;
+  ${mobilePrototype} {
+    justify-content: space-between;
+    padding: 0 8px;
+    height: 60px;
+    min-height: 60px;
+    gap: 0;
+}
   font-family: "Baloo Paaji 2", sans-serif;
   user-select: none;
   padding: 0 8px;
@@ -65,25 +94,47 @@ export const MenuContainer = styled.div`
     width: 100%;
     font-family: "Baloo Paaji 2", sans-serif;
   }
+  
+  ${mobilePrototype} {
+    margin-top: 32px;
+    margin-bottom: 0;
+    padding: 0;
+    height: auto;
+    width: 100%;
+    background: transparent;
+    justify-content: center;
+  }
 `;
 
 export const MenuOptions = styled.div`
   display: flex;
   background-color: white;
-  padding: 8px 12px;
+  padding: 8px 2vw;
   border-radius: 20px;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 2vw;
 
   /* MOBILE */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 18px;
     background: transparent;
     padding: 0;
     width: 100%;
+  }
+  
+  ${mobilePrototype} {
+    gap: 12px;
+    padding: 0 0 0 0;
+    border-radius: 0;
+    width: 100%;
+    background: transparent;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin: 0 auto;
+    max-width: 340px;
   }
 `;
 
@@ -124,6 +175,17 @@ export const MenuOption = styled.a`
     line-height: 1.2;
     padding: 10px;
   }
+  
+  ${mobilePrototype} {
+    width: 100%;
+    height: 70px;
+    font-size: 18px;
+    border-radius: 16px;
+    padding: 0 2px;
+    gap: 10px;
+    margin: 0;
+    box-shadow: none;
+  }
 `;
 
 export const PlanetImage = styled.img`
@@ -131,18 +193,20 @@ export const PlanetImage = styled.img`
   pointer-events: none;
   z-index: 1;
 
-  /* MOBILE */
-  @media (max-width: 768px) {
-    width: 250px;
-    bottom: -20px;
-    right: -60px;
-  }
-
   /* DESKTOP */
   @media (min-width: 1025px) {
     width: 1200px;
     bottom: -150px;
     right: -300px;
+    max-width: 60vw;
+  }
+  
+  ${mobilePrototype} {
+    // width: 480px;
+    right: -105px;
+    bottom: 0px;
+    max-width: 90vw;
+    min-width: 110vw;
   }
 `;
 
@@ -155,10 +219,22 @@ export const DescriptionContainer = styled.div`
   font-family: "Baloo Paaji 2", sans-serif;
 
   /* MOBILE */
+  @media (max-width: 1024px) {
+    margin-top: 24px;
+    max-width: 90vw;
+    gap: 12px;
+  }
   @media (max-width: 768px) {
-    margin-top: 30px;
+    margin-top: 18px;
     max-width: 320px;
-    gap: 16px;
+    gap: 10px;
+  }
+  
+  ${mobilePrototype} {
+    margin-top: 24px;
+    max-width: 320px;
+    gap: 10px;
+    align-items: center;
   }
 `;
 
@@ -171,8 +247,46 @@ export const DescriptionText = styled.p`
   margin: 0;
 
   /* MOBILE */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 16px;
     line-height: 1.3;
   }
+  
+  ${mobilePrototype} {
+    font-size: 15px;
+    line-height: 1.2;
+    text-align: left;
+    font-weight: 600;
+  }
 `;
+
+export const AstronautImage = styled.img`
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 90px;
+  pointer-events: none;
+  display: none;
+  ${mobilePrototype} {
+    display: block;
+    height: 45vw;
+    width: 28vw;
+    margin-left: -17vw;
+    bottom: 18vw;
+    min-width: 300px;
+    max-width: 350px;
+  }
+`;
+
+
+export const LogoImage = styled.img`
+  width: 100px;
+  height: 60px;
+  object-fit: contain;
+  ${mobilePrototype} {
+    width: 100px;
+    height: 60px;
+  }
+`;
+

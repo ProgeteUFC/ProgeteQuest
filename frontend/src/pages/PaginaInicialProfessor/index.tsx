@@ -8,6 +8,8 @@ import { Container, Content, MenuContainer, MenuOption, MenuOptions, PlanetImage
 import { Link } from 'react-router-dom' 
 import planetOrange from "../../assets/planet_orange.png";
 import { Menu } from 'components/Menu'
+import astronaut from "../../assets/astronaut.png";
+import { AstronautImage } from "./styles";
 
 const PaginaInicialProfessor = () => {
   const navigate = useNavigate();
@@ -20,20 +22,10 @@ const PaginaInicialProfessor = () => {
     };
   }, []);
 
- //useEffect(() => {
- // const type = localStorage.getItem("userType");
-//
-//  console.log("TIPO:", type);
-//
-  //if (type !== "teacher") {
-    //navigate("/minhasTurmas");
-  //}
-//}, []);
-
 return (
   <>
     <PlanetImage src={planetOrange} alt="Planeta Laranja" />
-
+    <AstronautImage src={astronaut} alt="Astronauta" />
     <Container>
       <HeaderProfessor />
 
