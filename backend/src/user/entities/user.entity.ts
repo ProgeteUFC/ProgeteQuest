@@ -1,5 +1,6 @@
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
+import { Admin } from 'src/admin/entities/admin.entity';
 import {
   Entity,
   PrimaryColumn,
@@ -54,4 +55,7 @@ export class User {
 
   @OneToMany(() => Student, (student) => student.user)
   students?: Student[];
+
+  @OneToMany(() => Admin, (admin) => admin.user)
+  admins?: Admin[];
 }

@@ -8,6 +8,7 @@ import { generateUuid } from '../utils/generateUuid';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
+import { Admin } from 'src/admin/entities/admin.entity';
 import * as bcrypt from 'bcrypt';
 import { UnauthorizedException } from '@nestjs/common';
 
@@ -20,11 +21,17 @@ export class UserService {
     private readonly studentRepository: Repository<Student>,
     @InjectRepository(Teacher)
     private readonly teacherRepository: Repository<Teacher>,
+    @InjectRepository(Admin)
+    private readonly adminRepository: Repository<Admin>,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    // Verifica o tipo de usuário
-    if (createUserDto.type !== 'student' && createUserDto.type !== 'teacher') {
+    // Verifica o tipo de usuário incluindo admin
+    if (
+      createUserDto.type !== 'student' &&
+      createUserDto.type !== 'teacher' &&
+      createUserDto.type !== 'admin'
+    ) {
       throw new BadRequestException('Tipo de usuário inválido');
     }
 
@@ -33,6 +40,7 @@ export class UserService {
     const existingUser = await this.userRepository.findOne({
       where: { email },
     });
+    
     if (existingUser) {
       throw new ConflictException('Esse registro já existe');
     }
@@ -97,7 +105,7 @@ export class UserService {
 
     await this.userRepository.save(user);
 
-    // Criação do vínculo com estudante ou professor
+    // Criação do vínculo com estudante, professor ou admin
     if (createUserDto.type === 'student') {
       await this.studentRepository.save({
         userId: user.userId,
@@ -108,6 +116,11 @@ export class UserService {
       await this.teacherRepository.save({
         userId: user.userId,
         registrationTeacher: createUserDto.registrationTeacher?.trim(),
+        user,
+      });
+    } else if (createUserDto.type === 'admin') {
+      await this.adminRepository.save({
+        userId: user.userId,
         user,
       });
     }
@@ -123,16 +136,19 @@ export class UserService {
   async findAll() {
     const users = await this.userRepository.find({
       select: ['userId', 'name', 'email', 'createdAt', 'updatedAt'],
-      relations: ['students', 'teachers'],
+      relations: ['students', 'teachers', 'admins'],
     });
 
     return users.map((user) => {
-      let type: 'student' | 'teacher' | null = null;
-      if (user.students && user.students.length > 0) {
+      let type: 'student' | 'teacher' | 'admin' | null = null;
+      if (user.admins && user.admins.length > 0) {
+        type = 'admin';
+      } else if (user.students && user.students.length > 0) {
         type = 'student';
       } else if (user.teachers && user.teachers.length > 0) {
         type = 'teacher';
       }
+      
       return {
         userId: user.userId,
         name: user.name,
@@ -147,8 +163,9 @@ export class UserService {
   async remove(userId: string, password: string) {
     const user = await this.userRepository.findOne({
       where: { userId },
-      relations: ['students', 'teachers'],
+      relations: ['students', 'teachers', 'admins'],
     });
+    
     if (!user) {
       throw new BadRequestException('Usuário não encontrado');
     }
@@ -157,6 +174,11 @@ export class UserService {
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) {
       throw new UnauthorizedException('Senha incorreta');
+    }
+
+    // Remove registros de administrador, se existirem
+    if (user.admins && user.admins.length > 0) {
+      await this.adminRepository.delete({ userId });
     }
 
     // Remove registros de estudante, se existirem
@@ -195,7 +217,7 @@ export class UserService {
 
     const user = await this.userRepository.findOne({
       where: { userId },
-      relations: ['students', 'teachers'],
+      relations: ['students', 'teachers', 'admins'],
     });
 
     if (!user) {
@@ -314,14 +336,17 @@ export class UserService {
   async findOne(userId: string) {
     const user = await this.userRepository.findOne({
       where: { userId },
-      relations: ['students', 'teachers'],
+      relations: ['students', 'teachers', 'admins'],
     });
+    
     if (!user) {
       throw new BadRequestException('Usuário não encontrado');
     }
 
-    let type: 'student' | 'teacher' | null = null;
-    if (user.students && user.students.length > 0) {
+    let type: 'student' | 'teacher' | 'admin' | null = null;
+    if (user.admins && user.admins.length > 0) {
+      type = 'admin';
+    } else if (user.students && user.students.length > 0) {
       type = 'student';
     } else if (user.teachers && user.teachers.length > 0) {
       type = 'teacher';
