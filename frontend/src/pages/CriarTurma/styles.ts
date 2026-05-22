@@ -10,17 +10,49 @@ export const PageWrapper = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   padding-left: 9rem;
-  position:relative;
+  position: relative;
 
   padding-top: 2rem;
+
+  // Mobile (402x874)
+  @media (max-width: 768px) {
+    align-items: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1rem;
+  }
 `;
 
 export const Planet = styled.img`
-position: fixed;
+  position: fixed;
   width: 1300px;
   bottom: -100px;
   right: -130px;
   transform: translate(20%, 20%);
+
+  // Mobile (402x874)
+  @media (max-width: 768px) {
+    width: 300px;
+    bottom: -40px;
+    right: -40px;
+    transform: none;
+    opacity: 0.8;
+  }
+`;
+
+export const Astronaut = styled.img`
+  display: none;
+
+  // Mobile (402x874)
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    width: 300px;
+    bottom: 80px;
+    left: -10px;
+    margin-left: 0;
+    z-index: 1;
+  }
 `;
 
 export const Logo = styled.img`
@@ -29,17 +61,41 @@ export const Logo = styled.img`
   bottom: 130px;
   left: 2rem;
 
+  // Mobile (402x874)
+  @media (max-width: 768px) {
+    width: 80px;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+  }
 `;
 
 export const Container = styled.div`
-font-size: 18px;
+  font-size: 18px;
   font-weight: 400;
   color: ${({ theme }) => theme.colors.white};
   font-family: "Baloo Paaji 2", sans-serif;
-  
 
   margin: 0;
   padding-top: 2rem;
+
+  // Mobile (402x874)
+  @media (max-width: 768px) {
+    font-size: 16px;
+    width: 100%;
+    max-width: 402px;
+    padding-top: 1rem;
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 16px;
+      line-height: 1.4;
+    }
+  }
 `;
 
 export const FormCard = styled.div`
@@ -86,7 +142,20 @@ export const FormCard = styled.div`
     opacity: 0.8;
   }
 
-  
+  // Mobile (402x874)
+  @media (max-width: 768px) {
+    max-width: 100%;
+    margin-top: 1.5rem;
+    gap: 0.75rem;
+
+    input {
+      padding: 0.75rem 1rem;
+    }
+
+    textarea {
+      padding: 0.75rem 1rem;
+    }
+  }
 `;
 
 export const ButtonWrapper = styled.div`
@@ -97,6 +166,11 @@ export const ButtonWrapper = styled.div`
   justify-content: flex-end;
 
   margin-top: 1rem;
+
+  // Mobile (402x874)
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
 `;
 
 export const CreateButton = styled.button`
@@ -118,4 +192,11 @@ export const CreateButton = styled.button`
 
   font-weight: bold;
   cursor: pointer;
+
+  // Mobile (402x874)
+  @media (max-width: 768px) {
+    width: 150px;
+    font-size: 14px;
+    height: 40px;
+  }
 `;
