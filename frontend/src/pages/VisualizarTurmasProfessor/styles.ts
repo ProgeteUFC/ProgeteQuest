@@ -1,3 +1,12 @@
+import styled from 'styled-components';
+
+export const PageWrapper = styled.div`
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+`;
+
 export const ProgeteLogoFull = styled.img`
   position: fixed;
   width: 700px;
@@ -6,23 +15,23 @@ export const ProgeteLogoFull = styled.img`
   left: 0;
   transform: translate(-20%, 20%);
   pointer-events: none;
+  
   @media (max-width: 768px) {
-    width: 300px;
-    left: 0;
-    bottom: 0;
-    transform: translate(-10%, 10%);
+    display: none !important;
   }
 `;
+
 export const PlanetOrange = styled.img`
   position: fixed;
   bottom: 0;
   right: 0;
   pointer-events: none;
   z-index: 0;
+  
   @media (max-width: 768px) {
-    display: none;
-    width: 300px;
+    display: none !important;
   }
+  
   @media (min-width: 1025px) {
     display: block;
     width: 1200px;
@@ -31,6 +40,7 @@ export const PlanetOrange = styled.img`
     transform: translate(5%, 5%);
   }
 `;
+
 export const FixedLogo = styled.img`
   position: fixed;
   left: 32px;
@@ -39,9 +49,11 @@ export const FixedLogo = styled.img`
   height: auto;
   z-index: 10;
   pointer-events: none;
+  
+  @media (max-width: 768px) {
+    display: none !important;
+  }
 `;
-
-import styled from 'styled-components';
 
 export const ViewClassesBg = styled.div`
   height: 84.3vh;
@@ -51,8 +63,22 @@ export const ViewClassesBg = styled.div`
   align-items: stretch;
   position: relative;
   width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
   overflow-y: hidden;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: 100vh;
+    min-height: 100vh;
+    overflow-x: hidden !important;
+    overflow-y: auto;
+    
+    & > :not(:first-child) {
+      display: none !important;
+    }
+  }
 `;
 
 export const ViewClassesContainer = styled.div`
@@ -62,6 +88,19 @@ export const ViewClassesContainer = styled.div`
   justify-content: flex-start;
   z-index: 2;
   margin-top: 40px;
+  padding-left: 180px;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    margin-top: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    align-items: center;
+    text-align: center;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
 `;
 
 export const Title = styled.h1`
@@ -69,8 +108,15 @@ export const Title = styled.h1`
   font-size: 34px;
   font-weight: 800;
   font-family: 'Baloo Paaji 2', sans-serif;
-  margin-left: 180px;
   margin-bottom: 0.5rem;
+  margin-left: 0;
+  word-break: break-word;
+
+  @media (max-width: 768px) {
+    font-size: 28px;
+    text-align: center;
+    width: 100%;
+  }
 `;
 
 export const Subtitle = styled.h2`
@@ -78,9 +124,17 @@ export const Subtitle = styled.h2`
   font-size: 24px;
   font-weight: 700;
   font-family: 'Baloo Paaji 2', sans-serif;
-  margin-left: 180px;
   margin-bottom: 2.5rem;
   line-height: 1.2;
+  margin-left: 0;
+  word-break: break-word;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
 `;
 
 export const ListaTurmas = styled.div`
@@ -93,12 +147,20 @@ export const ListaTurmas = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-top: 32px;
-  margin-left: 180px;
+  margin-left: 0;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 340px;
+    padding: 16px;
+    margin: 0 auto;
+  }
 `;
 
 export const ListaTurmasScroll = styled.div`
   overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 20px;
   max-height: 298px;
   display: flex;
@@ -107,6 +169,7 @@ export const ListaTurmasScroll = styled.div`
   padding: 5px;
   scrollbar-width: thin;
   scrollbar-color: #fff #4f4192;
+  
   &::-webkit-scrollbar {
     width: 10px;
     border-radius: 32px;
@@ -131,6 +194,9 @@ export const TurmaCard = styled.div`
   justify-content: space-between;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  
   &:hover,
   &:focus {
     background: #f97316;
@@ -143,6 +209,7 @@ export const TurmaNome = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  word-break: break-word;
 `;
 
 export const PlanetIllustration = styled.div`
@@ -162,10 +229,8 @@ export const PlanetIllustration = styled.div`
     bottom: -80px;
     transform: translate(5%, 10%);
   }
-  @media (max-width: 900px) {
-    width: 500px;
-    height: 500px;
-    bottom: -40px;
-    transform: translate(0, 10%);
+  
+  @media (max-width: 768px) {
+    display: none !important;
   }
 `;

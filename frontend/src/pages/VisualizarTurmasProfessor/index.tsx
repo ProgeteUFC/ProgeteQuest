@@ -11,7 +11,8 @@ import {
   ListaTurmasScroll,
   TurmaCard,
   TurmaNome,
-  PlanetOrange
+  PlanetOrange,
+  PageWrapper,
 } from './styles';
 
 import planetOrange from '../../assets/planet_orange.png';
@@ -28,7 +29,7 @@ const classes = [
 
 const ViewClasses = () => {
   return (
-    <>
+    <PageWrapper>
       <HeaderProfessor />
       <ViewClassesBg>
         <ViewClassesContainer>
@@ -47,7 +48,7 @@ const ViewClasses = () => {
         <PlanetOrange src={planetOrange} alt="Planeta Laranja" />
         <Footer />
       </ViewClassesBg>
-    </>
+    </PageWrapper>
   );
 };
 
