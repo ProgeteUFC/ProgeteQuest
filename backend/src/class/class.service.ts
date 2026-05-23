@@ -33,6 +33,7 @@ export class ClassService {
       where: whereCondition,
     });
   }
+
   private async getUniqueJoinCode(): Promise<string> {
     let joinCode: string = '';
     let isUnique = false;
@@ -49,30 +50,32 @@ export class ClassService {
     return joinCode;
   }
 
-  async createClass(newClass: CreateClassDto): Promise<Class> {
+  async createClass(newClass: CreateClassDto, user: any): Promise<Class> {
     // valida o UUID
     const id = generateUuid();
     if (!isUuid(id)) {
       throw new BadRequestException('ID gerado inválido');
     }
 
+    const targetTeacherId = user.isAdmin ? newClass.teacherId : user.userId;
+
     // Garante que o código é único
     const joinCode = await this.getUniqueJoinCode();
 
     // verifica se teacher existe
     const teacherEntity = await this.teacherRepository.findOneBy({
-      userId: newClass.teacherId,
+      userId: targetTeacherId,
     });
     if (!teacherEntity) {
       throw new NotFoundException(
-        `Professor com ID ${newClass.teacherId} não encontrado`,
+        `Professor com ID ${targetTeacherId} não encontrado`,
       );
     }
 
     // cria uma nova turma
     const classEntity = this.classRepository.create({
       classId: id,
-      teacherId: newClass.teacherId,
+      teacherId: targetTeacherId,
       name: newClass.name.trim(),
       joinCode,
     });
@@ -81,7 +84,9 @@ export class ClassService {
   }
 
   async regenerateJoinCode(classId: string, user: any): Promise<Class> {
-    const whereCondition = user.isAdmin ? {classId} : { classId, teacherId: user.userId}
+    const whereCondition = user.isAdmin
+      ? { classId }
+      : { classId, teacherId: user.userId };
     const classEntity = await this.classRepository.findOne({
       where: whereCondition,
     });
@@ -92,8 +97,14 @@ export class ClassService {
     return this.classRepository.save(classEntity);
   }
 
-  async updateClass(id: string, updateDto: UpdateClassDto, user: any): Promise<Class> {
-    const whereCondition = user.isAdmin ? {classId: id} : {classId: id, teacherId: user.userId}
+  async updateClass(
+    id: string,
+    updateDto: UpdateClassDto,
+    user: any,
+  ): Promise<Class> {
+    const whereCondition = user.isAdmin
+      ? { classId: id }
+      : { classId: id, teacherId: user.userId };
     const existing = await this.classRepository.findOne({
       where: whereCondition,
     });
@@ -141,10 +152,16 @@ export class ClassService {
   }
 
   async deleteClass(id: string, user: any): Promise<void> {
-    const whereCondition = user.isAdmin ? {classId: id} : {classId: id, teacherId: user.userId}
-    const existing = await this.classRepository.findOne({where: whereCondition})
+    const whereCondition = user.isAdmin
+      ? { classId: id }
+      : { classId: id, teacherId: user.userId };
+    const existing = await this.classRepository.findOne({
+      where: whereCondition,
+    });
     if (!existing) {
-      throw new NotFoundException(`Turma com id ${id} não encontrada ou acesso negado.`)
+      throw new NotFoundException(
+        `Turma com id ${id} não encontrada ou acesso negado.`,
+      );
     }
     await this.classRepository.delete(id);
   }
@@ -152,8 +169,8 @@ export class ClassService {
   async searchClasses(query: { name?: string; joinCode?: string }, user: any) {
     const qb = this.classRepository.createQueryBuilder('class');
 
-    if (!user.isAdmin){
-      qb.andWhere('class.teacherId = :teacherId', {teacherId: user.userId});
+    if (!user.isAdmin) {
+      qb.andWhere('class.teacherId = :teacherId', { teacherId: user.userId });
     }
     if (query.name) {
       qb.andWhere('LOWER(class.name) LIKE :name', {
@@ -168,7 +185,9 @@ export class ClassService {
   }
 
   async getClassById(id: string, user: any): Promise<Class> {
-    const whereCondition = user.isAdmin ? { classId: id} : {classId: id, teacherId: user.userId}
+    const whereCondition = user.isAdmin
+      ? { classId: id }
+      : { classId: id, teacherId: user.userId };
     const turma = await this.classRepository.findOne({
       where: whereCondition,
     });

@@ -13,7 +13,7 @@ export class ActivityController {
 
   @Roles('teacher', 'admin', 'student')
   @Get()
-  getAll(@User() user: any): Promise<Activity[]> {
+  getAll(@User() user: UserPayload): Promise<Activity[]> {
     return this.activityService.getAllActivities(user);
   }
 
@@ -21,7 +21,7 @@ export class ActivityController {
   @Post()
   create(
     @Body() newActivity: CreateActivityDto,
-    @User() user: any,
+    @User() user: UserPayload,
   ): Promise<Activity> {
     return this.activityService.createActivity(newActivity, user);
   }
@@ -31,7 +31,7 @@ export class ActivityController {
   update(
     @Param('id') id: string,
     @Body() updatedActivity: CreateActivityDto,
-    @User() user: any,
+    @User() user: UserPayload,
   ): Promise<Activity> {
     return this.activityService.updateActivity(id, updatedActivity, user);
   }
@@ -40,7 +40,7 @@ export class ActivityController {
   @Delete(':id')
   delete(
     @Param('id') id: string,
-    @User() user: any,
+    @User() user: UserPayload,
   ): Promise<Activity[]> {
     return this.activityService.deleteActivity(id, user);
   }
@@ -49,7 +49,7 @@ export class ActivityController {
   @Post('search')
   async searchActivities(
     @Body() searchDto: SearchActivityDto,
-    @User() user: any,
+    @User() user: UserPayload,
   ) {
     return this.activityService.searchActivities(searchDto, user);
   }
@@ -58,7 +58,7 @@ export class ActivityController {
   @Get('class/:classId')
   async listByClass(
     @Param('classId') classId: string,
-    @User() user: any,
+    @User() user: UserPayload,
   ): Promise<Activity[]> {
     return this.activityService.listActivitiesByClass(
       classId,

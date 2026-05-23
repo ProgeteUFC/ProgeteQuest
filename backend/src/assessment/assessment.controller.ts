@@ -12,7 +12,7 @@ import { CreateAssessmentDto } from './dtos/createAssessment.dto';
 import { Assessment } from './entities/assessment.entity';
 import { UpdateAssessmentDto } from './dtos/updateAssessment.dto';
 import { Roles } from 'src/decorators/roles.decorator';
-import { User } from 'src/decorators/user.decorator';
+import { User, UserPayload } from 'src/decorators/user.decorator';
 
 @Controller('assessment')
 export class AssessmentController {
@@ -20,7 +20,7 @@ export class AssessmentController {
 
   @Roles('teacher', 'admin')
   @Get()
-  getAll(@User() user: any): Promise<Assessment[]> {
+  getAll(@User() user: UserPayload): Promise<Assessment[]> {
     return this.assessmentService.getAllAssessments(user);
   }
 
@@ -28,7 +28,7 @@ export class AssessmentController {
   @Post()
   create(
     @Body() newAssessment: CreateAssessmentDto,
-    @User() user: any,
+    @User() user: UserPayload,
   ): Promise<Assessment> {
     return this.assessmentService.createAssessment(newAssessment, user);
   }
@@ -38,14 +38,14 @@ export class AssessmentController {
   update(
     @Param('id') id: string,
     @Body() updatedAssessment: UpdateAssessmentDto,
-    @User() user: any,
+    @User() user: UserPayload,
   ): Promise<Assessment> {
     return this.assessmentService.updateAssessment(id, updatedAssessment, user);
   }
 
   @Roles('teacher', 'admin')
   @Delete(':id')
-  delete(@Param('id') id: string, @User() user: any): Promise<void> {
+  delete(@Param('id') id: string, @User() user: UserPayload): Promise<void> {
     return this.assessmentService.deleteAssessment(id, user);
   }
 }

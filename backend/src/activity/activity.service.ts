@@ -13,8 +13,7 @@ import { ActivityType } from '../Enums/activity.enum';
 import { validate as isUuid } from 'uuid';
 import { Class } from 'src/class/entities/class.entity';
 import { Assessment } from 'src/assessment/entities/assessment.entity';
-import { User, UserPayload } from 'src/decorators/user.decorator';
-import { Roles } from 'src/decorators/roles.decorator';
+import { UserPayload } from 'src/decorators/user.decorator';
 import { Checkin } from 'src/checkin/entities/checkin.entity';
 
 @Injectable()
@@ -33,7 +32,7 @@ export class ActivityService {
     private readonly checkinRepository: Repository<Checkin>,
   ) {}
 
-  async getAllActivities(user: any): Promise<Activity[]> {
+  async getAllActivities(user: UserPayload): Promise<Activity[]> {
     if (user.isAdmin) {
       return this.activityRepository.find();
     }
@@ -52,20 +51,17 @@ export class ActivityService {
     });
   }
 
-  async createActivity(newActivity: CreateActivityDto, user: any): Promise<Activity> {
-    // tipo da atividade
+  async createActivity(newActivity: CreateActivityDto, user: UserPayload): Promise<Activity> {
     const validTypes = Object.values(ActivityType);
     if (!validTypes.includes(newActivity.type)) {
       throw new BadRequestException(`Tipo inválido: ${newActivity.type}`);
     }
 
-    // valida a data
     const date = new Date(newActivity.date);
     if (isNaN(date.getTime())) {
       throw new BadRequestException('Data inválida');
     }
 
-    // impedir data no passado
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) {
@@ -74,13 +70,11 @@ export class ActivityService {
       );
     }
 
-    // valida o UUID gerado
     const id = generateUuid();
     if (!isUuid(id)) {
       throw new BadRequestException('ID inválido gerado');
     }
 
-    // verifica se a turma existe
     const classEntity = await this.classRepository.findOneBy({
       classId: newActivity.classId,
     });
@@ -96,7 +90,6 @@ export class ActivityService {
       );
     }
 
-    // verifica se a avaliação existe
     const assessmentEntity = await this.assessmentRepository.findOneBy({
       assessmentId: newActivity.assessmentId,
     });
@@ -106,14 +99,12 @@ export class ActivityService {
       );
     }
 
-    // garantir que assessment pertence à mesma turma
     if (assessmentEntity.classId !== newActivity.classId) {
       throw new BadRequestException(
         `A avaliação ${newActivity.assessmentId} não pertence à turma ${newActivity.classId}`,
       );
     }
 
-    // cria a atividade
     const activity = this.activityRepository.create({
       activityId: id,
       name: newActivity.name.trim(),
@@ -129,7 +120,7 @@ export class ActivityService {
   async updateActivity(
     id: string,
     updateDto: UpdateActivityDto,
-    user: any,
+    user: UserPayload,
   ): Promise<Activity> {
     const existing = await this.activityRepository.findOne({
       where: { activityId: id },
@@ -163,7 +154,6 @@ export class ActivityService {
         );
       }
 
-      // impedir data no passado
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (parsedDate < today) {
@@ -214,8 +204,6 @@ export class ActivityService {
 
       existing.assessmentId = updateDto.assessmentId;
     }
-    // --- VALIDATIONS RELACIONADAS ---
-    //assessmentId deve pertencer à turma (CASO UM DOS DOIS TENHA MUDADO)
 
     if (
       updateDto.assessmentId !== undefined ||
@@ -241,7 +229,7 @@ export class ActivityService {
     return await this.activityRepository.save(existing);
   }
 
-  async deleteActivity(id: string, user: any): Promise<Activity[]> {
+  async deleteActivity(id: string, user: UserPayload): Promise<Activity[]> {
     const existing = await this.activityRepository.findOne({
       where: { activityId: id },
     });
@@ -260,14 +248,14 @@ export class ActivityService {
     }
 
     await this.activityRepository.remove(existing);
-    return this.getAllActivities(user); // retorna a lista atualizada
+    return this.getAllActivities(user); 
   }
 
   async searchActivities(query: {
     name?: string;
     classId?: string;
     assessmentId?: string;
-  }, user: any) {
+  }, user: UserPayload) {
     const qb = this.activityRepository.createQueryBuilder('activity');
 
     if (!user.isAdmin) {
@@ -303,7 +291,7 @@ export class ActivityService {
     orderBy: 'name' | 'date' = 'date',
     order: 'ASC' | 'DESC' = 'ASC',
     studentId?: string,
-    user?: any
+    user?: UserPayload
   ) {
     if (user && !user.isAdmin && user.type === 'teacher') {
       const classEntity = await this.classRepository.findOne({
@@ -324,8 +312,8 @@ export class ActivityService {
         'type',
         'classId',
         'assessmentId',
-        'createdAt', // adicione este campo
-        'updatedAt', // se quiser também
+        'createdAt', 
+        'updatedAt', 
       ],
     });
 

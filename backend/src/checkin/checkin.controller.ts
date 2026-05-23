@@ -2,7 +2,7 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { CheckinService } from './checkin.service';
 import { CreateCheckinDto } from './dtos/createCheckin.dto';
 import { Roles } from 'src/decorators/roles.decorator';
-import { User } from 'src/decorators/user.decorator';
+import { User, UserPayload } from 'src/decorators/user.decorator';
 
 @Controller('checkin')
 export class CheckinController {
@@ -10,7 +10,7 @@ export class CheckinController {
 
   @Roles('student', 'teacher', 'admin')
   @Post()
-  async create(@Body() dto: CreateCheckinDto, @User() user: any) {
+  async create(@Body() dto: CreateCheckinDto, @User() user: UserPayload) {
     return this.checkinService.createCheckin(dto, user);
   }
 }

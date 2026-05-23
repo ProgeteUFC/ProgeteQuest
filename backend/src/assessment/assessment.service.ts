@@ -11,6 +11,7 @@ import { generateUuid } from '../utils/generateUuid';
 import { validate as isUuid } from 'uuid';
 import { Class } from 'src/class/entities/class.entity';
 import { UpdateAssessmentDto } from './dtos/updateAssessment.dto';
+import { UserPayload } from 'src/decorators/user.decorator';
 
 @Injectable()
 export class AssessmentService {
@@ -22,7 +23,7 @@ export class AssessmentService {
     private readonly classRepository: Repository<Class>,
   ) {}
 
-  async getAllAssessments(user: any): Promise<Assessment[]> {
+  async getAllAssessments(user: UserPayload): Promise<Assessment[]> {
     if (user.isAdmin) {
       return this.assessmentRepository.find();
     }
@@ -43,14 +44,13 @@ export class AssessmentService {
 
   async createAssessment(
     newAssessment: CreateAssessmentDto,
-    user: any,
+    user: UserPayload,
   ): Promise<Assessment> {
     const id = generateUuid();
     if (!isUuid(id)) {
       throw new BadRequestException('ID inválido gerado');
     }
 
-    // Verifica turma existente
     const classEntity = await this.classRepository.findOneBy({
       classId: newAssessment.classId,
     });
@@ -66,7 +66,6 @@ export class AssessmentService {
       );
     }
 
-    // Cria avaliação
     const assessment = this.assessmentRepository.create({
       assessmentId: id,
       name: newAssessment.name.trim(),
@@ -79,7 +78,7 @@ export class AssessmentService {
   async updateAssessment(
     id: string,
     updateDto: UpdateAssessmentDto,
-    user: any,
+    user: UserPayload,
   ): Promise<Assessment> {
     const existing = await this.assessmentRepository.findOne({
       where: { assessmentId: id },
@@ -94,7 +93,9 @@ export class AssessmentService {
         where: { classId: existing.classId, teacherId: user.userId },
       });
       if (!classEntity) {
-        throw new NotFoundException(`Avaliação com id ${id} não encontrada ou acesso negado`);
+        throw new NotFoundException(
+          `Avaliação com id ${id} não encontrada ou acesso negado`,
+        );
       }
     }
 
@@ -122,7 +123,7 @@ export class AssessmentService {
     return await this.assessmentRepository.save(existing);
   }
 
-  async deleteAssessment(id: string, user: any): Promise<void> {
+  async deleteAssessment(id: string, user: UserPayload): Promise<void> {
     const existing = await this.assessmentRepository.findOne({
       where: { assessmentId: id },
     });
@@ -136,7 +137,9 @@ export class AssessmentService {
         where: { classId: existing.classId, teacherId: user.userId },
       });
       if (!classEntity) {
-        throw new NotFoundException(`Avaliação com id ${id} não encontrada ou acesso negado`);
+        throw new NotFoundException(
+          `Avaliação com id ${id} não encontrada ou acesso negado`,
+        );
       }
     }
 

@@ -17,7 +17,7 @@ import {
 } from './dtos/responses/index';
 import { TopicStatus } from 'src/Enums/topicStatus.enum';
 import { Roles } from 'src/decorators/roles.decorator';
-import { User } from 'src/decorators/user.decorator';
+import { User, UserPayload } from 'src/decorators/user.decorator';
 
 @Controller()
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
@@ -35,7 +35,7 @@ export class ForumController {
   async createTopic(
     @Param('forumId') forumId: string,
     @Body() createTopicDto: CreateTopicDto,
-    @User() user: any,
+    @User() user: UserPayload,
   ) {
     return this.forumService.createTopic(forumId, createTopicDto, user);
   }
@@ -66,14 +66,17 @@ export class ForumController {
   async createPost(
     @Param('topicId') topicId: string,
     @Body() createPostDto: CreatePostDto,
-    @User() user: any,
+    @User() user: UserPayload,
   ) {
     return this.forumService.createPost(topicId, createPostDto, user);
   }
 
   @Roles('teacher', 'admin', 'student')
   @Patch('topic/:topicId/close')
-  async closeTopic(@Param('topicId') topicId: string, @User() user: any) {
+  async closeTopic(
+    @Param('topicId') topicId: string,
+    @User() user: UserPayload,
+  ) {
     return this.forumService.closeTopic(topicId, user);
   }
 }

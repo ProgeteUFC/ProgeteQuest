@@ -23,6 +23,7 @@ import {
   canAnswer,
 } from 'src/utils/forumPermissions';
 import { TopicStatus } from 'src/Enums/topicStatus.enum';
+import { UserPayload } from 'src/decorators/user.decorator';
 
 @Injectable()
 export class ForumService {
@@ -63,7 +64,7 @@ export class ForumService {
   async createTopic(
     forumId: string,
     createTopicDto: CreateTopicDto,
-    user: any,
+    user: UserPayload,
   ): Promise<TopicResponseDto> {
     const forum = await this.forumRepository.findOne({ where: { forumId } });
     if (!forum) {
@@ -103,7 +104,6 @@ export class ForumService {
 
     const savedTopic = await this.topicRepository.save(topic);
 
-    // Recarregar com relações e transformar em DTO
     return this.transformTopicToResponse(savedTopic.topicId);
   }
 
@@ -150,7 +150,7 @@ export class ForumService {
   async createPost(
     topicId: string,
     createPostDto: CreatePostDto,
-    user: any,
+    user: UserPayload,
   ): Promise<PostResponseDto> {
     const topic = await this.topicRepository.findOne({
       where: { topicId },
@@ -246,8 +246,6 @@ export class ForumService {
     };
   }
 
-  // ========== Métodos auxiliares de transformação ==========
-
   private async transformTopicToResponse(
     topicId: string,
   ): Promise<TopicResponseDto> {
@@ -315,7 +313,7 @@ export class ForumService {
     return dto;
   }
 
-  async closeTopic(topicId: string, user: any): Promise<Topic> {
+  async closeTopic(topicId: string, user: UserPayload): Promise<Topic> {
     const topic = await this.topicRepository.findOne({
       where: { topicId },
       relations: ['autor'],

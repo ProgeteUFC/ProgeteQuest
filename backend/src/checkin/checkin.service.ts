@@ -12,6 +12,7 @@ import { Activity } from 'src/activity/entities/activity.entity';
 import { Code } from 'src/code/entities/code.entity';
 import { StudentClass } from 'src/student_class/entities/studentClass.entity';
 import { generateUuid } from 'src/utils/generateUuid';
+import { UserPayload } from 'src/decorators/user.decorator';
 
 @Injectable()
 export class CheckinService {
@@ -26,7 +27,7 @@ export class CheckinService {
     private readonly studentClassRepository: Repository<StudentClass>,
   ) {}
 
-  async createCheckin(dto: CreateCheckinDto, user: any) {
+  async createCheckin(dto: CreateCheckinDto, user: UserPayload) {
     const now = new Date();
 
     // Verifica se o código existe e é válido (ativo e data)

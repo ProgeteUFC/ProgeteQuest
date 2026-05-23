@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Patch,
-  Req,
 } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { CreateClassDto } from './dtos/createClass.dto';
@@ -15,6 +14,7 @@ import { Class } from './entities/class.entity';
 import { UpdateClassDto } from './dtos/updateClass.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { SearchClassDto } from './dtos/searchClass.dto';
+import { User, UserPayload } from 'src/decorators/user.decorator';
 
 @Controller('class')
 export class ClassController {
@@ -22,23 +22,26 @@ export class ClassController {
 
   @Roles('teacher', 'admin', 'student')
   @Get()
-  getAll(@Req() req: any): Promise<Class[]> {
-    return this.classService.getAllClasses(req.user);
+  getAll(@User() user: UserPayload): Promise<Class[]> {
+    return this.classService.getAllClasses(user);
   }
 
   @Roles('teacher', 'admin')
   @Post()
-  create(@Body() newClass: CreateClassDto): Promise<Class> {
-    return this.classService.createClass(newClass);
+  create(
+    @Body() newClass: CreateClassDto,
+    @User() user: UserPayload,
+  ): Promise<Class> {
+    return this.classService.createClass(newClass, user);
   }
 
   @Roles('teacher', 'admin')
   @Patch(':id/join-code')
   async regenerateJoinCode(
     @Param('id') id: string,
-    @Req() req: any,
+    @User() user: UserPayload,
   ): Promise<Class> {
-    return this.classService.regenerateJoinCode(id, req.user);
+    return this.classService.regenerateJoinCode(id, user);
   }
 
   @Roles('teacher', 'admin')
@@ -46,26 +49,29 @@ export class ClassController {
   update(
     @Param('id') id: string,
     @Body() updatedClass: UpdateClassDto,
-    @Req() req: any,
+    @User() user: UserPayload,
   ): Promise<Class> {
-    return this.classService.updateClass(id, updatedClass, req.user);
+    return this.classService.updateClass(id, updatedClass, user);
   }
 
   @Roles('teacher', 'admin')
   @Delete(':id')
-  delete(@Param('id') id: string, @Req() req: any): Promise<void> {
-    return this.classService.deleteClass(id, req.user);
+  delete(@Param('id') id: string, @User() user: UserPayload): Promise<void> {
+    return this.classService.deleteClass(id, user);
   }
 
   @Roles('teacher', 'admin', 'student')
   @Get(':id')
-  async getById(@Param('id') id: string, @Req() req: any) {
-    return this.classService.getClassById(id, req.user);
+  async getById(@Param('id') id: string, @User() user: UserPayload) {
+    return this.classService.getClassById(id, user);
   }
 
   @Roles('teacher', 'admin', 'student')
   @Post('search')
-  async searchClasses(@Body() searchDto: SearchClassDto, @Req() req: any) {
-    return this.classService.searchClasses(searchDto, req.user);
+  async searchClasses(
+    @Body() searchDto: SearchClassDto,
+    @User() user: UserPayload,
+  ) {
+    return this.classService.searchClasses(searchDto, user);
   }
 }

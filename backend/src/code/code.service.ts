@@ -11,6 +11,7 @@ import { generateUuid } from 'src/utils/generateUuid';
 import { generateJoinCode } from 'src/utils/generateJoinCode';
 import { Activity } from 'src/activity/entities/activity.entity';
 import { Class } from 'src/class/entities/class.entity';
+import { UserPayload } from 'src/decorators/user.decorator';
 
 @Injectable()
 export class CodeService {
@@ -23,7 +24,7 @@ export class CodeService {
     private readonly classRepository: Repository<Class>,
   ) {}
 
-  async createCode(dto: CreateCodeDto, user: any) {
+  async createCode(dto: CreateCodeDto, user: UserPayload) {
     if (!user.isAdmin) {
       const activity = await this.activityRepository.findOne({
         where: { activityId: dto.activityId },
@@ -34,7 +35,9 @@ export class CodeService {
         where: { classId: activity.classId },
       });
       if (!classEntity || classEntity.teacherId !== user.userId) {
-        throw new BadRequestException('Acesso negado para criar código nesta atividade');
+        throw new BadRequestException(
+          'Acesso negado para criar código nesta atividade',
+        );
       }
     }
 
@@ -49,7 +52,7 @@ export class CodeService {
     return this.codeRepository.save(code);
   }
 
-  async invalidateCode(id: string, user: any) {
+  async invalidateCode(id: string, user: UserPayload) {
     const code = await this.codeRepository.findOne({ where: { codeId: id } });
     if (!code) throw new NotFoundException('Código não encontrado');
 
@@ -71,7 +74,7 @@ export class CodeService {
     return this.codeRepository.save(code);
   }
 
-  async renewCode(id: string, user: any) {
+  async renewCode(id: string, user: UserPayload) {
     const code = await this.codeRepository.findOne({ where: { codeId: id } });
     if (!code) throw new NotFoundException('Código não encontrado');
 
@@ -106,7 +109,7 @@ export class CodeService {
     return this.codeRepository.save(newCode);
   }
 
-  async listCodesByActivity(activityId: string, user: any) {
+  async listCodesByActivity(activityId: string, user: UserPayload) {
     if (!user.isAdmin) {
       const activity = await this.activityRepository.findOne({
         where: { activityId },
@@ -117,7 +120,9 @@ export class CodeService {
         where: { classId: activity.classId },
       });
       if (!classEntity || classEntity.teacherId !== user.userId) {
-        throw new NotFoundException('Acesso negado para listar códigos desta atividade');
+        throw new NotFoundException(
+          'Acesso negado para listar códigos desta atividade',
+        );
       }
     }
 
