@@ -1,0 +1,244 @@
+.login-wrapper *,
+.login-wrapper *::before,
+.login-wrapper *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  background-color: #1a0a3c; 
+}
+
+.login-container {
+  position: relative;
+  width: 402px;
+  min-height: 874px;
+  background: linear-gradient(180deg, #3b1fa3 0%, #2b0e8a 40%, #1c1054 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px 24px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.planeta {
+  position: absolute;
+  top: 8px;
+  right: -10px;
+  width: 100px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.astronauta {
+  width: 120px;
+  margin: 8px auto 0;
+  display: block;
+  pointer-events: none;
+}
+
+.login-header {
+  width: 100%;
+  text-align: center;
+  padding-top: 40px;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 2;
+}
+
+.bem-vindo {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.logo-progete {
+  width: 220px;
+  margin: 0 auto 6px;
+  display: block;
+}
+
+.tagline {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.login-card {
+  width: 100%;
+  background-color: #3d2db5;
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  margin-bottom: 20px;
+}
+
+.acessar-title {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.input-group {
+  margin-bottom: 10px;
+}
+
+.input-label {
+  display: block;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.input-group {
+  position: relative;
+}
+
+.input-group::before {
+  content: attr(data-label);
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: #555;
+  font-size: 14px;
+  pointer-events: none;
+  transition: 0.15s;
+}
+
+.login-input {
+  width: 100%;
+  height: 46px;
+  border-radius: 25px;
+  border: none;
+  background-color: #ffffff;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #222;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+
+.login-input:focus {
+  box-shadow: 0 0 0 2px #f7c948;
+}
+
+.login-input::placeholder {
+  color: #444;
+}
+
+.esqueci-senha {
+  background: none;
+  border: none;
+  color: #d0c8ff;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 0 14px;
+  text-align: left;
+  text-decoration: underline;
+  width: fit-content;
+}
+
+.esqueci-senha:hover {
+  color: #ffffff;
+}
+
+.login-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-login {
+  background-color: #ffffff;
+  color: #1a0a3c;
+  border: none;
+  border-radius: 25px;
+  padding: 11px 28px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-login:hover {
+  background-color: #f0ecff;
+}
+
+.btn-login:active {
+  transform: scale(0.97);
+}
+
+.btn-criar-conta {
+  background-color: #00c4cc;
+  color: #ffffff;
+  border: none;
+  border-radius: 25px;
+  padding: 11px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-criar-conta:hover {
+  background-color: #00adb5;
+}
+
+.btn-criar-conta:active {
+  transform: scale(0.97);
+}
+
+.descricao {
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+  padding: 0 4px;
+  margin-bottom: 16px;
+}
+
+.login-footer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-logo {
+  height: 28px;
+}
+
+.footer-copy {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 9px;
+  text-align: right;
+  max-width: 180px;
+  line-height: 1.4;
+}
