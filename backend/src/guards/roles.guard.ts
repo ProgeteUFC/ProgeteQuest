@@ -43,6 +43,10 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
+    if (loginPayload.user.type === 'admin') {
+      return requiredRoles.some((role) => role === 'teacher' || role === 'admin');
+    }
+
     return requiredRoles.some((role) => role === loginPayload.user.type);
   }
 }
