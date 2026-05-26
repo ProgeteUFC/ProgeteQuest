@@ -312,18 +312,11 @@ export class UserService {
       throw new BadRequestException('Usuário não encontrado');
     }
 
-    let type: 'student' | 'teacher' | null = null;
-    if (user.students && user.students.length > 0) {
-      type = 'student';
-    } else if (user.teachers && user.teachers.length > 0) {
-      type = 'teacher';
-    }
-
     return {
       userId: user.userId,
       name: user.name,
       email: user.email,
-      type,
+      type: user.type,
       registrationStudent: user.students?.[0]?.registrationStudent,
       registrationTeacher: user.teachers?.[0]?.registrationTeacher,
       createdAt: user.createdAt,
