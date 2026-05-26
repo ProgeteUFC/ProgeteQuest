@@ -61,22 +61,9 @@ export class AuthService {
     // Reset tentativas ao logar com sucesso
     loginAttempts[normalizedEmail] = { count: 0, lastAttempt: now };
 
-    let role = 'user';
-    const student = await this.userRepository.manager.findOne('Student', {
-      where: { user: { userId: user.userId } },
-    });
-    const teacher = await this.userRepository.manager.findOne('Teacher', {
-      where: { user: { userId: user.userId } },
-    });
-
-    if (student) {
-      role = 'student';
-    } else if (teacher) {
-      role = 'teacher';
-    } else {
-      throw new UnauthorizedException(
-        'Usuário não possui perfil de estudante ou professor',
-      );
+    const role = user.type;
+    if (role !== 'student' && role !== 'teacher' && role !== 'admin') {
+      throw new UnauthorizedException('Usuário não possui perfil válido.');
     }
 
     const payload = {
