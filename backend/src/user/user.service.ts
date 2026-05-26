@@ -126,22 +126,14 @@ export class UserService {
       relations: ['students', 'teachers'],
     });
 
-    return users.map((user) => {
-      let type: 'student' | 'teacher' | null = null;
-      if (user.students && user.students.length > 0) {
-        type = 'student';
-      } else if (user.teachers && user.teachers.length > 0) {
-        type = 'teacher';
-      }
-      return {
-        userId: user.userId,
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        type,
-      };
-    });
+    return users.map((user) => ({
+      userId: user.userId,
+      name: user.name,
+      email: user.email,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      type: user.type,
+    }));
   }
 
   async remove(userId: string, password: string) {
