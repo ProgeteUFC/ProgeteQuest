@@ -24,7 +24,7 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     // Verifica o tipo de usuário
-    if (createUserDto.type !== 'student' && createUserDto.type !== 'teacher') {
+    if (createUserDto.type !== 'student' && createUserDto.type !== 'teacher' && createUserDto.type !== 'admin') {
       throw new BadRequestException('Tipo de usuário inválido');
     }
 
@@ -93,6 +93,7 @@ export class UserService {
       name: createUserDto.name.trim(),
       email,
       password: hashedPassword,
+      type: createUserDto.type,
     });
 
     await this.userRepository.save(user);
