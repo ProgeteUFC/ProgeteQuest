@@ -14,7 +14,7 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    
+
     if (!requiredRoles) {
       return true;
     }
@@ -42,16 +42,20 @@ export class RolesGuard implements CanActivate {
       })
       .catch((err) => {
         console.error('Erro de validação JWT:', err);
-        throw err;
+        return undefined;
       });
 
     if (!loginPayload) {
       return false;
     }
-    if (loginPayload.user.type === 'admin') {
+
+    if (
+      loginPayload.user.type === 'admin' ||
+      loginPayload.user.isAdmin === true
+    ) {
       return true;
     }
 
-    return loginPayload.user.isAdmin === true || requiredRoles.some((role) => role === loginPayload.user.type);
+    return requiredRoles.some((role) => role === loginPayload.user.type);
   }
 }

@@ -28,7 +28,7 @@ export class AuthService {
       count: 0,
       lastAttempt: now,
     };
-    
+
     if (attempts.count >= 5 && now - attempts.lastAttempt < 1 * 60 * 1000) {
       throw new BadRequestException(
         'Muitas tentativas. Tente novamente em 1 minuto.',
@@ -39,57 +39,40 @@ export class AuthService {
     const user = await this.userRepository.findOne({
       where: { email: normalizedEmail },
     });
-    
+
     if (!user) {
       loginAttempts[normalizedEmail] = {
         count: attempts.count + 1,
         lastAttempt: now,
       };
+
       throw new UnauthorizedException('Não existe cadastro com esse e-mail.');
     }
 
     const passwordValid = await bcrypt.compare(password, user.password);
+
     if (!passwordValid) {
       loginAttempts[normalizedEmail] = {
         count: attempts.count + 1,
         lastAttempt: now,
       };
+
       throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
     // Reset de tentativas ao logar com sucesso
-    loginAttempts[normalizedEmail] = { count: 0, lastAttempt: now };
+    loginAttempts[normalizedEmail] = {
+      count: 0,
+      lastAttempt: now,
+    };
 
-    let role = 'user';
-    
-    // Verificação de Profiles baseada em Entidades
-    const student = await this.userRepository.manager.findOne('Student', {
-      where: { user: { userId: user.userId } },
-    });
-    
-    const teacher = await this.userRepository.manager.findOne('Teacher', {
-      where: { user: { userId: user.userId } },
-    });
+    const role = String(user.type).toLowerCase();
 
-    let admin: any = null;
-    try {
-      admin = await this.userRepository.manager.findOne('Admin', {
-        where: { user: { userId: user.userId } },
-      });
-    } catch (e) {
+    if (role !== 'student' && role !== 'teacher' && role !== 'admin') {
+      throw new UnauthorizedException('Usuário não possui perfil válido.');
     }
 
-    if (admin) {
-      role = 'admin';
-    } else if (teacher) {
-      role = 'teacher';
-    } else if (student) {
-      role = 'student';
-    } else {
-      throw new UnauthorizedException(
-        'Usuário não possui um perfil de acesso válido configurado no sistema.',
-      );
-    }
+    const isAdmin = role === 'admin';
 
     const payload = {
       user: {
@@ -97,18 +80,20 @@ export class AuthService {
         email: user.email,
         name: user.name,
         type: role,
+        isAdmin,
       },
     };
 
     const token = this.jwtService.sign(payload);
-    
+
     return {
-      token: token,
+      token,
       user: {
         userId: user.userId,
         email: user.email,
         name: user.name,
         type: role,
+        isAdmin,
       },
     };
   }

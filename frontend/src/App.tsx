@@ -20,6 +20,7 @@ import ForumTurmaPage from "./pages/ForumTurmaPage";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import ViewClasses from './pages/VisualizarTurmasProfessor';
+import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
 
 export default function App() {
   const [count, setCount] = useState(0);
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
           <Route path="/paginaInicialProfessor" element={<PaginaInicialProfessor />} />
           <Route path="/visualizarTurmasProfessor" element={<ViewClasses />} />
+          <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>

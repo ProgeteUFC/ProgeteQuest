@@ -146,30 +146,18 @@ export class UserService {
 
   async findAll() {
     const users = await this.userRepository.find({
-      select: ['userId', 'name', 'email', 'createdAt', 'updatedAt'],
+      select: ['userId', 'name', 'email', 'type', 'createdAt', 'updatedAt'],
       relations: ['students', 'teachers', 'admins'],
     });
 
-    return users.map((user) => {
-      let type: 'student' | 'teacher' | 'admin' | null = null;
-
-      if (user.admins && user.admins.length > 0) {
-        type = 'admin';
-      } else if (user.students && user.students.length > 0) {
-        type = 'student';
-      } else if (user.teachers && user.teachers.length > 0) {
-        type = 'teacher';
-      }
-
-      return {
-        userId: user.userId,
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        type,
-      };
-    });
+    return users.map((user) => ({
+      userId: user.userId,
+      name: user.name,
+      email: user.email,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      type: user.type,
+    }));
   }
 
   async remove(userId: string, password: string) {
@@ -361,21 +349,11 @@ export class UserService {
       throw new BadRequestException('Usuário não encontrado');
     }
 
-    let type: 'student' | 'teacher' | 'admin' | null = null;
-
-    if (user.admins && user.admins.length > 0) {
-      type = 'admin';
-    } else if (user.students && user.students.length > 0) {
-      type = 'student';
-    } else if (user.teachers && user.teachers.length > 0) {
-      type = 'teacher';
-    }
-
     return {
       userId: user.userId,
       name: user.name,
       email: user.email,
-      type,
+      type: user.type,
       registrationStudent: user.students?.[0]?.registrationStudent,
       registrationTeacher: user.teachers?.[0]?.registrationTeacher,
       createdAt: user.createdAt,
