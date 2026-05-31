@@ -1,5 +1,7 @@
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
+import { Admin } from 'src/admin/entities/admin.entity';
+import { UserType } from 'src/Enums/user.enum';
 import {
   Entity,
   PrimaryColumn,
@@ -44,11 +46,12 @@ export class User {
   password: string;
 
   @Column({
-    type: 'boolean',
-    default: false,
-    name: 'is_admin',
+    type: 'enum',
+    enum: UserType,
+    nullable: false,
+    name: 'type',
   })
-  isAdmin: boolean;
+  type: UserType;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
@@ -61,4 +64,7 @@ export class User {
 
   @OneToMany(() => Student, (student) => student.user)
   students?: Student[];
+
+  @OneToMany(() => Admin, (admin) => admin.user)
+  admins?: Admin[];
 }

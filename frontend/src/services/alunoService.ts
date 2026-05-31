@@ -1,6 +1,8 @@
 import axios from "axios";
+import { data } from "react-router";
 
-const API_URL = "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 export const alunoService = {
   async cadastrar(dados: any) {

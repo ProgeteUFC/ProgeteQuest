@@ -1,14 +1,16 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtService } from '@nestjs/jwt';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // HABILITAR CORS PARA O FRONTEND
+  // CORS liberado para qualquer origem (atenção: uso seguro apenas para ambientes de teste)
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: '*',
     credentials: true,
   });
 
@@ -16,9 +18,22 @@ async function bootstrap() {
   const jwtService = app.get(JwtService);
 
   app.useGlobalGuards(new RolesGuard(reflector, jwtService));
+  app.useGlobalPipes(new ValidationPipe());
 
-  // Habilita validação global dos DTOs
-  app.useGlobalPipes(new (await import('@nestjs/common')).ValidationPipe());
+  // Configuração do Swagger
+  const config = new DocumentBuilder()
+    .setTitle('ProgeteQuest API')
+    .setDescription('Documentação da API do backend ProgeteQuest')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

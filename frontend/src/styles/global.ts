@@ -9,8 +9,8 @@ export const GlobalStyle = createGlobalStyle`
 
 main {
   background-color: var(--primary-dark); 
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   color : white;
   font-weight: 600;
   font-family: Roboto, sans-serif;
