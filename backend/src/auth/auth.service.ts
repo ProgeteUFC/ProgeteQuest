@@ -71,8 +71,7 @@ export class AuthService {
       where: { user: { userId: user.userId } },
     });
 
-    /
-    let admin = null;
+    let admin: any = null;
     try {
       admin = await this.userRepository.manager.findOne('Admin', {
         where: { user: { userId: user.userId } },
@@ -98,7 +97,6 @@ export class AuthService {
         email: user.email,
         name: user.name,
         type: role,
-        isAdmin: user.isAdmin,
       },
     };
 
