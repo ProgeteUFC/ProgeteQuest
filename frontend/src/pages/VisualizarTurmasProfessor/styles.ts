@@ -44,13 +44,14 @@ export const FixedLogo = styled.img`
 import styled from 'styled-components';
 
 export const ViewClassesBg = styled.div`
-  height: 84.3vh;
+  // height: 84.3vh;
+  min-height: 85.6vh;
   background: #2e008b;
   display: flex;
   flex-direction: row;
   align-items: stretch;
   position: relative;
-  width: 100%;
+  // width: 100%;
   overflow-x: hidden;
   overflow-y: hidden;
 `;

@@ -14,12 +14,6 @@ main {
   color : white;
   font-weight: 600;
   font-family: Roboto, sans-serif;
-  display:flex;
-  align-items: center;
-  justify-content: center;
-  
-  
-  
 }
 
 main p {
