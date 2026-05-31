@@ -9,7 +9,6 @@ export const Container = styled.div`
   justify-content: center;
   position: relative;
   padding: 2rem;
-
   overflow: hidden;
 
   @media (max-width: 768px) {
@@ -17,6 +16,7 @@ export const Container = styled.div`
     padding: 1rem;
     align-items: flex-start;
     height: auto;
+    min-height: 100dvh;
   }
 `;
 
@@ -29,12 +29,18 @@ export const PageContent = styled.div`
   gap: 4rem;
   z-index: 1;
 
-  /* RESPONSIVIDADE: TABLET/LAPTOP PEQUENO */
   @media (max-width: 1000px) {
     flex-direction: column;
     justify-content: center;
     gap: 2rem;
     margin-top: 4rem;
+  }
+
+  @media (max-width: 768px) {
+    max-width: 402px; /* Força a adaptação ao formato mobile solicitado */
+    margin-top: 5rem;
+    margin-left: auto;
+    margin-right: auto;
   }
 `;
 
@@ -55,14 +61,14 @@ export const LeftColumn = styled.div`
     width: 100%;
   }
 
-  /* --- RESPONSIVIDADE: CELULAR --- */
   @media (max-width: 768px) {
     margin-left: 0;
     max-width: 100%;
     width: 100%;
 
     .button-group-vertical {
-      align-items: center; /* Centraliza botões no mobile */
+      align-items: center;
+      margin-top: 1.5rem;
     }
   }
 `;
@@ -76,7 +82,6 @@ export const HeaderContainer = styled.div`
     align-items: center;
     gap: 1rem;
     margin-bottom: 0;
-
     font-family: "Baloo Paaji 2", sans-serif;
   }
 
@@ -86,7 +91,6 @@ export const HeaderContainer = styled.div`
     font-size: 24px;
     font-weight: 800;
     padding-bottom: 10px;
-
     line-height: 1.2;
     margin-bottom: 0.2rem;
 
@@ -96,12 +100,16 @@ export const HeaderContainer = styled.div`
     }
   }
 
-  /* RESPONSIVIDADE: CELULAR */
   @media (max-width: 768px) {
     text-align: center;
+    margin-bottom: 1rem;
 
     .title-wrapper {
       justify-content: center;
+    }
+    .subtitle {
+      font-size: 18px; /* Ajuste para caber nos 402px */
+      padding-bottom: 0;
     }
   }
 `;
@@ -114,12 +122,13 @@ export const LogoTop = styled.img`
 
   @media (max-width: 768px) {
     left: 50%;
-    transform: translateX(-50%); /* Centraliza no topo */
+    transform: translateX(-50%);
     top: 1.5rem;
     height: 40px;
   }
 `;
 
+/* Escondido apenas no mobile */
 export const LogoBottom = styled.img`
   position: absolute;
   left: 2rem;
@@ -127,19 +136,11 @@ export const LogoBottom = styled.img`
   height: 48px;
 
   @media (max-width: 768px) {
-    /* No celular, removemos position absolute para não cobrir o formulário */
-    position: relative;
-    left: 0;
-    bottom: 0;
-    margin-top: 3rem;
-    margin-bottom: 1rem;
-    align-self: center;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    display: none;
   }
 `;
 
+/* Escondido apenas no mobile */
 export const Planet = styled.img`
   position: absolute;
   right: 2rem;
@@ -148,10 +149,7 @@ export const Planet = styled.img`
   width: 380px;
 
   @media (max-width: 768px) {
-    height: 90px;
-    top: 1rem;
-    right: -1rem;
-    opacity: 0.8;
+    display: none;
   }
 `;
 
@@ -166,6 +164,13 @@ export const Register = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1.2rem;
+    form {
+      gap: 0.6rem; /* Mais espaço vertical para o toque */
+    }
   }
 `;
 
@@ -193,10 +198,9 @@ export const InputWrapper = styled.div`
   }
 
   input {
-    // REFERÊNCIA
     background: transparent;
     border: none;
-    color: ${(props) => props.theme.colors.lightOrange}; //REFERÊCIA
+    color: ${(props) => props.theme.colors.lightOrange};
     width: 100%;
     font-family: "Codec Pro", sans-serif;
     font-size: 14px;
@@ -212,8 +216,16 @@ export const InputWrapper = styled.div`
       font-family: "Codec Pro", sans-serif;
     }
   }
+
+  @media (max-width: 768px) {
+    height: 48px; /* Padrão mínimo de touch target mobile */
+    input {
+      font-size: 16px; /* Evita zoom automático no iOS */
+    }
+  }
 `;
 
+/* Escondido apenas no mobile */
 export const RightArtwork = styled.img`
   width: 450px;
   height: auto;
@@ -244,6 +256,13 @@ export const CadastrarButton = styled.button`
     background-color: ${(props) => props.theme.colors.challengeOrange};
     color: #fff;
   }
+
+  @media (max-width: 768px) {
+    width: 100%; /* Largura total para facilitar o clique */
+    height: 48px;
+    font-size: 18px;
+    padding: 0;
+  }
 `;
 
 export const UserTypeRow = styled.div`
@@ -255,6 +274,10 @@ export const UserTypeRow = styled.div`
   padding: 6px;
   width: 100%;
   box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1.5rem;
+  }
 `;
 
 export const UserTypeButton = styled.button<{ active: boolean }>`
@@ -273,6 +296,7 @@ export const UserTypeButton = styled.button<{ active: boolean }>`
   margin: 0;
   font-family: "Baloo Paaji 2", sans-serif;
   letter-spacing: 0.01em;
+  
   &:not(:last-child) {
     border-right: 2px solid transparent;
   }
@@ -284,5 +308,10 @@ export const UserTypeButton = styled.button<{ active: boolean }>`
   &:hover:not(.active) {
     background: rgba(255,255,255,0.18);
     color: #fff;
+  }
+
+  @media (max-width: 768px) {
+    padding: 8px 0; /* Maior área de toque */
+    font-size: 1rem;
   }
 `;

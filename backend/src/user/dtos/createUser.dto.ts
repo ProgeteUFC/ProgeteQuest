@@ -1,5 +1,10 @@
-import { Matches, IsNotEmpty, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import {
+  Matches,
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+} from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserType } from 'src/Enums/user.enum';
 
 export class CreateUserDto {
@@ -21,13 +26,25 @@ export class CreateUserDto {
   @IsString({ message: 'Senha deve ser uma string' })
   password: string;
 
-  @ApiProperty({ example: 'student', description: 'Tipo do usuário (student ou teacher ou admin)' })
+  @ApiProperty({
+    example: 'student',
+    description: 'Tipo do usuário (student, teacher ou admin)',
+    enum: UserType,
+  })
   @IsNotEmpty({ message: 'Tipo é obrigatório' })
   type: UserType;
 
-  @ApiProperty({ example: '123456', description: 'Matrícula do estudante (opcional)' })
+  @ApiPropertyOptional({
+    example: '123456',
+    description: 'Matrícula do estudante (opcional)',
+  })
+  @IsOptional()
   registrationStudent?: string;
 
-  @ApiProperty({ example: '654321', description: 'Matrícula do professor (opcional)' })
+  @ApiPropertyOptional({
+    example: '654321',
+    description: 'Matrícula do professor (opcional)',
+  })
+  @IsOptional()
   registrationTeacher?: string;
 }

@@ -13,7 +13,11 @@ import {
 import { IconHome, IconExite, Box } from "../headerRanking/styles";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Header() {
+interface HeaderProps {
+  className?: string;
+}
+
+export default function HeaderProfessor({ className }: HeaderProps) {
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -24,33 +28,39 @@ export default function Header() {
   }
 
   return (
-    <MenuContainer>
+    <MenuContainer className={className}>
       <Logo>
         <img src={logoProgeteQuest} alt="Logo do Progete Quest" width={200} />
       </Logo>
+
       <MenuContent>
         <Box>
           <IconHome>
-            <Link to="/">
+            <Link to="/paginaInicialProfessor">
               <TiHome size={30} />
             </Link>
           </IconHome>
         </Box>
+
         <MenuOptions>
           <MenuOption as={Link} to="/entrarEmTurma">
-            Entrar em uma turma
+            Criar uma Turma
           </MenuOption>
-          <MenuOption as={Link} to="/minhasTurmas">
-            Minhas Turmas
+
+          <MenuOption as={Link} to="/visualizarTurmasProfessor">
+            Visualizar Turmas
           </MenuOption>
+
           <MenuOption as={Link} to="/meusDados">
             Meus dados
           </MenuOption>
+
           <MenuOption as={Link} to="/forum">
             Fórum
           </MenuOption>
         </MenuOptions>
       </MenuContent>
+
       <RightBox>
         <IconExite onClick={handleLogout}>
           <IoExitOutline size={30} />
