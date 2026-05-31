@@ -7,14 +7,13 @@ import { CreateActivityDto } from './dtos/createActivity.dto';
 import { UpdateActivityDto } from './dtos/updateActivity.dto';
 import { generateUuid } from '../utils/generateUuid';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Activity } from './entities/activity.entity';
 import { ActivityType } from '../Enums/activity.enum';
 import { validate as isUuid } from 'uuid';
 import { Class } from 'src/class/entities/class.entity';
 import { Assessment } from 'src/assessment/entities/assessment.entity';
-import { User, UserPayload } from 'src/decorators/user.decorator';
-import { Roles } from 'src/decorators/roles.decorator';
+import { UserPayload } from 'src/decorators/user.decorator';
 import { Checkin } from 'src/checkin/entities/checkin.entity';
 
 @Injectable()
@@ -33,24 +32,36 @@ export class ActivityService {
     private readonly checkinRepository: Repository<Checkin>,
   ) {}
 
-  async getAllActivities(): Promise<Activity[]> {
-    return this.activityRepository.find();
+  async getAllActivities(user: UserPayload): Promise<Activity[]> {
+    if (user.isAdmin) {
+      return this.activityRepository.find();
+    }
+
+    const myClasses = await this.classRepository.find({
+      where: { teacherId: user.userId },
+      select: ['classId'],
+    });
+    
+    const classIds = myClasses.map((c) => c.classId);
+
+    if (classIds.length === 0) return [];
+
+    return this.activityRepository.find({
+      where: { classId: In(classIds) },
+    });
   }
 
-  async createActivity(newActivity: CreateActivityDto): Promise<Activity> {
-    // tipo da atividade
+  async createActivity(newActivity: CreateActivityDto, user: UserPayload): Promise<Activity> {
     const validTypes = Object.values(ActivityType);
     if (!validTypes.includes(newActivity.type)) {
       throw new BadRequestException(`Tipo inválido: ${newActivity.type}`);
     }
 
-    // valida a data
     const date = new Date(newActivity.date);
     if (isNaN(date.getTime())) {
       throw new BadRequestException('Data inválida');
     }
 
-    // impedir data no passado
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) {
@@ -59,13 +70,11 @@ export class ActivityService {
       );
     }
 
-    // valida o UUID gerado
     const id = generateUuid();
     if (!isUuid(id)) {
       throw new BadRequestException('ID inválido gerado');
     }
 
-    // verifica se a turma existe
     const classEntity = await this.classRepository.findOneBy({
       classId: newActivity.classId,
     });
@@ -75,7 +84,12 @@ export class ActivityService {
       );
     }
 
-    // verifica se a avaliação existe
+    if (!user.isAdmin && classEntity.teacherId !== user.userId) {
+      throw new NotFoundException(
+        `Turma com ID ${newActivity.classId} não encontrada ou acesso negado`,
+      );
+    }
+
     const assessmentEntity = await this.assessmentRepository.findOneBy({
       assessmentId: newActivity.assessmentId,
     });
@@ -85,14 +99,12 @@ export class ActivityService {
       );
     }
 
-    // garantir que assessment pertence à mesma turma
     if (assessmentEntity.classId !== newActivity.classId) {
       throw new BadRequestException(
         `A avaliação ${newActivity.assessmentId} não pertence à turma ${newActivity.classId}`,
       );
     }
 
-    // cria a atividade
     const activity = this.activityRepository.create({
       activityId: id,
       name: newActivity.name.trim(),
@@ -108,6 +120,7 @@ export class ActivityService {
   async updateActivity(
     id: string,
     updateDto: UpdateActivityDto,
+    user: UserPayload,
   ): Promise<Activity> {
     const existing = await this.activityRepository.findOne({
       where: { activityId: id },
@@ -115,6 +128,15 @@ export class ActivityService {
 
     if (!existing) {
       throw new NotFoundException(`Atividade com id ${id} não encontrada`);
+    }
+
+    if (!user.isAdmin) {
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: existing.classId, teacherId: user.userId },
+      });
+      if (!classEntity) {
+        throw new NotFoundException(`Atividade com id ${id} não encontrada ou acesso negado`);
+      }
     }
 
     if (updateDto.name !== undefined) {
@@ -132,7 +154,6 @@ export class ActivityService {
         );
       }
 
-      // impedir data no passado
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (parsedDate < today) {
@@ -156,12 +177,14 @@ export class ActivityService {
 
     if (updateDto.classId !== undefined) {
       const classExists = await this.classRepository.findOne({
-        where: { classId: updateDto.classId },
+        where: user.isAdmin 
+          ? { classId: updateDto.classId } 
+          : { classId: updateDto.classId, teacherId: user.userId },
       });
 
       if (!classExists) {
         throw new NotFoundException(
-          `Turma com id ${updateDto.classId} não encontrada`,
+          `Turma com id ${updateDto.classId} não encontrada ou acesso negado`,
         );
       }
 
@@ -181,8 +204,6 @@ export class ActivityService {
 
       existing.assessmentId = updateDto.assessmentId;
     }
-    // --- VALIDATIONS RELACIONADAS ---
-    //assessmentId deve pertencer à turma (CASO UM DOS DOIS TENHA MUDADO)
 
     if (
       updateDto.assessmentId !== undefined ||
@@ -208,7 +229,7 @@ export class ActivityService {
     return await this.activityRepository.save(existing);
   }
 
-  async deleteActivity(id: string): Promise<Activity[]> {
+  async deleteActivity(id: string, user: UserPayload): Promise<Activity[]> {
     const existing = await this.activityRepository.findOne({
       where: { activityId: id },
     });
@@ -217,16 +238,36 @@ export class ActivityService {
       throw new NotFoundException(`Atividade com id ${id} não encontrada`);
     }
 
+    if (!user.isAdmin) {
+      const classEntity = await this.classRepository.findOne({
+        where: { classId: existing.classId, teacherId: user.userId },
+      });
+      if (!classEntity) {
+        throw new NotFoundException(`Atividade com id ${id} não encontrada ou acesso negado`);
+      }
+    }
+
     await this.activityRepository.remove(existing);
-    return this.getAllActivities(); // retorna a lista atualizada
+    return this.getAllActivities(user); 
   }
 
   async searchActivities(query: {
     name?: string;
     classId?: string;
     assessmentId?: string;
-  }) {
+  }, user: UserPayload) {
     const qb = this.activityRepository.createQueryBuilder('activity');
+
+    if (!user.isAdmin) {
+      const myClasses = await this.classRepository.find({
+        where: { teacherId: user.userId },
+        select: ['classId'],
+      });
+      const classIds = myClasses.map((c) => c.classId);
+      
+      if (classIds.length === 0) return [];
+      qb.andWhere('activity.classId IN (:...classIds)', { classIds });
+    }
 
     if (query.name) {
       qb.andWhere('LOWER(activity.name) LIKE :name', {
@@ -249,8 +290,18 @@ export class ActivityService {
     classId: string,
     orderBy: 'name' | 'date' = 'date',
     order: 'ASC' | 'DESC' = 'ASC',
-    studentId?: string
+    studentId?: string,
+    user?: UserPayload
   ) {
+    if (user && !user.isAdmin && user.type === 'teacher') {
+      const classEntity = await this.classRepository.findOne({
+        where: { classId, teacherId: user.userId },
+      });
+      if (!classEntity) {
+        throw new NotFoundException('Turma não encontrada ou acesso negado');
+      }
+    }
+
     const atividades = await this.activityRepository.find({
       where: { classId },
       order: { [orderBy]: order },
@@ -261,8 +312,8 @@ export class ActivityService {
         'type',
         'classId',
         'assessmentId',
-        'createdAt', // adicione este campo
-        'updatedAt', // se quiser também
+        'createdAt', 
+        'updatedAt', 
       ],
     });
 

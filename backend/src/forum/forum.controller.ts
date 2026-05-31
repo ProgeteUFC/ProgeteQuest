@@ -27,9 +27,9 @@ import {
   PostResponseDto,
 } from './dtos/responses/index';
 import { TopicStatus } from 'src/Enums/topicStatus.enum';
-import { ForumContextUser } from 'src/utils/forumPermissions';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
+import { ForumContextUser } from 'src/utils/forumPermissions';
 
 @ApiTags('Fórum')
 @ApiBearerAuth()
@@ -39,10 +39,12 @@ export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 
   private mapToForumUser(payload: UserPayload): ForumContextUser {
+    const type = String(payload.type).toLowerCase();
+
     return {
       id: String(payload.userId),
-      isTeacher: payload.type === 'teacher',
-      isStudent: payload.type === 'student',
+      isTeacher: type === 'teacher' || payload.isAdmin === true,
+      isStudent: type === 'student',
     };
   }
 
@@ -51,7 +53,7 @@ export class ForumController {
   @ApiResponse({ status: 201, description: 'Fórum criado com sucesso.' })
   @ApiResponse({ status: 404, description: 'Turma não encontrada.' })
   @ApiResponse({ status: 403, description: 'Acesso negado.' })
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   @Post('turmas/:id/forum')
   async createForum(
     @Param('id') turmaId: string,
@@ -74,15 +76,14 @@ export class ForumController {
     status: 403,
     description: 'Acesso negado: Usuário não pertence à turma.',
   })
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Post('forum/:forumId/topic')
   async createTopic(
     @Param('forumId') forumId: string,
     @Body() createTopicDto: CreateTopicDto,
-    @User() userPayload: UserPayload,
+    @User() user: UserPayload,
   ) {
-    const forumUser = this.mapToForumUser(userPayload);
-    return this.forumService.createTopic(forumId, createTopicDto, forumUser);
+    return this.forumService.createTopic(forumId, createTopicDto, user);
   }
 
   @ApiOperation({ summary: 'Listar tópicos de um fórum' })
@@ -105,7 +106,7 @@ export class ForumController {
     status: 403,
     description: 'Acesso negado: Usuário não pertence à turma.',
   })
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Get('forum/:forumId/topics')
   async getTopics(
     @Param('forumId') forumId: string,
@@ -115,6 +116,7 @@ export class ForumController {
     @Query('limit') limit: number = 10,
   ): Promise<TopicListResponseDto> {
     const forumUser = this.mapToForumUser(userPayload);
+
     return this.forumService.listTopicsByForum(
       forumId,
       forumUser,
@@ -138,7 +140,7 @@ export class ForumController {
     status: 403,
     description: 'Acesso negado: Usuário não pertence à turma.',
   })
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Get('topic/:topicId/posts')
   async getPosts(
     @Param('topicId') topicId: string,
@@ -147,7 +149,13 @@ export class ForumController {
     @Query('limit') limit: number = 15,
   ): Promise<PostListResponseDto> {
     const forumUser = this.mapToForumUser(userPayload);
-    return this.forumService.listPostsByTopic(topicId, forumUser, page, limit);
+
+    return this.forumService.listPostsByTopic(
+      topicId,
+      forumUser,
+      page,
+      limit,
+    );
   }
 
   @ApiOperation({ summary: 'Responder a um tópico (criar postagem)' })
@@ -164,15 +172,14 @@ export class ForumController {
     description:
       'Acesso negado: Tópico fechado ou usuário não pertence à turma.',
   })
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Post('topic/:topicId/post')
   async createPost(
     @Param('topicId') topicId: string,
     @Body() createPostDto: CreatePostDto,
-    @User() userPayload: UserPayload,
+    @User() user: UserPayload,
   ) {
-    const forumUser = this.mapToForumUser(userPayload);
-    return this.forumService.createPost(topicId, createPostDto, forumUser);
+    return this.forumService.createPost(topicId, createPostDto, user);
   }
 
   @ApiOperation({ summary: 'Fechar um tópico' })
@@ -183,13 +190,12 @@ export class ForumController {
     status: 403,
     description: 'Acesso negado: Apenas o autor ou um professor podem fechar.',
   })
-  @Roles('teacher', 'student')
+  @Roles('teacher', 'admin', 'student')
   @Patch('topic/:topicId/close')
   async closeTopic(
     @Param('topicId') topicId: string,
-    @User() userPayload: UserPayload,
+    @User() user: UserPayload,
   ) {
-    const forumUser = this.mapToForumUser(userPayload);
-    return this.forumService.closeTopic(topicId, forumUser);
+    return this.forumService.closeTopic(topicId, user);
   }
 }

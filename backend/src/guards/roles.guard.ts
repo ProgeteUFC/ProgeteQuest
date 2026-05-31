@@ -33,6 +33,7 @@ export class RolesGuard implements CanActivate {
             email: string;
             name: string;
             type: string;
+            isAdmin?: boolean;
           };
         }
       | undefined = await this.jwtService
@@ -51,6 +52,6 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    return requiredRoles.some((role) => role === loginPayload.user.type);
+    return loginPayload.user.isAdmin === true || requiredRoles.some((role) => role === loginPayload.user.type);
   }
 }

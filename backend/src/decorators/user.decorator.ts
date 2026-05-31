@@ -10,6 +10,7 @@ export interface UserPayload {
   email: string;
   name: string;
   type: string;
+  isAdmin?: boolean;
 }
 
 export const User = createParamDecorator(

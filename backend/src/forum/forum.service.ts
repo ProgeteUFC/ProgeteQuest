@@ -23,16 +23,20 @@ import {
   canAnswer,
 } from 'src/utils/forumPermissions';
 import { TopicStatus } from 'src/Enums/topicStatus.enum';
+import { UserPayload } from 'src/decorators/user.decorator';
 
 @Injectable()
 export class ForumService {
   constructor(
     @InjectRepository(Forum)
     private readonly forumRepository: Repository<Forum>,
+
     @InjectRepository(Topic)
     private readonly topicRepository: Repository<Topic>,
+
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
+
     @InjectRepository(Class)
     private readonly classRepository: Repository<Class>,
   ) {}
@@ -67,6 +71,7 @@ export class ForumService {
     const turma = await this.classRepository.findOne({
       where: { classId: turmaId },
     });
+
     if (!turma) {
       throw new NotFoundException(`Turma com ID ${turmaId} não encontrada`);
     }
@@ -80,13 +85,14 @@ export class ForumService {
     const existingForum = await this.forumRepository.findOne({
       where: { turmaId },
     });
+
     if (existingForum) {
       return existingForum;
     }
 
     const forum = this.forumRepository.create({
       forumId: generateUuid(),
-      turmaId: turmaId,
+      turmaId,
     });
 
     return this.forumRepository.save(forum);
@@ -95,34 +101,44 @@ export class ForumService {
   async createTopic(
     forumId: string,
     createTopicDto: CreateTopicDto,
-    user: ForumContextUser,
+    user: UserPayload,
   ): Promise<TopicResponseDto> {
-    const forum = await this.forumRepository.findOne({ where: { forumId } });
+    const forum = await this.forumRepository.findOne({
+      where: { forumId },
+    });
+
     if (!forum) {
       throw new NotFoundException(`Fórum com ID ${forumId} não encontrado`);
     }
 
-    const isStudentInClass = await this.classRepository.exists({
-      where: {
-        classId: forum.turmaId,
-        studentClasses: {
-          studentId: user.id,
+    if (!user.isAdmin) {
+      const isStudentInClass = await this.classRepository.exists({
+        where: {
+          classId: forum.turmaId,
+          studentClasses: {
+            studentId: user.userId,
+          },
         },
-      },
-    });
+      });
 
-    // Verificando a permissão exata: se canCreateTopic retornar falso (ex: professor tentando criar tópico ou aluno fora da turma).
-    if (!canCreateTopic(user, isStudentInClass)) {
-      throw new ForbiddenException(
-        `Você não tem permissão para criar tópicos nesse fórum. Certifique-se de que você é um aluno matriculado nesta turma.`,
-      );
+      const forumUser: ForumContextUser = {
+        id: user.userId,
+        isTeacher: user.type === 'Teacher' || user.type === 'teacher',
+        isStudent: user.type === 'Student' || user.type === 'student',
+      };
+
+      if (!canCreateTopic(forumUser, isStudentInClass)) {
+        throw new ForbiddenException(
+          'Você não tem permissão para criar tópicos nesse fórum. Certifique-se de que você é um aluno matriculado nesta turma.',
+        );
+      }
     }
 
     const topic = this.topicRepository.create({
       ...createTopicDto,
       topicId: generateUuid(),
-      forumId: forumId,
-      autorId: user.id,
+      forumId,
+      autorId: user.userId,
       status: TopicStatus.OPEN,
     });
 
@@ -138,7 +154,9 @@ export class ForumService {
     page: number = 1,
     limit: number = 10,
   ): Promise<TopicListResponseDto> {
-    const forum = await this.forumRepository.findOne({ where: { forumId } });
+    const forum = await this.forumRepository.findOne({
+      where: { forumId },
+    });
 
     if (!forum) {
       throw new NotFoundException(`Fórum não encontrado`);
@@ -147,6 +165,7 @@ export class ForumService {
     await this.validateUserInClass(forum.turmaId, user);
 
     const whereCondition: any = { forumId };
+
     if (status) {
       whereCondition.status = status;
     }
@@ -177,7 +196,7 @@ export class ForumService {
   async createPost(
     topicId: string,
     createPostDto: CreatePostDto,
-    user: ForumContextUser,
+    user: UserPayload,
   ): Promise<PostResponseDto> {
     const topic = await this.topicRepository.findOne({
       where: { topicId },
@@ -193,26 +212,34 @@ export class ForumService {
       status: topic.status,
     };
 
-    const isUserInClass = await this.classRepository.exists({
-      where: {
-        classId: topic.forum.turmaId,
-        studentClasses: {
-          studentId: user.id,
+    if (!user.isAdmin) {
+      const isUserInClass = await this.classRepository.exists({
+        where: {
+          classId: topic.forum.turmaId,
+          studentClasses: {
+            studentId: user.userId,
+          },
         },
-      },
-    });
+      });
 
-    if (!canAnswer(user, topicContext, isUserInClass)) {
-      throw new ForbiddenException(
-        'Você não pode responder a este tópico. O tópico pode estar fechado ou você não pertence a essa turma.',
-      );
+      const forumUser: ForumContextUser = {
+        id: user.userId,
+        isTeacher: user.type === 'Teacher' || user.type === 'teacher',
+        isStudent: user.type === 'Student' || user.type === 'student',
+      };
+
+      if (!canAnswer(forumUser, topicContext, isUserInClass)) {
+        throw new ForbiddenException(
+          'Você não pode responder a este tópico. O tópico pode estar fechado ou você não pertence a essa turma.',
+        );
+      }
     }
 
     const post = this.postRepository.create({
       ...createPostDto,
       postId: generateUuid(),
-      topicId: topicId,
-      autorId: user.id,
+      topicId,
+      autorId: user.userId,
     });
 
     const savedPost = await this.postRepository.save(post);
@@ -226,9 +253,9 @@ export class ForumService {
     page: number = 1,
     limit: number = 15,
   ): Promise<PostListResponseDto> {
-    const topic = await this.topicRepository.findOne({ 
+    const topic = await this.topicRepository.findOne({
       where: { topicId },
-      relations: ['forum']
+      relations: ['forum'],
     });
 
     if (!topic) {
@@ -247,6 +274,7 @@ export class ForumService {
 
     const data = posts.map((post) => {
       const dto = new PostResponseDto();
+
       dto.postId = post.postId;
       dto.mensagem = post.mensagem;
       dto.topicId = post.topicId;
@@ -257,6 +285,7 @@ export class ForumService {
         name: post.autor.name,
         email: post.autor.email,
       };
+
       return dto;
     });
 
@@ -270,8 +299,6 @@ export class ForumService {
       },
     };
   }
-
-  // ========== Métodos auxiliares de transformação ==========
 
   private async transformTopicToResponse(
     topicId: string,
@@ -295,6 +322,7 @@ export class ForumService {
     });
 
     const dto = new TopicResponseDto();
+
     dto.topicId = topic.topicId;
     dto.forumId = topic.forumId;
     dto.titulo = topic.titulo;
@@ -326,6 +354,7 @@ export class ForumService {
     }
 
     const dto = new PostResponseDto();
+
     dto.postId = post.postId;
     dto.mensagem = post.mensagem;
     dto.topicId = post.topicId;
@@ -340,7 +369,7 @@ export class ForumService {
     return dto;
   }
 
-  async closeTopic(topicId: string, user: ForumContextUser): Promise<Topic> {
+  async closeTopic(topicId: string, user: UserPayload): Promise<Topic> {
     const topic = await this.topicRepository.findOne({
       where: { topicId },
       relations: ['autor', 'forum'],
@@ -350,19 +379,27 @@ export class ForumService {
       throw new NotFoundException(`Tópico não encontrado`);
     }
 
-    await this.validateUserInClass(topic.forum.turmaId, user);
+    if (!user.isAdmin) {
+      const forumUser: ForumContextUser = {
+        id: user.userId,
+        isTeacher: user.type === 'Teacher' || user.type === 'teacher',
+        isStudent: user.type === 'Student' || user.type === 'student',
+      };
 
-    const topicContext: TopicContext = {
-      authorId: topic.autorId,
-      status: topic.status,
-    };
+      await this.validateUserInClass(topic.forum.turmaId, forumUser);
 
-    const isAllowed = canClose(user, topicContext);
+      const topicContext: TopicContext = {
+        authorId: topic.autorId,
+        status: topic.status,
+      };
 
-    if (!isAllowed) {
-      throw new ForbiddenException(
-        `Acesso negado: Você não tem permissão para fechar esse tópico. Apenas o criador do tópico ou o professor da turma podem realizar esta ação.`,
-      );
+      const isAllowed = canClose(forumUser, topicContext);
+
+      if (!isAllowed) {
+        throw new ForbiddenException(
+          'Acesso negado: Você não tem permissão para fechar esse tópico. Apenas o criador do tópico ou o professor da turma podem realizar esta ação.',
+        );
+      }
     }
 
     topic.status = TopicStatus.CLOSED;

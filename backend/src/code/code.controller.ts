@@ -3,44 +3,81 @@ import { CodeService } from './code.service';
 import { CreateCodeDto } from './dtos/createCode.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 
 @ApiTags('Códigos')
 @Controller('code')
 export class CodeController {
   constructor(private readonly codeService: CodeService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Criar novo código', description: 'Cria um novo código para uma atividade.' })
-  @ApiBody({ type: CreateCodeDto, description: 'Dados para criação do código', examples: { exemplo: { value: { code: 'ABC123', validity: '2024-05-10T23:59:59Z', active: true, score: 10, activityId: 'uuid-da-atividade' } } } })
+  @Roles('teacher', 'admin')
+  @ApiOperation({
+    summary: 'Criar novo código',
+    description: 'Cria um novo código para uma atividade.',
+  })
+  @ApiBody({
+    type: CreateCodeDto,
+    description: 'Dados para criação do código',
+    examples: {
+      exemplo: {
+        value: {
+          code: 'ABC123',
+          validity: '2024-05-10T23:59:59Z',
+          active: true,
+          score: 10,
+          activityId: 'uuid-da-atividade',
+        },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: 'Código criado com sucesso.' })
-  async create(@Body() dto: CreateCodeDto) {
-    return this.codeService.createCode(dto);
+  @Post()
+  async create(@Body() dto: CreateCodeDto, @User() user: UserPayload) {
+    return this.codeService.createCode(dto, user);
   }
 
-  @Roles('teacher')
-  @Patch(':id/invalidate')
-  @ApiOperation({ summary: 'Invalidar código', description: 'Invalida um código pelo ID.' })
+  @Roles('teacher', 'admin')
+  @ApiOperation({
+    summary: 'Invalidar código',
+    description: 'Invalida um código pelo ID.',
+  })
   @ApiParam({ name: 'id', description: 'ID do código a ser invalidado' })
   @ApiResponse({ status: 200, description: 'Código invalidado com sucesso.' })
-  async invalidate(@Param('id') id: string) {
-    return this.codeService.invalidateCode(id);
+  @Patch(':id/invalidate')
+  async invalidate(@Param('id') id: string, @User() user: UserPayload) {
+    return this.codeService.invalidateCode(id, user);
   }
 
-  @Roles('teacher')
-  @Patch(':id/renew')
-  @ApiOperation({ summary: 'Renovar código', description: 'Renova um código pelo ID.' })
+  @Roles('teacher', 'admin')
+  @ApiOperation({
+    summary: 'Renovar código',
+    description: 'Renova um código pelo ID.',
+  })
   @ApiParam({ name: 'id', description: 'ID do código a ser renovado' })
   @ApiResponse({ status: 200, description: 'Código renovado com sucesso.' })
+  @Patch(':id/renew')
   async renew(@Param('id') id: string, @User() user: UserPayload) {
-    return this.codeService.renewCode(id, user.userId);
+    return this.codeService.renewCode(id, user);
   }
 
-  @Get('activity/:activityId')
-  @ApiOperation({ summary: 'Listar códigos por atividade', description: 'Lista todos os códigos de uma atividade.' })
+  @Roles('teacher', 'admin', 'student')
+  @ApiOperation({
+    summary: 'Listar códigos por atividade',
+    description: 'Lista todos os códigos de uma atividade.',
+  })
   @ApiParam({ name: 'activityId', description: 'ID da atividade' })
   @ApiResponse({ status: 200, description: 'Lista de códigos da atividade.' })
-  async listByActivity(@Param('activityId') activityId: string) {
-    return this.codeService.listCodesByActivity(activityId);
+  @Get('activity/:activityId')
+  async listByActivity(
+    @Param('activityId') activityId: string,
+    @User() user: UserPayload,
+  ) {
+    return this.codeService.listCodesByActivity(activityId, user);
   }
 }
