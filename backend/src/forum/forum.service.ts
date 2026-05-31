@@ -37,12 +37,44 @@ export class ForumService {
     private readonly classRepository: Repository<Class>,
   ) {}
 
-  async createForum(turmaId: string): Promise<Forum> {
+  private async validateUserInClass(
+    turmaId: string,
+    user: ForumContextUser,
+  ): Promise<boolean> {
+    if (user.isTeacher) {
+      return true;
+    }
+
+    const isStudentInClass = await this.classRepository.exists({
+      where: {
+        classId: turmaId,
+        studentClasses: {
+          studentId: user.id,
+        },
+      },
+    });
+
+    if (!isStudentInClass) {
+      throw new ForbiddenException(
+        'Acesso negado: Você não pertence a esta turma e não pode visualizar ou interagir com este conteúdo.',
+      );
+    }
+
+    return true;
+  }
+
+  async createForum(turmaId: string, user: ForumContextUser): Promise<Forum> {
     const turma = await this.classRepository.findOne({
       where: { classId: turmaId },
     });
     if (!turma) {
       throw new NotFoundException(`Turma com ID ${turmaId} não encontrada`);
+    }
+
+    if (!user.isTeacher) {
+      throw new ForbiddenException(
+        'Acesso negado: Apenas professores podem habilitar o fórum de uma turma.',
+      );
     }
 
     const existingForum = await this.forumRepository.findOne({
@@ -79,9 +111,10 @@ export class ForumService {
       },
     });
 
+    // Verificando a permissão exata: se canCreateTopic retornar falso (ex: professor tentando criar tópico ou aluno fora da turma).
     if (!canCreateTopic(user, isStudentInClass)) {
       throw new ForbiddenException(
-        `Você não tem permissão para criar tópicos nesse fórum`,
+        `Você não tem permissão para criar tópicos nesse fórum. Certifique-se de que você é um aluno matriculado nesta turma.`,
       );
     }
 
@@ -95,12 +128,12 @@ export class ForumService {
 
     const savedTopic = await this.topicRepository.save(topic);
 
-    // Recarregar com relações e transformar em DTO
     return this.transformTopicToResponse(savedTopic.topicId);
   }
 
   async listTopicsByForum(
     forumId: string,
+    user: ForumContextUser,
     status?: TopicStatus,
     page: number = 1,
     limit: number = 10,
@@ -110,6 +143,8 @@ export class ForumService {
     if (!forum) {
       throw new NotFoundException(`Fórum não encontrado`);
     }
+
+    await this.validateUserInClass(forum.turmaId, user);
 
     const whereCondition: any = { forumId };
     if (status) {
@@ -169,7 +204,7 @@ export class ForumService {
 
     if (!canAnswer(user, topicContext, isUserInClass)) {
       throw new ForbiddenException(
-        'Você não pode responder a este tópico. Ele pode estar fechado ou você não pertence a essa turma.',
+        'Você não pode responder a este tópico. O tópico pode estar fechado ou você não pertence a essa turma.',
       );
     }
 
@@ -187,14 +222,20 @@ export class ForumService {
 
   async listPostsByTopic(
     topicId: string,
+    user: ForumContextUser,
     page: number = 1,
     limit: number = 15,
   ): Promise<PostListResponseDto> {
-    const topic = await this.topicRepository.findOne({ where: { topicId } });
+    const topic = await this.topicRepository.findOne({ 
+      where: { topicId },
+      relations: ['forum']
+    });
 
     if (!topic) {
       throw new NotFoundException(`Tópico com ID ${topicId} não encontrado`);
     }
+
+    await this.validateUserInClass(topic.forum.turmaId, user);
 
     const [posts, total] = await this.postRepository.findAndCount({
       where: { topicId },
@@ -302,12 +343,14 @@ export class ForumService {
   async closeTopic(topicId: string, user: ForumContextUser): Promise<Topic> {
     const topic = await this.topicRepository.findOne({
       where: { topicId },
-      relations: ['autor'],
+      relations: ['autor', 'forum'],
     });
 
     if (!topic) {
       throw new NotFoundException(`Tópico não encontrado`);
     }
+
+    await this.validateUserInClass(topic.forum.turmaId, user);
 
     const topicContext: TopicContext = {
       authorId: topic.autorId,
@@ -318,7 +361,7 @@ export class ForumService {
 
     if (!isAllowed) {
       throw new ForbiddenException(
-        `Você não tem permissão para fechar esse tópico.`,
+        `Acesso negado: Você não tem permissão para fechar esse tópico. Apenas o criador do tópico ou o professor da turma podem realizar esta ação.`,
       );
     }
 

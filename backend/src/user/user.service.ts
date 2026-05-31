@@ -1,32 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { generateUuid } from '../utils/generateUuid';
-import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
 import * as bcrypt from 'bcrypt';
-import { UnauthorizedException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
     @InjectRepository(Student)
     private readonly studentRepository: Repository<Student>,
+
     @InjectRepository(Teacher)
     private readonly teacherRepository: Repository<Teacher>,
+
     @InjectRepository(Admin)
     private readonly adminRepository: Repository<Admin>,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    // Verifica o tipo de usuário incluindo admin
+    // Verifica o tipo de usuário
     if (
       createUserDto.type !== 'student' &&
       createUserDto.type !== 'teacher' &&
@@ -37,10 +43,11 @@ export class UserService {
 
     // Verifica se o email já está em uso
     const email = createUserDto.email.trim().toLowerCase();
+
     const existingUser = await this.userRepository.findOne({
       where: { email },
     });
-    
+
     if (existingUser) {
       throw new ConflictException('Esse registro já existe');
     }
@@ -52,6 +59,7 @@ export class UserService {
       if (!reg) {
         throw new BadRequestException('registrationStudent é obrigatório');
       }
+
       if (!/^\d{6}$/.test(reg)) {
         throw new BadRequestException(
           'registrationStudent deve conter exatamente 6 dígitos numéricos',
@@ -61,6 +69,7 @@ export class UserService {
       const existingStudent = await this.studentRepository.findOne({
         where: { registrationStudent: reg },
       });
+
       const existingTeacher = await this.teacherRepository.findOne({
         where: { registrationTeacher: reg },
       });
@@ -84,6 +93,7 @@ export class UserService {
       const existingTeacher = await this.teacherRepository.findOne({
         where: { registrationTeacher: reg },
       });
+
       const existingStudent = await this.studentRepository.findOne({
         where: { registrationStudent: reg },
       });
@@ -101,6 +111,7 @@ export class UserService {
       name: createUserDto.name.trim(),
       email,
       password: hashedPassword,
+      type: createUserDto.type,
     });
 
     await this.userRepository.save(user);
@@ -141,6 +152,7 @@ export class UserService {
 
     return users.map((user) => {
       let type: 'student' | 'teacher' | 'admin' | null = null;
+
       if (user.admins && user.admins.length > 0) {
         type = 'admin';
       } else if (user.students && user.students.length > 0) {
@@ -148,7 +160,7 @@ export class UserService {
       } else if (user.teachers && user.teachers.length > 0) {
         type = 'teacher';
       }
-      
+
       return {
         userId: user.userId,
         name: user.name,
@@ -165,13 +177,14 @@ export class UserService {
       where: { userId },
       relations: ['students', 'teachers', 'admins'],
     });
-    
+
     if (!user) {
       throw new BadRequestException('Usuário não encontrado');
     }
 
     // Valida senha
     const passwordValid = await bcrypt.compare(password, user.password);
+
     if (!passwordValid) {
       throw new UnauthorizedException('Senha incorreta');
     }
@@ -227,12 +240,15 @@ export class UserService {
     // Email
     if (typeof updateUserDto.email === 'string') {
       const email = updateUserDto.email.trim().toLowerCase();
+
       const existingUser = await this.userRepository.findOne({
         where: { email },
       });
+
       if (existingUser && existingUser.userId !== userId) {
         throw new ConflictException('Esse registro já existe');
       }
+
       user.email = email;
     }
 
@@ -284,6 +300,7 @@ export class UserService {
 
       const student = user.students[0];
       student.registrationStudent = registration;
+
       await this.studentRepository.save(student);
     }
 
@@ -323,6 +340,7 @@ export class UserService {
 
       const teacher = user.teachers[0];
       teacher.registrationTeacher = registration;
+
       await this.teacherRepository.save(teacher);
     }
 
@@ -338,12 +356,13 @@ export class UserService {
       where: { userId },
       relations: ['students', 'teachers', 'admins'],
     });
-    
+
     if (!user) {
       throw new BadRequestException('Usuário não encontrado');
     }
 
     let type: 'student' | 'teacher' | 'admin' | null = null;
+
     if (user.admins && user.admins.length > 0) {
       type = 'admin';
     } else if (user.students && user.students.length > 0) {
