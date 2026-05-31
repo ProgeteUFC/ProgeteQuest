@@ -4,27 +4,25 @@ const mobilePrototype = `@media ((max-width: 410px) and (max-height: 900px)), (m
 
 export const Container = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: flex-start;
   padding: 20px;
   font-size: 14px;
-  margin-top: 30px;
-  bottom: 0;
-  position: absolute;
+  margin-top: auto;
   width: 100%;
-  height: 130px;
+  min-height: 60px;
+  background: transparent;
+  position: relative;
   z-index: 1;
 `;
 export const Image = styled.img`
-  // REFERÊNCIA - IMAGEM DA LOGO DO PROGETE
-  position: absolute;
-  left: 2rem;
-  bottom: 0.7rem;
   height: 48px;
-
+  margin-left: 2rem;
+  margin-bottom: 0.7rem;
   ${mobilePrototype} {
-    left: 1rem;
-    bottom: 0.5rem;
+    margin-left: 1rem;
+    margin-bottom: 0.5rem;
     height: 30px;
-    margin-left: -5px;
   }
 `;
 
