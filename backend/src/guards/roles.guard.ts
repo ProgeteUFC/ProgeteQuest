@@ -14,6 +14,7 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+
     if (!requiredRoles) {
       return true;
     }
@@ -21,26 +22,38 @@ export class RolesGuard implements CanActivate {
     const { authorization } = context.switchToHttp().getRequest().headers;
     const token = authorization?.replace('Bearer ', '');
 
+    if (!token) {
+      return false;
+    }
+
     const loginPayload:
       | {
           user: {
-            userId: number;
+            userId: number | string;
             email: string;
             name: string;
             type: string;
+            isAdmin?: boolean;
           };
         }
       | undefined = await this.jwtService
       .verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       })
-      .catch(err => {
-        console.error("Erro ao buscar atividades:", err);
-        throw err;
+      .catch((err) => {
+        console.error('Erro de validação JWT:', err);
+        return undefined;
       });
 
     if (!loginPayload) {
       return false;
+    }
+
+    if (
+      loginPayload.user.type === 'admin' ||
+      loginPayload.user.isAdmin === true
+    ) {
+      return true;
     }
 
     return requiredRoles.some((role) => role === loginPayload.user.type);
