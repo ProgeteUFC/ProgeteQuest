@@ -32,7 +32,7 @@ export const Planet = styled.img`
 
   // Mobile (402x874)
   @media (max-width: 768px) {
-    width: 300px;
+    width: 400px;
     bottom: -40px;
     right: -40px;
     transform: none;
@@ -87,19 +87,19 @@ export const Container = styled.div`
     padding-top: 1rem;
 
     h1 {
-      font-size: 28px;
+      font-size: 18px;
       margin-bottom: 0.5rem;
     }
 
     h2 {
-      font-size: 16px;
-      line-height: 1.4;
+      font-size: 18px;
+      line-height: 1.0;
     }
   }
 `;
 
 export const FormCard = styled.div`
-  background-color: ${({ theme }) => theme.colors.white};
+  background-color: transparent;
   padding: 1rem;
   border-radius: 20px;
   font-family: "Baloo Paaji 2", sans-serif;
@@ -128,9 +128,10 @@ export const FormCard = styled.div`
     border: none;
     border-radius: 16px;
     padding: 1rem;
+    font-family: "Baloo Paaji 2", sans-serif;
 
     background-color: ${({ theme }) => theme.colors.indigo};
-    color: white;
+    
 
     min-height: 100px;
     resize: none;
@@ -139,7 +140,7 @@ export const FormCard = styled.div`
   input::placeholder,
   textarea::placeholder {
     color: white;
-    opacity: 0.8;
+    
   }
 
   // Mobile (402x874)
