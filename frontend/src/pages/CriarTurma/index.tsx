@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import Header from "../../components/Header";
+import HeaderProfessor from "../../components/HeaderProfessor";
 import logo from "../../assets/progete.png";
 import PlanetOrange from "../../assets/planet_orange.png";
 import AstronautImg from "../../assets/astronaut.png"; // Importação correta como default
@@ -19,8 +19,11 @@ export default function CriarTurma() {
   }, []);
   
   return (
+    
     <>
-      <Header />
+    
+      <HeaderProfessor />
+      
       <PageWrapper>
         <Container>
           <h1>Criar turma</h1>
