@@ -15,6 +15,7 @@ import PaginaInicialProfessor from "./pages/PaginaInicialProfessor";
 import { MinhasTurmas } from "./pages/MinhasTurmas";
 import { MinhasAtividades } from "./pages/MinhasAtividades";
 import ForumPage from "./pages/ForumPage";
+import LoginProfessor from "./pages/LoginProfessor";
 
 import ForumTurmaPage from "./pages/ForumTurmaPage";
 import reactLogo from "./assets/react.svg";
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/paginaInicialProfessor" element={<PaginaInicialProfessor />} />
           <Route path="/visualizarTurmasProfessor" element={<ViewClasses />} />
           <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
+          <Route path="/loginProfessor" element={<LoginProfessor />} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
