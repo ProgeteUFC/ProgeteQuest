@@ -1,5 +1,7 @@
 import styled from "styled-components";
 
+const mobilePrototype = `@media (max-width: 768px)`;
+
 export const MenuContainer = styled.div`
   display: flex;
   color: white;
@@ -10,6 +12,11 @@ export const MenuContainer = styled.div`
   user-select: none;
   padding: 0 8px; 
   gap: 12px; 
+  ${mobilePrototype} {
+    justify-content: space-between;
+    padding: 0 12px;
+    min-height: 60px;
+  }
 `;
 
 export const MenuOptions = styled.div`
@@ -47,6 +54,9 @@ export const MenuContent = styled.div`
   justify-content: center;
   gap: 20px;
   margin-left: 245px; 
+  ${mobilePrototype} {
+    display: none;
+  }
 `;
 
 export const MenuOption = styled.a`
@@ -76,6 +86,16 @@ export const MenuOption = styled.a`
 
 export const Logo = styled.div`
   padding: 10px;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  ${mobilePrototype} {
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+}
 `;
 
 
@@ -124,4 +144,80 @@ export const RightBox = styled.div`
   align-items: center;
   justify-content: flex-end;
   padding-left: 8px;
+  z-index: 20;
+  ${mobilePrototype} {
+   padding-left: 0;
+}
+
+`;
+
+export const HamburgerButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  margin-right: 8px;
+  z-index: 20;
+  ${mobilePrototype} {
+    display: flex;
+  }
+`;
+
+
+interface MobileMenuProps {
+  open: boolean;
+}
+
+export const MobileMenu = styled.div<MobileMenuProps>`
+  display: none;
+  ${mobilePrototype} {
+    display: ${({ open }) => (open ? "flex" : "none")};
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(30, 20, 80, 0.98);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  & > div {
+    background: #fff;
+    border-radius: 32px;
+    padding: 32px 0 32px 0;
+    box-shadow: 0 4px 32px 0 rgba(0,0,0,0.10);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80vw;
+    max-width: 340px;
+    min-width: 220px;
+    gap: 18px;
+  }
+  & a {
+    width: 90%;
+    min-width: 160px;
+    max-width: 300px;
+    margin: 0 auto;
+    border-radius: 24px !important;
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 14px 0;
+    background: ${(props) => props.theme.colors.indigo};
+    color: #fff;
+    text-align: center;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+    transition: background 0.2s;
+  }
+  & a:active, & a:hover {
+    background: ${(props) => props.theme.colors.challengeOrange};
+    color: #fff;
+  }
 `;
