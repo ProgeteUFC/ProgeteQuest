@@ -17,7 +17,6 @@ import { HamburgerButton, MobileMenu } from "./style";
 
 export default function HeaderProfessor() {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   function handleLogout() {
@@ -27,14 +26,6 @@ export default function HeaderProfessor() {
     navigate("/");
   }
 
-  const toggleMenu = () => {
-    setIsOpen((prev) => !prev);
-  };
-
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen((prev) => !prev);
-  };
-
   return (
     <MenuContainer>
       <HamburgerButton onClick={() => setMobileMenuOpen((open) => !open)}>
@@ -43,6 +34,7 @@ export default function HeaderProfessor() {
       <Logo>
         <img src={logoProgeteQuest} alt="Logo do Progete Quest" width={200} />
       </Logo>
+
       <MenuContent>
         <Box>
           <IconHome>
@@ -66,8 +58,12 @@ export default function HeaderProfessor() {
           </MenuOption>
         </MenuOptions>
       </MenuContent>
+
       <MobileMenu open={mobileMenuOpen}>
         <MenuOptions style={{ flexDirection: "column", gap: 24 }}>
+          <MenuOption as={Link} to="/paginaInicialProfessor" onClick={() => setMobileMenuOpen(false)}>
+            Tela Inicial
+          </MenuOption>
           <MenuOption as={Link} to="/entrarEmTurma" onClick={() => setMobileMenuOpen(false)}>
             Criar uma Turma
           </MenuOption>
@@ -82,6 +78,7 @@ export default function HeaderProfessor() {
           </MenuOption>
         </MenuOptions>
       </MobileMenu>
+
       <RightBox>
         <IconExite onClick={handleLogout}>
           <IoExitOutline size={30} />
