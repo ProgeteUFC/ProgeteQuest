@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import logoProgeteQuest from "../../assets/logo.png";
 import { TiHome } from "react-icons/ti";
 import { IoExitOutline } from "react-icons/io5";
@@ -12,6 +12,8 @@ import {
 } from "./style";
 import { IconHome, IconExite, Box } from "../headerRanking/styles";
 import { Link, useNavigate } from "react-router-dom";
+import { GiHamburgerMenu } from "react-icons/gi";
+import { HamburgerButton, MobileMenu } from "./style";
 
 interface HeaderProps {
   className?: string;
@@ -19,6 +21,7 @@ interface HeaderProps {
 
 export default function HeaderProfessor({ className }: HeaderProps) {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   function handleLogout() {
     localStorage.removeItem("token");
@@ -29,6 +32,9 @@ export default function HeaderProfessor({ className }: HeaderProps) {
 
   return (
     <MenuContainer className={className}>
+      <HamburgerButton onClick={() => setMobileMenuOpen((open) => !open)}>
+        <GiHamburgerMenu size={30} />
+      </HamburgerButton>
       <Logo>
         <img src={logoProgeteQuest} alt="Logo do Progete Quest" width={200} />
       </Logo>
@@ -60,6 +66,29 @@ export default function HeaderProfessor({ className }: HeaderProps) {
           </MenuOption>
         </MenuOptions>
       </MenuContent>
+
+      <MobileMenu open={mobileMenuOpen}>
+        <MenuOptions style={{ flexDirection: "column", gap: 24 }}>
+          <MenuOption as={Link} to="/paginaInicialProfessor" onClick={() => setMobileMenuOpen(false)}>
+            Tela Inicial
+          </MenuOption>
+          <MenuOption as={Link} to="/entrarEmTurma" onClick={() => setMobileMenuOpen(false)}>
+            Criar uma Turma
+          </MenuOption>
+
+          <MenuOption as={Link} to="/visualizarTurmasProfessor" onClick={() => setMobileMenuOpen(false)}>
+            Visualizar Turmas
+          </MenuOption>
+
+          <MenuOption as={Link} to="/meusDados" onClick={() => setMobileMenuOpen(false)}>
+            Meus dados
+          </MenuOption>
+
+          <MenuOption as={Link} to="/forum" onClick={() => setMobileMenuOpen(false)}>
+            Fórum
+          </MenuOption>
+        </MenuOptions>
+      </MobileMenu>
 
       <RightBox>
         <IconExite onClick={handleLogout}>

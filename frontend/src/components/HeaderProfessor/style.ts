@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-const mobilePrototype = `@media ((max-width: 410px) and (max-height: 900px)), (min-width: 1024px) and (max-width: 1024px) and (max-height: 900px)`;
+const mobilePrototype = `@media (max-width: 768px)`;
 
 export const MenuContainer = styled.div`
   display: flex;
@@ -12,6 +12,11 @@ export const MenuContainer = styled.div`
   user-select: none;
   padding: 0 8px; 
   gap: 12px; 
+  ${mobilePrototype} {
+    justify-content: space-between;
+    padding: 0 12px;
+    min-height: 60px;
+  }
 `;
 
 export const MenuOptions = styled.div`
