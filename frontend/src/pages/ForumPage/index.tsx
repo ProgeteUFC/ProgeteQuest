@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
-import Header from "../../components/Header";
+import HeaderProfessor from "../../components/HeaderProfessor";
 import {
   Container,
   Content,
@@ -12,8 +12,10 @@ import {
   PlanetImage,
   ForumTitle,
   ForumDescription,
+  AstronautImage,
 } from "./styles";
-import planet_blue_anel from "../../assets/planet_blue_anel.png";
+import planet_orange from "../../assets/planet_orange.png";
+
 
 const turmas = [
   { id: "1", nome: "Processos de Software" },
@@ -34,7 +36,7 @@ export default function ForumPage() {
   const navigate = useNavigate();
   return (
     <Container>
-      <Header />
+      <HeaderProfessor />
       <Content>
         <ForumTitle>Fórum</ForumTitle>
         <ForumDescription>
@@ -56,7 +58,7 @@ export default function ForumPage() {
         </ListaTurmas>
       </Content>
       <Footer />
-      <PlanetImage src={planet_blue_anel} alt="Planeta Azul" />
+      <PlanetImage src={planet_orange} alt="Planeta Laranja" />
     </Container>
   );
 }

@@ -8,8 +8,8 @@ export const Container = styled.div`
 `;
 
 export const Content = styled.div`
-  padding: 40px 0 0 0;
-  max-width: 900px;
+  padding: 20px 0 0 0;
+  max-width: 400px;
   // margin: 0 auto;
 `;
 
@@ -18,13 +18,20 @@ export const ListaTurmas = styled.div`
   border-radius: 32px;
   padding: 22px 16px;
   width: 400px;
-  max-height: 342px;
+  max-height: 380px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   margin-top: 32px;
   margin-left: 180px;
+
+    @media (max-width: 768px) {
+    margin-left: 20px;   
+    width: calc(100% - 40px);
+    max-height: 360px;
+  }
+
 `;
 
 
@@ -32,7 +39,7 @@ export const ListaTurmas = styled.div`
 export const ListaTurmasScroll = styled.div`
   overflow-y: auto;
   border-radius: 20px;
-  max-height: 298px;
+  max-height: 236px;
   display: flex;
   flex-direction: column;
   gap: 17px;
@@ -50,6 +57,8 @@ export const ListaTurmasScroll = styled.div`
     background: ${(props) => props.theme.colors.indigo};
     border-radius: 32px;
   }
+    @media (max-width: 768px) {
+    max-height: 206px;
 `;
 
 export const TurmaCard = styled.div`
@@ -82,19 +91,19 @@ export const TurmaNome = styled.div`
 
 export const PlanetImage = styled.img`
   position: fixed;
-  width: 700px;
+  width: 1400px;
   bottom: 0;
   right: 0;
-  transform: translate(20%, 20%);
+  transform: translate(40%, 20%);  
   pointer-events: none;
 
   @media (max-width: 1400px) {
     width: 500px;
-    transform: translate(10%, 10%);
+    transform: translate(35%, 10%);
   }
   @media (max-width: 900px) {
-    width: 350px;
-    transform: translate(10%, 10%);
+    width: 400px;
+    transform: translate(30%, 10%);
   }
 `;
 
@@ -104,6 +113,12 @@ export const ForumTitle = styled.h1`
   font-weight: 800;
   font-family: "Baloo Paaji 2", sans-serif;
   margin-left:180px;
+
+  @media (max-width: 768px) {
+    margin-left: 20px;
+    font-size: 35px;
+  }
+
 `;
 
 export const ForumDescription = styled.p`
@@ -113,4 +128,26 @@ export const ForumDescription = styled.p`
   font-family: "Baloo Paaji 2", sans-serif;
   margin-left:180px;
   line-height: 1.2;
+  @media (max-width: 768px) {
+    margin-left: 20px;  
+    font-size: 20px;    
+  }
 `;
+
+
+
+export const AstronautImage = styled.div`
+  position: fixed;
+  bottom: 80px;
+  right: 10px;
+  width: 120px;
+  height: 120px;
+  z-index: 9999;
+  display: block;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+`
