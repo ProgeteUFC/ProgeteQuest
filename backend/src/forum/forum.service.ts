@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { Forum, Topic, Post } from './entities/index';
 import { CreateTopicDto, CreatePostDto } from './dtos/index';
 import {
@@ -164,7 +164,7 @@ export class ForumService {
 
     await this.validateUserInClass(forum.turmaId, user);
 
-    const whereCondition: any = { forumId };
+    const whereCondition: FindOptionsWhere<Topic> = { forumId };
 
     if (status) {
       whereCondition.status = status;
@@ -369,7 +369,10 @@ export class ForumService {
     return dto;
   }
 
-  async closeTopic(topicId: string, user: UserPayload): Promise<Topic> {
+  async closeTopic(
+    topicId: string,
+    user: UserPayload,
+  ): Promise<TopicResponseDto> {
     const topic = await this.topicRepository.findOne({
       where: { topicId },
       relations: ['autor', 'forum'],
@@ -404,6 +407,8 @@ export class ForumService {
 
     topic.status = TopicStatus.CLOSED;
 
-    return this.topicRepository.save(topic);
+    const savedTopic = await this.topicRepository.save(topic);
+
+    return this.transformTopicToResponse(savedTopic.topicId);
   }
 }
