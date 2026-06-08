@@ -14,6 +14,8 @@ import {
   BtnLogin,
   BtnCriarConta,
   Descricao,
+  AstronautaWrapper,
+  Smoke,
   Astronauta,
   Footer,
   FooterBrand,
@@ -21,27 +23,26 @@ import {
   FooterNome,
   FooterCopy,
 } from "./styles";
+
 import planeta from "../../assets/planet_orange.png";
 import logoProgeteQuest from "../../assets/logo.png";
 import astronauta from "../../assets/astronaut.png";
 import logoProgete from "../../assets/progete.png";
+import smoke from "../../assets/smoke.png";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
   const handleLogin = () => {
-    // TODO: integrar com a API de autenticação
     console.log("Login professor:", { email, senha });
   };
 
   const handleCriarConta = () => {
-    // TODO: navegar para tela de cadastro
     console.log("Criar conta professor");
   };
 
   const handleEsqueciSenha = () => {
-    // TODO: navegar para tela de recuperação de senha
     console.log("Esqueci minha senha");
   };
 
@@ -95,7 +96,11 @@ const LoginPage = () => {
         tão divertido!
       </Descricao>
 
+      <AstronautaWrapper>
+      <Smoke src={smoke} alt="" aria-hidden="true" className="smoke-left" />
       <Astronauta src={astronauta} alt="" aria-hidden="true" />
+      <Smoke src={smoke} alt="" aria-hidden="true" className="smoke-right" />
+      </AstronautaWrapper>
 
       <Footer>
         <FooterBrand>
