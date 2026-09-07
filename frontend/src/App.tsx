@@ -61,8 +61,10 @@ export default function App() {
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
           <Route path="/paginaInicialProfessor" element={<PaginaInicialProfessor />} />
+          <Route path="/cadastrarDisciplina" element={<CadastrarDisciplina />} />
           <Route path="/visualizarTurmasProfessor" element={<ViewClasses />} />
           <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
+          <Route path="/visualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
           <Route path="/loginProfessor" element={<LoginProfessor />} />
         </Routes>
       </KeyedRouter>

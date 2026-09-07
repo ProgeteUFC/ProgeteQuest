@@ -34,11 +34,11 @@ return (
 
         <MenuContainer>
           <MenuOptions>
-            <MenuOption as={Link} to="/entrarEmTurma">
+            <MenuOption as={Link} to="/cadastrarDisciplina">
               Criar Turma
             </MenuOption>
 
-            <MenuOption as={Link} to="/minhasTurmas">
+            <MenuOption as={Link} to="/visualizarTurmasProfessor">
               Visualizar Turmas
             </MenuOption>
 

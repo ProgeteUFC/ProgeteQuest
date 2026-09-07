@@ -32,13 +32,12 @@ async function handleLogin(e: React.FormEvent) {
     localStorage.setItem("token", res.data.token);
     localStorage.setItem("userId", res.data.user.userId);
     localStorage.setItem("userType", res.data.user.type);
-    localStorage.setItem("userType", "teacher");
 
     //Lógica de Redirecionamento Dinâmico
     const userType = res.data.user.type; // Pega o tipo que veio da API
 
     if (userType === "teacher") {
-      navigate("/PaginaInicialProfessor"); // Rota para professores
+      navigate("/paginaInicialProfessor"); // Rota para professores
     } else {
       navigate("/minhasTurmas"); // Rota padrão dos alunos
     }

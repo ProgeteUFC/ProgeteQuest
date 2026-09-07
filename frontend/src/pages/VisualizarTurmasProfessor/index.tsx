@@ -32,7 +32,7 @@ const ViewClasses = () => {
 
   const handleCardClick = (id: string) => {
   // Navega para a rota definida no App.tsx passando o ID da turma
-  navigate(`/VisualizandoTurmasProfessor/${id}`);
+  navigate(`/visualizandoTurmasProfessor/${id}`);
   };
 
   return (

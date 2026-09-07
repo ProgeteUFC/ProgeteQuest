@@ -38,6 +38,7 @@ export class AuthService {
     // Busca o usuário usando o e-mail normalizado
     const user = await this.userRepository.findOne({
       where: { email: normalizedEmail },
+      relations: ['students', 'teachers', 'admins'],
     });
 
     if (!user) {
@@ -66,7 +67,15 @@ export class AuthService {
       lastAttempt: now,
     };
 
-    const role = String(user.type).toLowerCase();
+    const savedRole = String(user.type).toLowerCase();
+    const role =
+      user.admins && user.admins.length > 0
+        ? 'admin'
+        : user.teachers && user.teachers.length > 0
+          ? 'teacher'
+          : user.students && user.students.length > 0
+            ? 'student'
+            : savedRole;
 
     if (role !== 'student' && role !== 'teacher' && role !== 'admin') {
       throw new UnauthorizedException('Usuário não possui perfil válido.');

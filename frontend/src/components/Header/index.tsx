@@ -14,14 +14,19 @@ import { IconHome, IconExite, Box } from "../headerRanking/styles";
 import { Link, useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HamburgerButton, MobileMenu } from "./style";
+import HeaderProfessor from "../HeaderProfessor";
 
 interface HeaderProps {
   className?: string;
 }
 
-export default function HeaderProfessor({ className }: HeaderProps) {
+export default function Header({ className }: HeaderProps) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  if (localStorage.getItem("userType") === "teacher") {
+    return <HeaderProfessor />;
+  }
 
   function handleLogout() {
     localStorage.removeItem("token");
@@ -42,7 +47,7 @@ export default function HeaderProfessor({ className }: HeaderProps) {
       <MenuContent>
         <Box>
           <IconHome>
-            <Link to="/paginaInicialProfessor">
+            <Link to="/minhasTurmas">
               <TiHome size={30} />
             </Link>
           </IconHome>
@@ -50,11 +55,11 @@ export default function HeaderProfessor({ className }: HeaderProps) {
 
         <MenuOptions>
           <MenuOption as={Link} to="/entrarEmTurma">
-            Criar uma Turma
+            Entrar em uma turma
           </MenuOption>
 
-          <MenuOption as={Link} to="/visualizarTurmasProfessor">
-            Visualizar Turmas
+          <MenuOption as={Link} to="/minhasTurmas">
+            Minhas Turmas
           </MenuOption>
 
           <MenuOption as={Link} to="/meusDados">
@@ -69,15 +74,15 @@ export default function HeaderProfessor({ className }: HeaderProps) {
 
       <MobileMenu open={mobileMenuOpen}>
         <MenuOptions style={{ flexDirection: "column", gap: 24 }}>
-          <MenuOption as={Link} to="/paginaInicialProfessor" onClick={() => setMobileMenuOpen(false)}>
+          <MenuOption as={Link} to="/minhasTurmas" onClick={() => setMobileMenuOpen(false)}>
             Tela Inicial
           </MenuOption>
           <MenuOption as={Link} to="/entrarEmTurma" onClick={() => setMobileMenuOpen(false)}>
-            Criar uma Turma
+            Entrar em uma turma
           </MenuOption>
 
-          <MenuOption as={Link} to="/visualizarTurmasProfessor" onClick={() => setMobileMenuOpen(false)}>
-            Visualizar Turmas
+          <MenuOption as={Link} to="/minhasTurmas" onClick={() => setMobileMenuOpen(false)}>
+            Minhas Turmas
           </MenuOption>
 
           <MenuOption as={Link} to="/meusDados" onClick={() => setMobileMenuOpen(false)}>

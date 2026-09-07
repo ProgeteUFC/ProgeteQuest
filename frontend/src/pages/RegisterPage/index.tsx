@@ -54,7 +54,10 @@ export default function RegisterPage() {
       localStorage.setItem("userType", res.data.user.type);
       setSucesso("Cadastro realizado com sucesso! Você foi logado.");
       // Redireciona para Minhas Turmas
-      window.location.href = "/minhasTurmas";
+      window.location.href =
+        res.data.user.type === "teacher"
+          ? "/paginaInicialProfessor"
+          : "/minhasTurmas";
     } catch (err: any) {
       setErro(
         err?.response?.data?.message ||

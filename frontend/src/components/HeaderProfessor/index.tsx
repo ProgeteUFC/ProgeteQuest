@@ -44,7 +44,7 @@ export default function HeaderProfessor() {
           </IconHome>
         </Box>
         <MenuOptions>
-          <MenuOption as={Link} to="/entrarEmTurma">
+          <MenuOption as={Link} to="/cadastrarDisciplina">
             Criar uma Turma
           </MenuOption>
           <MenuOption as={Link} to="/visualizarTurmasProfessor">
@@ -64,7 +64,7 @@ export default function HeaderProfessor() {
           <MenuOption as={Link} to="/paginaInicialProfessor" onClick={() => setMobileMenuOpen(false)}>
             Tela Inicial
           </MenuOption>
-          <MenuOption as={Link} to="/entrarEmTurma" onClick={() => setMobileMenuOpen(false)}>
+          <MenuOption as={Link} to="/cadastrarDisciplina" onClick={() => setMobileMenuOpen(false)}>
             Criar uma Turma
           </MenuOption>
           <MenuOption as={Link} to="/visualizarTurmasProfessor" onClick={() => setMobileMenuOpen(false)}>

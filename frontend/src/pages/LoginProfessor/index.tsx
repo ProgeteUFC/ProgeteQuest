@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { alunoService } from "../../services/alunoService";
 import {
   Container,
   Planeta,
@@ -26,22 +28,40 @@ import logoProgeteQuest from "../../assets/logo.png";
 import astronauta from "../../assets/astronaut.png";
 import logoProgete from "../../assets/progete.png";
 
-const LoginPage = () => {
+const LoginProfessor = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    // TODO: integrar com a API de autenticação
-    console.log("Login professor:", { email, senha });
+  const handleLogin = async () => {
+    setErro("");
+    try {
+      const res = await alunoService.login(email, senha);
+      const userType = res.data.user.type;
+
+      if (userType !== "teacher") {
+        setErro("Esta tela é apenas para professores.");
+        return;
+      }
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userId", res.data.user.userId);
+      localStorage.setItem("userType", userType);
+      navigate("/paginaInicialProfessor");
+    } catch (err: any) {
+      setErro(
+        err?.response?.data?.message ||
+          "Erro ao fazer login. Verifique suas credenciais."
+      );
+    }
   };
 
   const handleCriarConta = () => {
-    // TODO: navegar para tela de cadastro
-    console.log("Criar conta professor");
+    navigate("/register");
   };
 
   const handleEsqueciSenha = () => {
-    // TODO: navegar para tela de recuperação de senha
     console.log("Esqueci minha senha");
   };
 
@@ -86,6 +106,7 @@ const LoginPage = () => {
             CRIAR CONTA
           </BtnCriarConta>
         </Actions>
+        {erro && <div style={{ color: "red", marginTop: 8 }}>{erro}</div>}
       </Card>
 
       <Descricao>
@@ -110,4 +131,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default LoginProfessor;
