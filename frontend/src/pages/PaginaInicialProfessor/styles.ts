@@ -43,6 +43,14 @@ export const Content = styled.div`
     max-width: 1200px;
   }
 
+  @media (max-width: 1439px) {
+    width: min(900px, calc(100% - 48px));
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 32px 24px 60px;
+    align-items: center;
+  }
+
   /* TABLET */
   @media (max-width: 1024px) {
     padding: 24px 2vw 24px 2vw;
@@ -208,6 +216,10 @@ export const PlanetImage = styled.img`
     max-width: 90vw;
     min-width: 110vw;
   }
+
+  @media (max-width: 1439px) {
+    display: none;
+  }
 `;
 
 export const DescriptionContainer = styled.div`
@@ -259,26 +271,6 @@ export const DescriptionText = styled.p`
     font-weight: 600;
   }
 `;
-
-export const AstronautImage = styled.img`
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  z-index: 2;
-  width: 90px;
-  pointer-events: none;
-  display: none;
-  ${mobilePrototype} {
-    display: block;
-    height: 45vw;
-    width: 28vw;
-    margin-left: -17vw;
-    bottom: 18vw;
-    min-width: 300px;
-    max-width: 350px;
-  }
-`;
-
 
 export const LogoImage = styled.img`
   width: 100px;

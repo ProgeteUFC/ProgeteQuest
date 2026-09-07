@@ -1,19 +1,13 @@
 import React from 'react'
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import Footer from '../../components/Footer'
 import HeaderProfessor from '../../components/HeaderProfessor'
 import { TitleName } from '../../components/TitleName'
 import { Container, Content, MenuContainer, MenuOption, MenuOptions, PlanetImage, DescriptionContainer, DescriptionText} from './styles'
 import { Link } from 'react-router-dom' 
 import planetOrange from "../../assets/planet_orange.png";
-import { Menu } from 'components/Menu'
-import astronaut from "../../assets/astronaut.png";
-import { AstronautImage } from "./styles";
 
 const PaginaInicialProfessor = () => {
-  const navigate = useNavigate();
-
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
@@ -25,12 +19,11 @@ const PaginaInicialProfessor = () => {
 return (
   <>
     <PlanetImage src={planetOrange} alt="Planeta Laranja" />
-    <AstronautImage src={astronaut} alt="Astronauta" />
     <Container>
       <HeaderProfessor />
 
       <Content>
-        <TitleName titleName="Olá, Professor! O que você deseja fazer ?" />
+        <TitleName titleName="Olá, Professor(a)! O que você deseja fazer ?" />
 
         <MenuContainer>
           <MenuOptions>

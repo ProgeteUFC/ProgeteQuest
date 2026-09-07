@@ -252,3 +252,103 @@ export const Estrelas = styled.div`
   display: flex;
   justify-content: center;
 `;
+
+export const Feedback = styled.p<{ $error?: boolean }>`
+  margin-top: 10px;
+  color: ${(props) => props.$error ? "#ffd1d1" : "#d9ffd9"};
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+`;
+
+export const ModalBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 3, 65, 0.78);
+  backdrop-filter: blur(5px);
+`;
+
+export const ModalCard = styled.div`
+  width: min(460px, 100%);
+  max-height: min(620px, 90vh);
+  padding: 28px;
+  overflow-y: auto;
+  border: 8px solid white;
+  border-radius: 30px;
+  color: white;
+  background: ${(props) => props.theme.colors.indigo};
+  box-shadow: 0 24px 70px rgba(15, 0, 55, 0.45);
+  font-family: "Baloo Paaji 2", sans-serif;
+
+  h2 { font-size: 28px; text-align: center; }
+  > p { margin-top: 10px; text-align: center; }
+  > input, > select {
+    width: 100%; min-height: 44px; margin-top: 20px; padding: 8px 16px;
+    border: 2px solid transparent; border-radius: 22px; outline: none;
+    color: ${(props) => props.theme.colors.primaryDark}; background: white;
+    font-family: inherit; font-size: 16px;
+  }
+  > input:focus, > select:focus { border-color: ${(props) => props.theme.colors.lightOrange}; }
+  .join-code {
+    margin-top: 18px; padding: 12px; border-radius: 18px; color: ${(props) => props.theme.colors.primaryDark};
+    background: white; font-size: 24px; font-weight: 800; letter-spacing: 3px; text-align: center;
+  }
+
+  @media (max-width: 480px) { padding: 22px 16px; border-width: 6px; border-radius: 24px; }
+`;
+
+export const ModalActions = styled.div`
+  margin-top: 22px; display: flex; justify-content: flex-end; gap: 10px;
+  @media (max-width: 480px) { flex-direction: column-reverse; }
+`;
+
+export const CancelButton = styled.button`
+  padding: 8px 20px; border: 2px solid white; border-radius: 22px; color: white;
+  background: transparent; font-family: inherit; font-weight: 700; cursor: pointer;
+  &:hover { background: rgba(255,255,255,.12); }
+`;
+
+export const ConfirmButton = styled.button`
+  padding: 8px 20px; border: 2px solid white; border-radius: 22px;
+  color: ${(props) => props.theme.colors.primaryDark}; background: white;
+  font-family: inherit; font-weight: 700; cursor: pointer;
+  &:hover { border-color: ${(props) => props.theme.colors.lightOrange}; background: ${(props) => props.theme.colors.lightOrange}; }
+`;
+
+export const DangerButton = styled(ConfirmButton)`
+  border-color: #e74c3c; color: white; background: #e74c3c;
+  &:hover { border-color: #c0392b; background: #c0392b; }
+`;
+
+export const DataList = styled.div`
+  margin-top: 18px; display: flex; flex-direction: column; gap: 9px;
+  > div { padding: 10px 14px; border-radius: 16px; color: ${(props) => props.theme.colors.primaryDark}; background: white; }
+  strong, span { display: block; }
+  span { color: #666; font-size: 13px; }
+  p { text-align: center; }
+  button {
+    margin-top: 8px; padding: 5px 12px; border: 0; border-radius: 16px;
+    color: white; background: ${(props) => props.theme.colors.indigo};
+    font-family: inherit; font-weight: 700; cursor: pointer;
+  }
+  button:hover { background: ${(props) => props.theme.colors.challengeOrange}; }
+  .deliveries { border: 3px solid ${(props) => props.theme.colors.lightOrange}; }
+  .deliveries span { margin-top: 6px; }
+`;
+
+export const FormField = styled.div`
+  width: 100%; margin-top: 16px; text-align: left;
+  label { display: block; margin: 0 0 5px 8px; color: white; font-size: 15px; font-weight: 700; }
+  input, select {
+    width: 100%; min-height: 44px; padding: 8px 16px; border: 2px solid transparent;
+    border-radius: 22px; outline: none; color: ${(props) => props.theme.colors.primaryDark};
+    background: white; font-family: inherit; font-size: 16px;
+  }
+  input:focus, select:focus { border-color: ${(props) => props.theme.colors.lightOrange}; }
+  small { display: block; margin: 5px 8px 0; color: ${(props) => props.theme.colors.muted}; font-size: 12px; }
+`;

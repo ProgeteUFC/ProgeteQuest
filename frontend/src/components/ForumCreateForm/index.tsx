@@ -10,19 +10,24 @@ import {
 
 
 interface ForumCreateFormProps {
-  onCreate: (title: string, message: string) => void;
+  onCreate: (title: string, message: string) => Promise<void>;
+  disabled?: boolean;
 }
 
-const ForumCreateForm: React.FC<ForumCreateFormProps> = ({ onCreate }) => {
+const ForumCreateForm: React.FC<ForumCreateFormProps> = ({ onCreate, disabled }) => {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !message.trim()) return;
-    onCreate(title, message);
-    setTitle("");
-    setMessage("");
+    try {
+      await onCreate(title, message);
+      setTitle("");
+      setMessage("");
+    } catch {
+      // Mantém os campos preenchidos para o usuário tentar novamente.
+    }
   };
 
   return (
@@ -46,7 +51,7 @@ const ForumCreateForm: React.FC<ForumCreateFormProps> = ({ onCreate }) => {
           required
         />
       </FieldGroup>
-      <SubmitButton type="submit">Criar Fórum</SubmitButton>
+      <SubmitButton type="submit" disabled={disabled}>{disabled ? "Salvando..." : "Criar tópico"}</SubmitButton>
     </FormContainer>
   );
 };

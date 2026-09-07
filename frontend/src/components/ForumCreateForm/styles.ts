@@ -1,66 +1,73 @@
 import styled from "styled-components";
 
 export const FormContainer = styled.form`
-  margin-top: 24px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 22px 16px;
-  margin-left: 180px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  position: relative;
-  z-index: 10;
+  width: min(600px, 100%);
+  margin-top: 30px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-
-  & > button {
-    align-self: flex-end;
-  }
+  gap: 10px;
+  border-radius: 30px;
+  background: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 3;
+  & > button { align-self: flex-end; }
+  @media (max-width: 768px) { padding: 12px; border-radius: 24px; }
 `;
 
 export const FieldGroup = styled.div`
-  margin-bottom: 12px;
+  padding: 9px 18px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  background: ${(props) => props.theme.colors.indigo};
 `;
 
 export const Label = styled.label`
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 16px;
   font-weight: 600;
-  font-size: 1.1rem;
-  font-family: 'Baloo Paaji 2', sans-serif;
-  color: ${(props) => props.theme.colors.kingfisherDaisy}
-  
 `;
 
 export const Input = styled.input`
   width: 100%;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-top: 4px;
-  font-family: 'Baloo Paaji 2', sans-serif;
+  padding: 2px 0;
+  border: 0;
+  outline: 0;
+  color: white;
+  background: transparent;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 16px;
+  &::placeholder { color: ${(props) => props.theme.colors.muted}; }
 `;
 
 export const TextArea = styled.textarea`
   width: 100%;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-top: 4px;
   min-height: 80px;
-  font-family: 'Baloo Paaji 2', sans-serif;
-  
+  padding: 2px 0;
+  resize: vertical;
+  border: 0;
+  outline: 0;
+  color: white;
+  background: transparent;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 16px;
+  &::placeholder { color: ${(props) => props.theme.colors.muted}; }
 `;
 
 export const SubmitButton = styled.button`
-  background: #6C63FF;
-  color: #fff;
+  min-width: 150px;
+  padding: 7px 20px;
   border: 0;
-  border-radius: 8px;
-  padding: 8px 24px;
+  border-radius: 999px;
+  color: white;
+  background: ${(props) => props.theme.colors.indigo};
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s;
-
-  &:hover {
-    background: ${(props) => props.theme.colors.challengeOrange};
-  }
+  &:hover { background: ${(props) => props.theme.colors.challengeOrange}; }
 `;

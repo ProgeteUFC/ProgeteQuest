@@ -90,19 +90,20 @@ export class ActivityService {
       );
     }
 
-    const assessmentEntity = await this.assessmentRepository.findOneBy({
-      assessmentId: newActivity.assessmentId,
-    });
-    if (!assessmentEntity) {
-      throw new NotFoundException(
-        `Avaliação com ID ${newActivity.assessmentId} não encontrada`,
-      );
-    }
-
-    if (assessmentEntity.classId !== newActivity.classId) {
-      throw new BadRequestException(
-        `A avaliação ${newActivity.assessmentId} não pertence à turma ${newActivity.classId}`,
-      );
+    if (newActivity.assessmentId) {
+      const assessmentEntity = await this.assessmentRepository.findOneBy({
+        assessmentId: newActivity.assessmentId,
+      });
+      if (!assessmentEntity) {
+        throw new NotFoundException(
+          `Avaliação com ID ${newActivity.assessmentId} não encontrada`,
+        );
+      }
+      if (assessmentEntity.classId !== newActivity.classId) {
+        throw new BadRequestException(
+          `A avaliação ${newActivity.assessmentId} não pertence à turma ${newActivity.classId}`,
+        );
+      }
     }
 
     const activity = this.activityRepository.create({
@@ -111,7 +112,7 @@ export class ActivityService {
       date,
       type: newActivity.type,
       classId: newActivity.classId,
-      assessmentId: newActivity.assessmentId,
+      assessmentId: newActivity.assessmentId ?? null,
     });
 
     return this.activityRepository.save(activity);
@@ -205,10 +206,10 @@ export class ActivityService {
       existing.assessmentId = updateDto.assessmentId;
     }
 
-    if (
+    if (existing.assessmentId && (
       updateDto.assessmentId !== undefined ||
       updateDto.classId !== undefined
-    ) {
+    )) {
       const assessment = await this.assessmentRepository.findOne({
         where: { assessmentId: existing.assessmentId },
       });

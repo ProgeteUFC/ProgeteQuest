@@ -13,13 +13,19 @@ export interface Forum {
   title: string;
   message: string;
   author: string;
+  authorId: string;
+  status: "OPEN" | "CLOSED";
+  postsCount: number;
 }
 
 interface ForumListProps {
   forums: Forum[];
+  onClose: (topicId: string) => void;
+  canClose: (forum: Forum) => boolean;
+  onOpen: (forum: Forum) => void;
 }
 
-const ForumList: React.FC<ForumListProps> = ({ forums }) => {
+const ForumList: React.FC<ForumListProps> = ({ forums, onClose, canClose, onOpen }) => {
   if (forums.length === 0) {
     return <NoForumText>Nenhum fórum encontrado para esta turma.</NoForumText>;
   }
@@ -30,6 +36,12 @@ const ForumList: React.FC<ForumListProps> = ({ forums }) => {
           <ForumTitle>{forum.title}</ForumTitle>
           <ForumMessage>{forum.message}</ForumMessage>
           <ForumAuthor>Por: {forum.author}</ForumAuthor>
+          <ForumAuthor>Status: {forum.status === "OPEN" ? "Aberto" : "Fechado"}</ForumAuthor>
+          <ForumAuthor>{forum.postsCount} resposta(s)</ForumAuthor>
+          <button className="open-topic" type="button" onClick={() => onOpen(forum)}>Abrir conversa</button>
+          {forum.status === "OPEN" && canClose(forum) && (
+            <button type="button" onClick={() => onClose(forum.id)}>Fechar fórum</button>
+          )}
         </ForumCard>
       ))}
     </ForumListContainer>

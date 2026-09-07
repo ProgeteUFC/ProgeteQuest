@@ -46,6 +46,14 @@ export class ForumService {
     user: ForumContextUser,
   ): Promise<boolean> {
     if (user.isTeacher) {
+      const ownsClass = await this.classRepository.exists({
+        where: { classId: turmaId, teacherId: user.id },
+      });
+      if (!ownsClass) {
+        throw new ForbiddenException(
+          'Acesso negado: Você não é o professor responsável por esta turma.',
+        );
+      }
       return true;
     }
 
@@ -82,6 +90,12 @@ export class ForumService {
       );
     }
 
+    if (turma.teacherId !== user.id) {
+      throw new ForbiddenException(
+        'Acesso negado: Apenas o professor responsável pode habilitar este fórum.',
+      );
+    }
+
     const existingForum = await this.forumRepository.findOne({
       where: { turmaId },
     });
@@ -98,6 +112,16 @@ export class ForumService {
     return this.forumRepository.save(forum);
   }
 
+  async getForumByClass(turmaId: string, user: ForumContextUser): Promise<Forum> {
+    await this.validateUserInClass(turmaId, user);
+    const forum = await this.forumRepository.findOne({ where: { turmaId } });
+    if (forum) return forum;
+
+    return this.forumRepository.save(
+      this.forumRepository.create({ forumId: generateUuid(), turmaId }),
+    );
+  }
+
   async createTopic(
     forumId: string,
     createTopicDto: CreateTopicDto,
@@ -112,6 +136,13 @@ export class ForumService {
     }
 
     if (!user.isAdmin) {
+      const forumUser: ForumContextUser = {
+        id: user.userId,
+        isTeacher: user.type === 'Teacher' || user.type === 'teacher',
+        isStudent: user.type === 'Student' || user.type === 'student',
+      };
+      await this.validateUserInClass(forum.turmaId, forumUser);
+
       const isStudentInClass = await this.classRepository.exists({
         where: {
           classId: forum.turmaId,
@@ -120,12 +151,6 @@ export class ForumService {
           },
         },
       });
-
-      const forumUser: ForumContextUser = {
-        id: user.userId,
-        isTeacher: user.type === 'Teacher' || user.type === 'teacher',
-        isStudent: user.type === 'Student' || user.type === 'student',
-      };
 
       if (!canCreateTopic(forumUser, isStudentInClass)) {
         throw new ForbiddenException(
@@ -227,6 +252,8 @@ export class ForumService {
         isTeacher: user.type === 'Teacher' || user.type === 'teacher',
         isStudent: user.type === 'Student' || user.type === 'student',
       };
+
+      await this.validateUserInClass(topic.forum.turmaId, forumUser);
 
       if (!canAnswer(forumUser, topicContext, isUserInClass)) {
         throw new ForbiddenException(

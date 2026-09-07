@@ -1,116 +1,134 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  background-color: ${(props) => props.theme.colors.kingfisherDaisy};
   min-height: 100vh;
-  width: 100vw;
   position: relative;
-`;
-
-export const Content = styled.div`
-  padding: 40px 0 0 0;
-  max-width: 900px;
-  // margin: 0 auto;
-`;
-
-export const ListaTurmas = styled.div`
-  background: #fff;
-  border-radius: 32px;
-  padding: 22px 16px;
-  width: 400px;
-  max-height: 342px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  margin-top: 32px;
-  margin-left: 180px;
-`;
-
-
-
-export const ListaTurmasScroll = styled.div`
+  overflow-x: hidden;
   overflow-y: auto;
-  border-radius: 20px;
-  max-height: 298px;
-  display: flex;
-  flex-direction: column;
-  gap: 17px;
-  padding: 5px;
-
-  scrollbar-width: thin;
-  scrollbar-color: #fff ${(props) => props.theme.colors.indigo};
-
-  &::-webkit-scrollbar {
-    width: 10px;
-    border-radius: 32px;
-    background: #fff;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: ${(props) => props.theme.colors.indigo};
-    border-radius: 32px;
-  }
-`;
-
-export const TurmaCard = styled.div`
-  background: ${(props) => props.theme.colors.indigo};
-  border-radius: 20px;
-  padding: 8px 18px;
-  display: flex;
-  align-items: center;
-  color: #fff;
+  color: white;
+  background: ${(props) => props.theme.colors.primaryDark};
   font-family: "Baloo Paaji 2", sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
 
-  &:hover,
-  &:focus {
-    background: ${(props) => props.theme.colors.challengeOrange};
-    color: #fff;
-    outline: none;
-  }
+  @media (max-width: 768px) { min-height: 100dvh; overflow-y: auto; }
 `;
 
-export const TurmaNome = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
+export const Content = styled.main`
+  position: relative;
+  z-index: 2;
+  width: min(840px, calc(100% - 48px));
+  margin-left: 180px;
+  padding: 40px 0 110px;
 
-export const PlanetImage = styled.img`
-  position: fixed;
-  width: 700px;
-  bottom: 0;
-  right: 0;
-  transform: translate(20%, 20%);
-  pointer-events: none;
-
-  @media (max-width: 1400px) {
-    width: 500px;
-    transform: translate(10%, 10%);
+  @media (max-width: 1024px) {
+    width: min(700px, calc(100% - 48px));
+    margin: 0 auto;
   }
-  @media (max-width: 900px) {
-    width: 350px;
-    transform: translate(10%, 10%);
+  @media (max-width: 768px) {
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    padding: 52px 0 110px;
   }
 `;
 
 export const ForumTitle = styled.h1`
-  color: #fff;
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
   font-size: 34px;
   font-weight: 800;
-  font-family: "Baloo Paaji 2", sans-serif;
-  margin-left:180px;
+  line-height: 1.2;
 `;
 
 export const ForumDescription = styled.p`
-  color: #fff;
+  max-width: 720px;
+  margin-top: 8px;
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
   font-size: 24px;
   font-weight: 700;
-  font-family: "Baloo Paaji 2", sans-serif;
-  margin-left:180px;
   line-height: 1.2;
+  @media (max-width: 768px) { font-size: 20px; }
+`;
+
+export const ListaTurmas = styled.section`
+  width: min(400px, 100%);
+  max-height: 342px;
+  margin-top: 56px;
+  padding: 22px 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 30px;
+  background: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  @media (max-width: 768px) {
+    width: 100%; max-height: min(390px, 48vh); margin-top: 36px; padding: 16px 12px; border-radius: 24px;
+  }
+`;
+
+export const ListaTurmasScroll = styled.div`
+  max-height: 298px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  padding: 5px;
+  border-radius: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: ${(props) => props.theme.colors.indigo} white;
+  &::-webkit-scrollbar { width: 10px; }
+  &::-webkit-scrollbar-track { background: white; }
+  &::-webkit-scrollbar-thumb { border-radius: 32px; background: ${(props) => props.theme.colors.indigo}; }
+`;
+
+export const TurmaCard = styled.div`
+  min-height: 42px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 20px;
+  color: white;
+  background: ${(props) => props.theme.colors.indigo};
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  &:hover, &:focus-visible { background: ${(props) => props.theme.colors.challengeOrange}; outline: none; }
+  &:active { transform: scale(0.98); }
+`;
+
+export const TurmaNome = styled.div`
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+`;
+
+export const ForumState = styled.p<{ $error?: boolean }>`
+  padding: 18px 12px;
+  color: ${(props) => props.$error ? "#b42318" : props.theme.colors.primaryDark};
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+`;
+
+export const PlanetImage = styled.img`
+  position: fixed;
+  z-index: 1;
+  width: 1200px;
+  max-width: 60vw;
+  right: -300px;
+  bottom: -150px;
+  pointer-events: none;
+  @media (max-width: 1439px) { display: none; }
+`;
+
+export const LogoProgete = styled.img`
+  position: fixed;
+  z-index: 2;
+  bottom: 31px;
+  left: 52px;
+  height: 48px;
+  width: auto;
+  @media (max-width: 768px) { left: 36px; bottom: 28px; height: 30px; }
 `;

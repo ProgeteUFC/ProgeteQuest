@@ -77,6 +77,18 @@ export class ForumController {
     return this.forumService.createForum(turmaId, forumUser);
   }
 
+  @Roles('teacher', 'admin', 'student')
+  @Get('turmas/:id/forum')
+  async getForum(
+    @Param('id') turmaId: string,
+    @User() userPayload: UserPayload,
+  ) {
+    return this.forumService.getForumByClass(
+      turmaId,
+      this.mapToForumUser(userPayload),
+    );
+  }
+
   @ApiOperation({
     summary: 'Criar tópico no fórum',
     description:

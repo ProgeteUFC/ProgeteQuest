@@ -11,10 +11,17 @@ import {
   DadosTitle,
   DadosDescricao,
   Image,
+  ModalBackdrop,
+  ModalCard,
+  ModalIcon,
+  ModalActions,
+  CancelButton,
+  ConfirmDeleteButton,
+  ModalError,
 } from "./styles";
 import Header from "../../components/Header";
 import logo from "../../assets/progete.png";
-import planet_blue from "../../assets/planet_blue_anel.png";
+import planetOrange from "../../assets/planet_orange.png";
 import { alunoService } from "../../services/alunoService";
 import { useNavigate } from "react-router-dom";
 
@@ -29,6 +36,8 @@ export default function MeusDados() {
   const [tipo, setTipo] = useState<"student" | "teacher">("student");
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
   const [senhaExcluir, setSenhaExcluir] = useState("");
+  const [erroExclusao, setErroExclusao] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,40 +96,44 @@ export default function MeusDados() {
   }
 
   async function handleExcluirConta() {
-    setErro("");
+    setErroExclusao("");
     if (!senhaExcluir) {
-      setErro("Digite sua senha para confirmar a exclusão.");
+      setErroExclusao("Digite sua senha para confirmar a exclusão.");
       return;
     }
     try {
+      setExcluindo(true);
       const token = localStorage.getItem("token") || "";
       await alunoService.excluirConta(token, senhaExcluir);
       localStorage.clear();
       navigate("/");
     } catch (err: any) {
-      setErro(
+      setErroExclusao(
         err?.response?.data?.message ||
           "Erro ao excluir conta. Verifique a senha e tente novamente."
       );
+    } finally {
+      setExcluindo(false);
     }
   }
 
   function handleConfirmarExclusao() {
-    if (
-      window.confirm(
-        "Tem certeza que deseja excluir sua conta? Essa ação é permanente e não pode ser desfeita."
-      )
-    ) {
-      setMostrarConfirmacao(true);
-    }
+    setErroExclusao("");
+    setMostrarConfirmacao(true);
+  }
+
+  function fecharConfirmacao() {
+    if (excluindo) return;
+    setMostrarConfirmacao(false);
+    setSenhaExcluir("");
+    setErroExclusao("");
   }
 
   return (
-    <>
+    <Container>
       <Header />
-      <Container>
-        <LogoBottom src={logo} alt="Progete logo rodapé" />
-        <PageContent>
+      <LogoBottom src={logo} alt="Progete logo rodapé" />
+      <PageContent>
           <LeftColumn>
             <DadosTitle>Meus Dados</DadosTitle>
             <DadosDescricao>
@@ -139,7 +152,7 @@ export default function MeusDados() {
                   />
                 </InputWrapper>
                 <InputWrapper>
-                  <label>{tipo === "student" ? "Matrícula:" : "Siape/Registro:"}</label>
+                  <label>{tipo === "student" ? "Matrícula:" : "SIAPE:"}</label>
                   <input
                     type="text"
                     name="matricula"
@@ -180,41 +193,9 @@ export default function MeusDados() {
                 </InputWrapper>
                 <div className="button-group-vertical">
                   <SaveButton type="submit">SALVAR</SaveButton>
-                  {!mostrarConfirmacao ? (
-                    <ExcluirButton
-                      type="button"
-                      onClick={handleConfirmarExclusao}
-                    >
-                      EXCLUIR CONTA
-                    </ExcluirButton>
-                  ) : (
-                    <>
-                      <div className="placeholder-alert">
-                        Essa ação é <u>permanente</u>! Digite sua senha para confirmar:
-                      </div>
-                      <input
-                        type="password"
-                        placeholder="Digite sua senha para excluir"
-                        value={senhaExcluir}
-                        onChange={(e) => setSenhaExcluir(e.target.value)}
-                      />
-                      <ExcluirButton
-                        type="button"
-                        onClick={handleExcluirConta}
-                      >
-                        CONFIRMAR EXCLUSÃO
-                      </ExcluirButton>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMostrarConfirmacao(false);
-                          setSenhaExcluir("");
-                        }}
-                      >
-                        CANCELAR
-                      </button>
-                    </>
-                  )}
+                  <ExcluirButton type="button" onClick={handleConfirmarExclusao}>
+                    EXCLUIR CONTA
+                  </ExcluirButton>
                 </div>
                 {erro && <div style={{ color: "red", marginTop: 8 }}>{erro}</div>}
                 {sucesso && (
@@ -223,9 +204,34 @@ export default function MeusDados() {
               </form>
             </PersonalData>
           </LeftColumn>
-        </PageContent>
-        <Image src={planet_blue} alt="Planeta Azul" />
-      </Container>
-    </>
+      </PageContent>
+      <Image src={planetOrange} alt="" />
+      {mostrarConfirmacao && (
+        <ModalBackdrop onMouseDown={(event) => event.target === event.currentTarget && fecharConfirmacao()}>
+          <ModalCard role="dialog" aria-modal="true" aria-labelledby="titulo-excluir-conta">
+            <ModalIcon aria-hidden="true">!</ModalIcon>
+            <h2 id="titulo-excluir-conta">Excluir conta?</h2>
+            <p>Essa ação é permanente e todos os seus dados serão removidos.</p>
+            <label htmlFor="senha-exclusao">Digite sua senha para confirmar:</label>
+            <input
+              id="senha-exclusao"
+              type="password"
+              placeholder="Sua senha"
+              value={senhaExcluir}
+              onChange={(event) => setSenhaExcluir(event.target.value)}
+              onKeyDown={(event) => event.key === "Enter" && handleExcluirConta()}
+              autoFocus
+            />
+            {erroExclusao && <ModalError role="alert">{erroExclusao}</ModalError>}
+            <ModalActions>
+              <CancelButton type="button" onClick={fecharConfirmacao} disabled={excluindo}>CANCELAR</CancelButton>
+              <ConfirmDeleteButton type="button" onClick={handleExcluirConta} disabled={excluindo}>
+                {excluindo ? "EXCLUINDO..." : "EXCLUIR CONTA"}
+              </ConfirmDeleteButton>
+            </ModalActions>
+          </ModalCard>
+        </ModalBackdrop>
+      )}
+    </Container>
   );
 }

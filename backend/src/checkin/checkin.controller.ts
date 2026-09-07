@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { CheckinService } from './checkin.service';
 import { CreateCheckinDto } from './dtos/createCheckin.dto';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -41,5 +41,14 @@ export class CheckinController {
   @Post()
   async create(@Body() dto: CreateCheckinDto, @User() user: UserPayload) {
     return this.checkinService.createCheckin(dto, user);
+  }
+
+  @Roles('teacher', 'admin')
+  @Get('activity/:activityId')
+  async listByActivity(
+    @Param('activityId') activityId: string,
+    @User() user: UserPayload,
+  ) {
+    return this.checkinService.listByActivity(activityId, user);
   }
 }

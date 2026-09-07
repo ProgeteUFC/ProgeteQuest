@@ -92,4 +92,28 @@ export class CheckinService {
     });
     return this.checkinRepository.save(checkin);
   }
+
+  async listByActivity(activityId: string, user: UserPayload) {
+    const activity = await this.activityRepository.findOne({
+      where: { activityId },
+      relations: ['class'],
+    });
+    if (!activity || (!user.isAdmin && activity.class.teacherId !== user.userId)) {
+      throw new NotFoundException('Atividade não encontrada ou acesso negado');
+    }
+
+    const checkins = await this.checkinRepository.find({
+      where: { activityId },
+      relations: ['student', 'student.user'],
+      order: { createdAt: 'ASC' },
+    });
+
+    return checkins.map((checkin) => ({
+      checkinId: checkin.checkinId,
+      studentId: checkin.studentId,
+      name: checkin.student.user?.name,
+      registrationStudent: checkin.student.registrationStudent,
+      deliveredAt: checkin.createdAt,
+    }));
+  }
 }

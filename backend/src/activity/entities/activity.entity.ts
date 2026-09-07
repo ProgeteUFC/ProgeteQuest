@@ -54,8 +54,9 @@ export class Activity {
     type: 'varchar',
     length: 36,
     name: 'assessment_id',
+    nullable: true,
   })
-  assessmentId!: string;
+  assessmentId!: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
@@ -71,7 +72,7 @@ export class Activity {
   // Relação com Assessment (1,1)
   @ManyToOne(() => Assessment, (assessment) => assessment.activities)
   @JoinColumn({ name: 'assessment_id' })
-  assessment!: Assessment;
+  assessment!: Assessment | null;
 
   //Relação com Code (0,n)
   @OneToMany(() => Code, (code) => code.activity)

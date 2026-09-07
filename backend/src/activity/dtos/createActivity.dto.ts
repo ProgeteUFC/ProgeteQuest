@@ -15,5 +15,5 @@ export class CreateActivityDto {
   classId!: string;
 
   @ApiProperty({ example: 'uuid-da-avaliacao', description: 'ID da avaliação relacionada' })
-  assessmentId!: string;
+  assessmentId?: string;
 }

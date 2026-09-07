@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import {
   Container,
@@ -12,26 +11,44 @@ import {
   PlanetImage,
   ForumTitle,
   ForumDescription,
+  LogoProgete,
+  ForumState,
 } from "./styles";
-import planet_blue_anel from "../../assets/planet_blue_anel.png";
+import planetOrange from "../../assets/planet_orange.png";
+import progeteLogo from "../../assets/progete.png";
+import { turmaService } from "../../services/turmaService";
+import { alunoService } from "../../services/alunoService";
 
-const turmas = [
-  { id: "1", nome: "Processos de Software" },
-  { id: "2", nome: "Gerência de Projetos" },
-  { id: "3", nome: "Qualidade de Software" },
-  { id: "4", nome: "Requisitos de Software" },
-  { id: "5", nome: "Banco de Dados" },
-  { id: "6", nome: "Engenharia de Software" },
-  { id: "7", nome: "Redes de Computadores" },
-  { id: "8", nome: "Estruturas de Dados" },
-  { id: "9", nome: "Algoritmos" },
-  { id: "10", nome: "Sistemas Operacionais" },
-  { id: "11", nome: "Inteligência Artificial" },
-  { id: "12", nome: "Compiladores" },
-];
+interface TurmaForum { id: string; nome: string }
 
 export default function ForumPage() {
   const navigate = useNavigate();
+  const [turmas, setTurmas] = useState<TurmaForum[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    let ativo = true;
+    async function carregarTurmas() {
+      try {
+        const token = localStorage.getItem("token") || "";
+        const userType = localStorage.getItem("userType");
+        const userId = localStorage.getItem("userId") || "";
+        const response = userType === "teacher"
+          ? await turmaService.listarTurmasProfessor(token)
+          : await alunoService.listarTurmas(userId, token);
+        if (ativo) {
+          setTurmas(response.data.map((turma: any) => ({ id: turma.classId, nome: turma.name })));
+        }
+      } catch (error: any) {
+        if (ativo) setErro(error?.response?.data?.message || "Não foi possível carregar as turmas.");
+      } finally {
+        if (ativo) setCarregando(false);
+      }
+    }
+    carregarTurmas();
+    return () => { ativo = false; };
+  }, []);
   return (
     <Container>
       <Header />
@@ -42,12 +59,16 @@ export default function ForumPage() {
         </ForumDescription>
         <ListaTurmas>
           <ListaTurmasScroll>
-            {turmas.map((turma) => (
+            {carregando && <ForumState>Carregando turmas...</ForumState>}
+            {!carregando && erro && <ForumState $error>{erro}</ForumState>}
+            {!carregando && !erro && turmas.length === 0 && <ForumState>Nenhuma turma associada ao seu perfil.</ForumState>}
+            {!carregando && !erro && turmas.map((turma) => (
               <TurmaCard
                 key={turma.id}
                 tabIndex={0}
                 onClick={() => navigate(`/forum/${turma.id}`)}
-                style={{ cursor: 'pointer' }}
+                onKeyDown={(event) => event.key === "Enter" && navigate(`/forum/${turma.id}`)}
+                role="button"
               >
                 <TurmaNome>{turma.nome}</TurmaNome>
               </TurmaCard>
@@ -55,8 +76,8 @@ export default function ForumPage() {
           </ListaTurmasScroll>
         </ListaTurmas>
       </Content>
-      <Footer />
-      <PlanetImage src={planet_blue_anel} alt="Planeta Azul" />
+      <LogoProgete src={progeteLogo} alt="Progete" />
+      <PlanetImage src={planetOrange} alt="" />
     </Container>
   );
 }

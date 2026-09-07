@@ -18,6 +18,10 @@ export function canCreateTopic(
   user: ForumContextUser,
   isStudentInClass: boolean,
 ): boolean {
+  if (user.isTeacher) {
+    return true;
+  }
+
   if (!user.isStudent) {
     return false;
   }

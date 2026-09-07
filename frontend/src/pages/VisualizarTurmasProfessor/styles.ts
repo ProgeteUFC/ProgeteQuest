@@ -1,172 +1,156 @@
-export const ProgeteLogoFull = styled.img`
-  position: fixed;
-  width: 700px;
-  z-index: 0;
-  bottom: 0;
-  left: 0;
-  transform: translate(-20%, 20%);
-  pointer-events: none;
-  @media (max-width: 768px) {
-    width: 300px;
-    left: 0;
-    bottom: 0;
-    transform: translate(-10%, 10%);
-  }
-`;
-export const PlanetOrange = styled.img`
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  pointer-events: none;
-  z-index: 0;
-  @media (max-width: 768px) {
-    display: none;
-    width: 300px;
-  }
-  @media (min-width: 1025px) {
-    display: block;
-    width: 1200px;
-    bottom: -150px;
-    right: -300px;
-    transform: translate(5%, 5%);
-  }
-`;
-export const FixedLogo = styled.img`
-  position: fixed;
-  left: 32px;
-  bottom: 32px;
-  width: 120px;
-  height: auto;
-  z-index: 10;
-  pointer-events: none;
-`;
-
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const ViewClassesBg = styled.div`
-  // height: 84.3vh;
-  min-height: 85.6vh;
-  background: #2e008b;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
+  min-height: 100vh;
   position: relative;
-  // width: 100%;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: hidden;
+  color: white;
+  background: ${(props) => props.theme.colors.primaryDark};
+  font-family: "Baloo Paaji 2", sans-serif;
 `;
 
-export const ViewClassesContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
+export const ViewClassesContainer = styled.main`
+  position: relative;
   z-index: 2;
-  margin-top: 40px;
+  width: min(840px, calc(100% - 48px));
+  margin-left: 180px;
+  padding-top: 40px;
+
+  @media (max-width: 1024px) {
+    width: min(700px, calc(100% - 48px));
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    padding-top: 52px;
+  }
 `;
 
 export const Title = styled.h1`
-  color: #fff;
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
   font-size: 34px;
   font-weight: 800;
-  font-family: 'Baloo Paaji 2', sans-serif;
-  margin-left: 180px;
-  margin-bottom: 0.5rem;
-`;
-
-export const Subtitle = styled.h2`
-  color: #fff;
-  font-size: 24px;
-  font-weight: 700;
-  font-family: 'Baloo Paaji 2', sans-serif;
-  margin-left: 180px;
-  margin-bottom: 2.5rem;
   line-height: 1.2;
 `;
 
-export const ListaTurmas = styled.div`
-  background: #fff;
-  border-radius: 32px;
-  padding: 22px 16px;
-  width: 400px;
+export const Subtitle = styled.h2`
+  margin-top: 8px;
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+`;
+
+export const ListaTurmas = styled.section`
+  width: min(400px, 100%);
   max-height: 342px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin-top: 56px;
+  padding: 22px 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-top: 32px;
-  margin-left: 180px;
+  border-radius: 30px;
+  background: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-height: min(390px, 48vh);
+    margin-top: 36px;
+    padding: 16px 12px;
+    border-radius: 24px;
+  }
 `;
 
 export const ListaTurmasScroll = styled.div`
-  overflow-y: auto;
-  border-radius: 20px;
   max-height: 298px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 17px;
   padding: 5px;
+  border-radius: 20px;
   scrollbar-width: thin;
-  scrollbar-color: #fff #4f4192;
-  &::-webkit-scrollbar {
-    width: 10px;
-    border-radius: 32px;
-    background: #fff;
-  }
+  scrollbar-color: ${(props) => props.theme.colors.indigo} white;
+
+  &::-webkit-scrollbar { width: 10px; }
+  &::-webkit-scrollbar-track { background: white; }
   &::-webkit-scrollbar-thumb {
-    background: #4f4192;
     border-radius: 32px;
+    background: ${(props) => props.theme.colors.indigo};
   }
 `;
 
 export const TurmaCard = styled.div`
-  background: #4f4192;
-  border-radius: 20px;
+  min-height: 42px;
   padding: 8px 18px;
   display: flex;
   align-items: center;
-  color: #fff;
-  font-family: 'Baloo Paaji 2', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
   justify-content: space-between;
+  border-radius: 20px;
+  color: white;
+  background: ${(props) => props.theme.colors.indigo};
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  &:hover,
-  &:focus {
-    background: #f97316;
-    color: #fff;
+  transition: background 0.2s, transform 0.1s;
+
+  &:hover, &:focus-visible {
+    background: ${(props) => props.theme.colors.challengeOrange};
     outline: none;
   }
+  &:active { transform: scale(0.98); }
 `;
 
 export const TurmaNome = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-export const PlanetIllustration = styled.div`
-  position: fixed;
-  width: 1100px;
-  height: 1100px;
-  right: -265px;
-  bottom: -350px;
-  background: url('/src/assets/planeta_amarelo.png') no-repeat center/contain;
-  z-index: 1;
-  pointer-events: none;
-  max-width: 100vw;
+export const StateMessage = styled.p<{ $error?: boolean }>`
+  padding: 18px 12px;
+  color: ${(props) => props.$error ? "#b42318" : props.theme.colors.primaryDark};
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+`;
 
-  @media (max-width: 1400px) {
-    width: 800px;
-    height: 800px;
-    bottom: -80px;
-    transform: translate(5%, 10%);
-  }
-  @media (max-width: 900px) {
-    width: 500px;
-    height: 500px;
-    bottom: -40px;
-    transform: translate(0, 10%);
+export const PlanetOrange = styled.img`
+  position: fixed;
+  z-index: 1;
+  width: 1200px;
+  max-width: 60vw;
+  right: -300px;
+  bottom: -150px;
+  pointer-events: none;
+
+  @media (max-width: 1439px) { display: none; }
+`;
+
+export const LogoProgete = styled.img`
+  position: fixed;
+  z-index: 2;
+  bottom: 31px;
+  left: 52px;
+  height: 48px;
+  width: auto;
+
+  @media (max-width: 768px) {
+    left: 36px;
+    bottom: 28px;
+    height: 30px;
   }
 `;

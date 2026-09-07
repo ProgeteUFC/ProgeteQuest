@@ -1,254 +1,327 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  width: 100%;
-  height: 84.3vh; //REFERÊNCIA - JÁ CONTA COM O ESPAÇO DA HEADER
-  background-color: ${(props) => props.theme.colors.kingfisherDaisy};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 100vh;
   position: relative;
-
   overflow: hidden;
+  color: white;
+  background: ${(props) => props.theme.colors.primaryDark};
+  font-family: "Baloo Paaji 2", sans-serif;
 
   @media (max-width: 768px) {
+    min-height: 100dvh;
     overflow-y: auto;
-    padding: 1rem;
-    align-items: flex-start;
-    height: auto;
   }
 `;
 
-export const PageContent = styled.div`
-  width: 100%;
-  // max-width: 1200px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4rem;
-  z-index: 1;
-  margin-bottom: 45px;
+export const PageContent = styled.main`
+  position: relative;
+  z-index: 2;
+  width: min(840px, calc(100% - 48px));
+  margin-left: 180px;
+  padding: 40px 0 110px;
 
+  @media (max-width: 1024px) {
+    width: min(700px, calc(100% - 48px));
+    margin: 0 auto;
+  }
 
-  /* RESPONSIVIDADE: TABLET/LAPTOP PEQUENO */
-  @media (max-width: 1000px) {
-    flex-direction: column;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 4rem;
+  @media (max-width: 768px) {
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    padding: 52px 0 110px;
   }
 `;
 
 export const LeftColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  // gap: 0.2rem;
-  flex: 1;
-  max-width: 600px;
-  
-
-
+  width: min(600px, 100%);
 
   .button-group-vertical {
     display: flex;
-    flex-direction: row;
-    gap: 1rem;
-    margin-top: 0.3rem;
-    margin-left: 0;
-    align-items: center;
-    width: 100%;
-    justify-content: space-between;
+    flex-wrap: wrap;
     flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
   }
 
-  /* --- RESPONSIVIDADE: CELULAR --- */
-  @media (max-width: 768px) {
-    margin-left: 0;
-    max-width: 100%;
+  .button-group-vertical .placeholder-alert {
     width: 100%;
+    color: #8b1f1f;
+    font-size: 14px;
+    font-weight: 600;
+  }
 
-    .button-group-vertical {
-      align-items: center; /* Centraliza botões no mobile */
-    }
+  .button-group-vertical > input {
+    width: 100%;
+    min-height: 38px;
+    padding: 7px 14px;
+    border: 2px solid ${(props) => props.theme.colors.indigo};
+    border-radius: 20px;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .button-group-vertical > button:not([type="submit"]) {
+    padding: 5px 20px;
+    border: 0;
+    border-radius: 20px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
   }
 `;
 
 export const DadosTitle = styled.h1`
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
   font-size: 34px;
   font-weight: 800;
-  color: ${(props) => props.theme.colors.white};
-  font-family: "Baloo Paaji 2", sans-serif;
-  margin-left: 180px;
-  margin-top: 80px;
-  margin-bottom: 1px;
-  margin-left: 180px;
-`;
-
-export const DadosDescricao = styled.p`
-  font-size: 24px;
-  font-weight: 800;
-  color: ${(props) => props.theme.colors.white};
-  font-family: "Baloo Paaji 2", sans-serif;
-  margin-left: 180px;
-  margin-bottom: 24px;
-  margin-left: 180px;
-
   line-height: 1.2;
 `;
 
-
-export const LogoTop = styled.img`
-  position: absolute;
-  left: 2rem;
-  top: 2rem;
-  height: 48px;
-
-  @media (max-width: 768px) {
-    left: 50%;
-    transform: translateX(-50%); /* Centraliza no topo */
-    top: 1.5rem;
-    height: 40px;
-  }
-`;
-
-export const LogoBottom = styled.img`
-  position: absolute;
-  left: 2rem;
-  bottom: 0.7rem;
-  height: 48px;
+export const DadosDescricao = styled.p`
+  margin-top: 8px;
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
 
   @media (max-width: 768px) {
-    /* No celular, removemos position absolute para não cobrir o formulário */
-    position: relative;
-    left: 0;
-    bottom: 0;
-    margin-top: 3rem;
-    margin-bottom: 1rem;
-    align-self: center;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    font-size: 20px;
+    br { display: none; }
   }
 `;
 
 export const PersonalData = styled.div`
-  background: ${({ theme }) => theme.colors.white};
-  padding: 26px 24px;
-  margin: 0 0 0 180px;
-  border-radius: 1.5rem;
   width: 100%;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  margin-top: 30px;
+  padding: 22px 20px;
+  border-radius: 30px;
+  background: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 
   form {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 8px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px 12px;
+    border-radius: 24px;
   }
 `;
 
 export const InputWrapper = styled.div`
+  width: 100%;
+  min-height: 40px;
+  padding: 7px 18px;
   display: flex;
   align-items: center;
-  background: #4a4385;
-  padding: 0 1rem;
-  border-radius: 1rem;
-  height: 36px;
-  width: 100%;
   border: 2px solid transparent;
+  border-radius: 20px;
+  background: ${(props) => props.theme.colors.indigo};
+  font-family: "Baloo Paaji 2", sans-serif;
 
-  &:focus-within {
-    border-color: ${({ theme }) => theme.colors.secondary || "#00ffb3"};
-  }
+  &:focus-within { border-color: ${(props) => props.theme.colors.lightOrange}; }
 
   label {
-    color: #fff;
-    font-weight: 500;
+    margin-right: 6px;
+    color: white;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
     white-space: nowrap;
-    margin-right: 0.5rem;
-    font-family: "Codec Pro", sans-serif;
-    font-size: 14px;
   }
 
   input {
-    background: transparent;
-    border: none;
-    color: ${(props) => props.theme.colors.lightOrange};
+    min-width: 0;
     width: 100%;
-    font-family: "Codec Pro", sans-serif;
-    font-size: 14px;
-    font-weight: 300;
     height: 100%;
+    border: 0;
+    outline: 0;
+    color: white;
+    background: transparent;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 400;
+  }
 
-    &:focus {
-      outline: none;
-    }
+  input::placeholder { color: ${(props) => props.theme.colors.muted}; }
 
-    &::placeholder {
-        color: ${(props) => props.theme.colors.muted};
-
-      font-family: "Codec Pro", sans-serif;
-      // font-weight: bold;
-    }
+  @media (max-width: 480px) {
+    align-items: flex-start;
+    flex-direction: column;
+    border-radius: 16px;
   }
 `;
 
 export const SaveButton = styled.button`
-  background-color: ${(props) => props.theme.colors.secondary};
-  color: ${(props) => props.theme.colors.white};
-  border: none;
-  border-radius: 20px;
-  font-size: 16px;
-  font-family: "Baloo Paaji 2", sans-serif;
-  font-weight: bold;
-  letter-spacing: 1px;
-  cursor: pointer;
-  padding: 4px 0;
   width: 160px;
-  margin-top: 10px;
-  transition: background 0.2s, color 0.2s;
-
-  &:hover {
-    background-color: ${(props) => props.theme.colors.challengeOrange};
-    color: #fff;
-  }
+  margin-top: 2px;
+  padding: 5px 20px;
+  border: 0;
+  border-radius: 20px;
+  color: white;
+  background: ${(props) => props.theme.colors.indigo};
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover { background: ${(props) => props.theme.colors.challengeOrange}; }
 `;
 
 export const ExcluirButton = styled.button`
-  background-color: ${(props) => props.theme.colors.secondary};
-  color: ${(props) => props.theme.colors.white};
-  border: none;
-  border-radius: 24px;
-  // padding: 10px 24px;
-   padding: 4px 20px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1rem;
-  font-family: "Baloo Paaji 2", sans-serif;
   max-width: 260px;
-  transition: background 0.2s, color 0.2s;
+  padding: 5px 20px;
+  border: 0;
+  border-radius: 20px;
+  color: white;
+  background: ${(props) => props.theme.colors.indigo};
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover { background: #e74c3c; }
+`;
 
-  &:hover {
-    background: #e74c3c;
-      color: ${(props) => props.theme.colors.white};
+export const LogoBottom = styled.img`
+  position: fixed;
+  z-index: 2;
+  bottom: 31px;
+  left: 52px;
+  height: 48px;
+  width: auto;
 
+  @media (max-width: 768px) {
+    left: 36px;
+    bottom: 28px;
+    height: 30px;
   }
 `;
 
 export const Image = styled.img`
-  // REFERÊNCIA - IMAGEM DO PLANETA AZUL CLARO
   position: fixed;
-  width: 700px;
-  bottom: 0;
-  right: 0;
-  transform: translate(20%, 20%);
+  z-index: 1;
+  width: 1200px;
+  max-width: 60vw;
+  right: -300px;
+  bottom: -150px;
+  pointer-events: none;
+  @media (max-width: 1439px) { display: none; }
+`;
 
-  @media (max-width: 1400px) {
-    width: 500px;
-    transform: translate(10%, 10%);
-  }
+export const LogoTop = styled.img``;
 
-  @media (max-width: 768px) {
-    width: 400px;
-    transform: translate(10%, 10%);
+export const ModalBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 3, 65, 0.78);
+  backdrop-filter: blur(5px);
+`;
+
+export const ModalCard = styled.div`
+  width: min(440px, 100%);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 8px solid white;
+  border-radius: 30px;
+  color: white;
+  background: ${(props) => props.theme.colors.indigo};
+  box-shadow: 0 24px 70px rgba(15, 0, 55, 0.45);
+  font-family: "Baloo Paaji 2", sans-serif;
+  text-align: center;
+
+  h2 { margin-top: 10px; font-size: 28px; line-height: 1.2; }
+  p { max-width: 340px; margin-top: 8px; font-size: 16px; line-height: 1.35; }
+  label { width: 100%; margin-top: 22px; text-align: left; font-size: 16px; font-weight: 600; }
+  > input {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 6px;
+    padding: 8px 16px;
+    border: 2px solid transparent;
+    border-radius: 22px;
+    outline: none;
+    color: ${(props) => props.theme.colors.primaryDark};
+    background: white;
+    font-family: inherit;
+    font-size: 16px;
   }
+  > input:focus { border-color: ${(props) => props.theme.colors.lightOrange}; }
+
+  @media (max-width: 480px) {
+    padding: 24px 18px;
+    border-width: 6px;
+    border-radius: 24px;
+    h2 { font-size: 24px; }
+  }
+`;
+
+export const ModalIcon = styled.div`
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 4px solid ${(props) => props.theme.colors.lightOrange};
+  border-radius: 50%;
+  color: ${(props) => props.theme.colors.lightOrange};
+  font-size: 30px;
+  font-weight: 800;
+`;
+
+export const ModalActions = styled.div`
+  width: 100%;
+  margin-top: 22px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  @media (max-width: 480px) { flex-direction: column-reverse; }
+`;
+
+export const CancelButton = styled.button`
+  padding: 8px 20px;
+  border: 2px solid white;
+  border-radius: 22px;
+  color: white;
+  background: transparent;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  &:hover { background: rgba(255, 255, 255, 0.12); }
+  &:disabled { cursor: wait; opacity: 0.65; }
+`;
+
+export const ConfirmDeleteButton = styled.button`
+  padding: 8px 20px;
+  border: 2px solid #e74c3c;
+  border-radius: 22px;
+  color: white;
+  background: #e74c3c;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  &:hover { border-color: #c0392b; background: #c0392b; }
+  &:disabled { cursor: wait; opacity: 0.65; }
+`;
+
+export const ModalError = styled.p`
+  width: 100%;
+  margin-top: 8px !important;
+  color: #ffd1d1;
+  text-align: left;
+  font-weight: 600;
 `;
