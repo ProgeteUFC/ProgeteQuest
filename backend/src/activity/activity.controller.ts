@@ -4,6 +4,7 @@ import { CreateActivityDto } from './dtos/createActivity.dto';
 import { Activity } from './entities/activity.entity';
 import { Roles } from 'src/decorators/roles.decorator';
 import { SearchActivityDto } from './dtos/searchActivity.dto';
+import { UpdateActivityDto } from './dtos/updateActivity.dto';
 import { User, UserPayload } from 'src/decorators/user.decorator';
 import {
   ApiTags,
@@ -74,7 +75,7 @@ export class ActivityController {
     description: 'ID da atividade a ser atualizada',
   })
   @ApiBody({
-    type: CreateActivityDto,
+    type: UpdateActivityDto,
     description: 'Novos dados da atividade',
     examples: {
       exemplo: {
@@ -95,7 +96,7 @@ export class ActivityController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() updatedActivity: CreateActivityDto,
+    @Body() updatedActivity: UpdateActivityDto,
     @User() user: UserPayload,
   ): Promise<Activity> {
     return this.activityService.updateActivity(id, updatedActivity, user);

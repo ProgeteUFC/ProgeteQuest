@@ -65,7 +65,7 @@ async listarTurmas(studentId: string, token: string) {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
-  async realizarCheckin(dados: { activityId: string; studentId: string; codeId: string }, token: string) {
+  async realizarCheckin(dados: { activityId: string; code: string }, token: string) {
     return axios.post(`${API_URL}/checkin`, dados, {
       headers: { Authorization: `Bearer ${token}` },
     });

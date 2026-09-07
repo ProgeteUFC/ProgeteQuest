@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
-import { ThemeProvider, useTheme } from "styled-components";
-import { Routes, Route, useLocation } from "react-router-dom";
+import React from "react";
+import { ThemeProvider } from "styled-components";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { GlobalStyle } from "./styles/global";
@@ -18,33 +17,10 @@ import ForumPage from "./pages/ForumPage";
 import LoginProfessor from "./pages/LoginProfessor";
 
 import ForumTurmaPage from "./pages/ForumTurmaPage";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import ViewClasses from './pages/VisualizarTurmasProfessor';
 import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
 
 export default function App() {
-  const [count, setCount] = useState(0);
-  const userType = localStorage.getItem("userType");
-
-
-  // Rotas protegidas para aluno
-  function PrivateRouteAluno({ children }: { children: React.ReactElement }) {
-    const [negado, setNegado] = useState(false);
-    useEffect(() => {
-      if (userType !== "student") {
-        setNegado(true);
-        setTimeout(() => {
-          window.location.href = "/paginaInicialProfessor";
-        }, 2000);
-      }
-    }, []);
-    if (userType !== "student") {
-      return <div style={{color: 'red', fontWeight: 'bold', textAlign: 'center', marginTop: 40}}>Acesso negado: apenas alunos podem acessar esta página.</div>;
-    }
-    return children;
-  }
-
   return (
     <ThemeProvider theme={defaultTheme}>
       <GlobalStyle />
@@ -70,6 +46,19 @@ export default function App() {
       </KeyedRouter>
     </ThemeProvider>
   );
+}
+
+function PrivateRouteAluno({ children }: { children: React.ReactElement }) {
+  const userType = localStorage.getItem("userType")?.toLowerCase();
+  const token = localStorage.getItem("token");
+
+  if (!token) return <Navigate to="/" replace />;
+  if (userType === "teacher" || userType === "admin") {
+    return <Navigate to="/paginaInicialProfessor" replace />;
+  }
+  if (userType !== "student") return <Navigate to="/" replace />;
+
+  return children;
 }
 
 const KeyedRouter = ({ children }: { children: React.ReactNode }) => {

@@ -1,159 +1,140 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
-  background-color: ${(props) => props.theme.colors.kingfisherDaisy};
+export const Container = styled.main`
   min-height: 100vh;
-  width: 100vw;
   position: relative;
-  display: flex;         
-  flex-direction: column; 
-  overflow-x: hidden;      
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.primaryDark};
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
 `;
 
-export const Content = styled.div`
-  padding: 40px 20px 0 20px;
-  max-width: 900px;
-  margin-top: 25px;
-  // margin: 0 auto;
-  flex: 1;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 60px;
+export const Content = styled.section`
+  position: relative;
+  z-index: 2;
+  width: min(840px, calc(100% - 48px));
+  margin-left: 180px;
+  padding: 40px 0 120px;
 
-  @media (min-width: 1024px) {
-    align-items: flex-start;
-    margin-left: 10%;
-    width: 80%;
-    max-width: 1200px;
-  }
-`;
-
-// export const Disciplinas = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   align-items: center;
-//   background-color: ${(props) => props.theme.colors.white};
-//   border-radius: 20px;
-//   margin-top: 20px;
-//   padding-bottom: 10px;
-
-//   @media (max-width: 320px) {
-//     width: 100%;
-//   }
-
-//   @media (min-width: 321px) and (max-width: 480px) {
-//     width: 100%;
-//   }
-
-//   @media (min-width: 481px) and (max-width: 768px) {
-//     width: 100%;
-//   }
-
-//   @media (min-width: 769px) and (max-width: 1024px) {
-//     width: 60%;
-//   }
-
-//   @media (min-width: 1025px) and (max-width: 1280px) {
-//     width: 55%;
-//   }
-
-//   @media (min-width: 1281px) {
-//     width: 55%;
-//   }
-// `;
-
-export const PlanetImage = styled.img`
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  pointer-events: none;
-  z-index: 0;           
-
-  /* MOBILE E TABLET (Até 768px) */
   @media (max-width: 768px) {
-    display: none;
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    padding-top: 52px;
+    padding-bottom: 100px;
   }
+`;
 
-  /* DESKTOP (Acima de 1024px) */
-  @media (min-width: 1025px) {
-    display: block;
-    width: 450px;
-    transform: translate(15%, 15%); 
-  }
+export const Title = styled.h1`
+  margin: 0;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.2;
+`;
+
+export const Subtitle = styled.p`
+  max-width: 760px;
+  margin: 8px 0 0;
+  font-family: "Baloo Paaji 2", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
 `;
 
 export const ListaTurmas = styled.div`
-  background: #fff;
-  border-radius: 32px;
+  width: min(450px, 100%);
+  margin-top: 56px;
   padding: 22px 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  max-width: 450px;
-  margin: 20px 0;
-  max-height: 400px;  
+  border-radius: 30px;
+  background: ${({ theme }) => theme.colors.white};
+
+  @media (max-width: 768px) {
+    margin-top: 36px;
+    padding: 14px 12px;
+    border-radius: 24px;
+  }
 `;
 
 export const ListaTurmasScroll = styled.div`
-  overflow-y: auto;
-  border-radius: 20px;
-  max-height: 298px; /* 342px - padding top/bottom */
   display: flex;
+  max-height: 390px;
   flex-direction: column;
-  gap: 17px;
-  padding: 5px;
+  gap: 14px;
+  overflow-y: auto;
+  padding: 2px 6px 2px 2px;
 
-  /* Barra de rolagem customizada */
+  scrollbar-color: ${({ theme }) => theme.colors.secondary} transparent;
   scrollbar-width: thin;
-  scrollbar-color: #fff ${(props) => props.theme.colors.indigo};
-
-  &::-webkit-scrollbar {
-    width: 10px;
-    border-radius: 32px;
-    background: #fff;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: ${(props) => props.theme.colors.indigo};
-    border-radius: 32px;
-  }
 `;
 
-export const TurmaCard = styled.div`
-  background: ${(props) => props.theme.colors.indigo};
-  border-radius: 20px;
-  padding: 16px 20px
-  min-height: 60px;
+export const TurmaCard = styled.button`
   display: flex;
+  width: 100%;
+  min-height: 44px;
   align-items: center;
-  color: #fff;
-  font-family: "Baloo Paaji 2", sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  justify-content: space-between;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 22px;
+  background: ${({ theme }) => theme.colors.indigo};
+  color: ${({ theme }) => theme.colors.white};
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: left;
   cursor: pointer;
-  
+  transition: background-color 0.2s ease, transform 0.2s ease;
 
-  &:hover{
-    transition: background 0.2s, color 0.2s;
-    background: ${(props) => props.theme.colors.challengeOrange};
-    color: #fff;
+  &:hover,
+  &:focus-visible {
+    background: ${({ theme }) => theme.colors.challengeOrange};
     outline: none;
   }
-  
-  @media (max-width: 480px) {
-    padding: 12px 16px;
-    font-size: 0.95rem;
+
+  &:active {
+    transform: scale(0.99);
   }
 `;
 
-export const TurmaNome = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+export const TurmaNome = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
+export const StateMessage = styled.p<{ $error?: boolean }>`
+  margin: 8px;
+  color: ${({ $error, theme }) =>
+    $error ? theme.colors.challengeOrange : theme.colors.primaryDark};
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+`;
 
+export const PlanetImage = styled.img`
+  position: fixed;
+  z-index: 1;
+  right: -100px;
+  bottom: -150px;
+  width: 1100px;
+  max-width: 50vw;
+  pointer-events: none;
+  user-select: none;
+
+  @media (max-width: 1439px) {
+    display: none;
+  }
+`;
+
+export const LogoProgete = styled.img`
+  position: fixed;
+  z-index: 2;
+  bottom: 31px;
+  left: 52px;
+  height: 48px;
+
+  @media (max-width: 768px) {
+    bottom: 28px;
+    left: 36px;
+    height: 30px;
+  }
+`;

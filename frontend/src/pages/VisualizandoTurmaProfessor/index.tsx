@@ -10,7 +10,7 @@ import {
 } from "./styles";
 import starIcon from "../../assets/icons/star-icon.svg";
 
-type ModalType = "createActivity" | "activities" | "enroll" | "students" | "joinCode" | "delete" | null;
+type ModalType = "createActivity" | "editActivity" | "deleteActivity" | "activities" | "enroll" | "students" | "joinCode" | "delete" | null;
 
 const VisualizandoTurmasProfessor = () => {
   const { turmaId } = useParams<{ turmaId: string }>();
@@ -24,6 +24,19 @@ const VisualizandoTurmasProfessor = () => {
   const [atividadeCodigo, setAtividadeCodigo] = useState<AtividadeTurma | null>(null);
   const [codigosAtividade, setCodigosAtividade] = useState<CodigoAtividade[]>([]);
   const [dataAtividade, setDataAtividade] = useState("");
+
+  useEffect(() => {
+    const removerAtividadesExpiradas = () => {
+      const agora = Date.now();
+      setAtividades((atuais) =>
+        atuais.filter((atividade) => new Date(atividade.date).getTime() > agora)
+      );
+    };
+
+    removerAtividadesExpiradas();
+    const intervalId = window.setInterval(removerAtividadesExpiradas, 15000);
+    return () => window.clearInterval(intervalId);
+  }, []);
   const [tipoAtividade, setTipoAtividade] = useState<AtividadeTurma["type"]>("activity");
   const [participantes, setParticipantes] = useState<ParticipanteTurma[]>([]);
   const [valor, setValor] = useState("");
@@ -110,10 +123,20 @@ const VisualizandoTurmasProfessor = () => {
   async function visualizarCodigosAtividade(atividade: AtividadeTurma) {
     setAtividadeCodigo(atividade);
     setAtividadeSelecionada(null);
+    setCodigosAtividade([]);
     await executar(async () => {
       const response = await turmaService.listarCodigosAtividade(atividade.activityId, token);
       setCodigosAtividade(response.data);
     });
+  }
+
+  function voltarParaListaDeAtividades() {
+    setAtividadeSelecionada(null);
+    setAtividadeCodigo(null);
+    setEntregas([]);
+    setCodigosAtividade([]);
+    setErro("");
+    setFeedback("");
   }
 
   async function gerarNovoCodigoAtividade() {
@@ -135,6 +158,25 @@ const VisualizandoTurmasProfessor = () => {
     abrirModal("createActivity");
   }
 
+  function prepararEdicaoAtividade(atividade: AtividadeTurma) {
+    const dataLocal = new Date(atividade.date);
+    dataLocal.setMinutes(dataLocal.getMinutes() - dataLocal.getTimezoneOffset());
+    setAtividadeSelecionada(atividade);
+    setValor(atividade.name);
+    setDataAtividade(dataLocal.toISOString().slice(0, 16));
+    setTipoAtividade(atividade.type);
+    setErro("");
+    setFeedback("");
+    setModal("editActivity");
+  }
+
+  function prepararExclusaoAtividade(atividade: AtividadeTurma) {
+    setAtividadeSelecionada(atividade);
+    setErro("");
+    setFeedback("");
+    setModal("deleteActivity");
+  }
+
   async function criarAtividade() {
     if (!turmaId || !valor.trim() || !dataAtividade) {
       return setErro("Preencha o nome e a data da atividade.");
@@ -148,6 +190,47 @@ const VisualizandoTurmasProfessor = () => {
       setFeedback("Atividade e código de check-in criados com sucesso!");
       setValor("");
       setDataAtividade("");
+    });
+  }
+
+  async function editarAtividade() {
+    if (!atividadeSelecionada || !valor.trim() || !dataAtividade) {
+      return setErro("Preencha o nome e a data limite da atividade.");
+    }
+    await executar(async () => {
+      const response = await turmaService.editarAtividade(
+        atividadeSelecionada.activityId,
+        {
+          name: valor.trim(),
+          date: new Date(dataAtividade).toISOString(),
+          type: tipoAtividade,
+        },
+        token
+      );
+      setAtividades((atuais) =>
+        atuais.map((atividade) =>
+          atividade.activityId === response.data.activityId
+            ? response.data
+            : atividade
+        )
+      );
+      setAtividadeSelecionada(null);
+      setModal("activities");
+      setFeedback("Atividade atualizada com sucesso!");
+    });
+  }
+
+  async function excluirAtividade() {
+    if (!atividadeSelecionada) return;
+    const activityId = atividadeSelecionada.activityId;
+    await executar(async () => {
+      await turmaService.excluirAtividade(activityId, token);
+      setAtividades((atuais) =>
+        atuais.filter((atividade) => atividade.activityId !== activityId)
+      );
+      setAtividadeSelecionada(null);
+      setModal("activities");
+      setFeedback("Atividade excluída com sucesso!");
     });
   }
 
@@ -185,7 +268,8 @@ const VisualizandoTurmasProfessor = () => {
   }
 
   const modalTitles: Record<Exclude<ModalType, null>, string> = {
-    createActivity: "Criar atividade", activities: "Atividades da turma",
+    createActivity: "Criar atividade", editActivity: "Editar atividade",
+    deleteActivity: "Excluir atividade?", activities: "Atividades da turma",
     enroll: "Matricular aluno", students: "Alunos matriculados",
     joinCode: "Código de entrada da turma", delete: "Excluir turma?",
   };
@@ -228,7 +312,7 @@ const VisualizandoTurmasProfessor = () => {
           <ModalBackdrop onMouseDown={(event) => event.target === event.currentTarget && fecharModal()}>
             <ModalCard role="dialog" aria-modal="true" aria-labelledby="modal-title">
               <h2 id="modal-title">{modalTitles[modal]}</h2>
-              {modal === "createActivity" && <>
+              {(modal === "createActivity" || modal === "editActivity") && <>
                 <FormField>
                   <label htmlFor="activity-name">Nome da atividade</label>
                   <input id="activity-name" autoFocus value={valor} onChange={(e) => setValor(e.target.value)} placeholder="Ex.: Lista de exercícios" />
@@ -246,39 +330,77 @@ const VisualizandoTurmasProfessor = () => {
                 </FormField>
               </>}
               {modal === "enroll" && <input autoFocus value={valor} onChange={(e) => setValor(e.target.value)} placeholder="Matrícula do aluno" />}
-              {modal === "activities" && <DataList>
-                {processando && !atividadeSelecionada ? <p>Carregando...</p> : atividades.length ? atividades.map((item) => (
-                  <div key={item.activityId}>
-                    <strong>{item.name}</strong>
-                    <span>Entrega até {new Date(item.date).toLocaleString("pt-BR")}</span>
-                    <button type="button" onClick={() => visualizarEntregas(item)}>Ver quem entregou</button>
-                    <button type="button" onClick={() => visualizarCodigosAtividade(item)}>Ver códigos de check-in</button>
-                  </div>
-                )) : <p>Nenhuma atividade criada.</p>}
-                {atividadeSelecionada && <div className="deliveries">
-                  <strong>Entregas: {atividadeSelecionada.name}</strong>
-                  {processando ? <span>Carregando...</span> : entregas.length ? entregas.map((entrega) => (
-                    <span key={entrega.checkinId}>{entrega.name} ({entrega.registrationStudent}) — {new Date(entrega.deliveredAt).toLocaleString("pt-BR")}</span>
-                  )) : <span>Nenhum aluno entregou esta atividade.</span>}
-                </div>}
-                {atividadeCodigo && <div className="deliveries">
-                  <strong>Códigos: {atividadeCodigo.name}</strong>
-                  {processando ? <span>Carregando...</span> : codigosAtividade.length ? codigosAtividade.map((codigo) => (
-                    <span key={codigo.codeId}>
-                      <b>{codigo.code}</b> — {codigo.active ? "Ativo" : "Inativo"} — válido até {new Date(codigo.validity).toLocaleString("pt-BR")}
-                    </span>
-                  )) : <span>Nenhum código de check-in foi gerado para esta atividade.</span>}
-                  {!processando && <button type="button" onClick={gerarNovoCodigoAtividade}>Gerar novo código</button>}
-                </div>}
-              </DataList>}
+              {modal === "activities" && (
+                <DataList>
+                  {atividadeCodigo ? (
+                    <div className="deliveries">
+                      <strong>Códigos: {atividadeCodigo.name}</strong>
+                      {processando ? (
+                        <span>Carregando códigos...</span>
+                      ) : codigosAtividade.length ? (
+                        codigosAtividade.map((codigo) => (
+                          <span key={codigo.codeId}>
+                            <b>{codigo.code}</b> — {codigo.active ? "Ativo" : "Inativo"} — válido até {new Date(codigo.validity).toLocaleString("pt-BR")}
+                          </span>
+                        ))
+                      ) : (
+                        <span>Nenhum código de check-in foi gerado para esta atividade.</span>
+                      )}
+                      {!processando && (
+                        <>
+                          <button type="button" onClick={gerarNovoCodigoAtividade}>Gerar novo código</button>
+                          <button type="button" onClick={voltarParaListaDeAtividades}>Voltar às atividades</button>
+                        </>
+                      )}
+                    </div>
+                  ) : atividadeSelecionada ? (
+                    <div className="deliveries">
+                      <strong>Entregas: {atividadeSelecionada.name}</strong>
+                      {processando ? (
+                        <span>Carregando entregas...</span>
+                      ) : entregas.length ? (
+                        entregas.map((entrega) => (
+                          <span key={entrega.checkinId}>{entrega.name} ({entrega.registrationStudent}) — {new Date(entrega.deliveredAt).toLocaleString("pt-BR")}</span>
+                        ))
+                      ) : (
+                        <span>Nenhum aluno entregou esta atividade.</span>
+                      )}
+                      {!processando && <button type="button" onClick={voltarParaListaDeAtividades}>Voltar às atividades</button>}
+                    </div>
+                  ) : processando ? (
+                    <p>Carregando...</p>
+                  ) : atividades.length ? (
+                    atividades.map((item) => (
+                      <div key={item.activityId}>
+                        <strong>{item.name}</strong>
+                        <span>Entrega até {new Date(item.date).toLocaleString("pt-BR")}</span>
+                        <button type="button" onClick={() => visualizarEntregas(item)}>Ver quem entregou</button>
+                        <button type="button" onClick={() => visualizarCodigosAtividade(item)}>Ver códigos de check-in</button>
+                        <button type="button" onClick={() => prepararEdicaoAtividade(item)}>Editar</button>
+                        <button className="danger" type="button" onClick={() => prepararExclusaoAtividade(item)}>Excluir</button>
+                      </div>
+                    ))
+                  ) : (
+                    <p>Nenhuma atividade criada.</p>
+                  )}
+                </DataList>
+              )}
               {modal === "students" && <DataList>{processando ? <p>Carregando...</p> : participantes.length ? participantes.map((item) => <div key={item.studentId}><strong>{item.name}</strong><span>{item.registrationStudent} · {item.email}</span></div>) : <p>Nenhum aluno matriculado.</p>}</DataList>}
               {modal === "joinCode" && <><p>Compartilhe este código para os alunos entrarem na turma:</p><div className="join-code">{processando ? "Gerando..." : turma?.joinCode || "Código indisponível"}</div><p>Gere um novo somente se quiser substituir o código atual.</p></>}
               {modal === "delete" && <p>Essa ação é permanente e removerá a turma.</p>}
+              {modal === "deleteActivity" && (
+                <p>
+                  Tem certeza de que deseja excluir a atividade <strong>{atividadeSelecionada?.name}</strong>?
+                  Essa ação também removerá seus códigos e check-ins.
+                </p>
+              )}
               {feedback && <Feedback>{feedback}</Feedback>}
               {erro && <Feedback $error>{erro}</Feedback>}
               <ModalActions>
                 <CancelButton onClick={fecharModal} disabled={processando}>Fechar</CancelButton>
                 {modal === "createActivity" && <ConfirmButton onClick={criarAtividade} disabled={processando}>{processando ? "Criando..." : "Criar"}</ConfirmButton>}
+                {modal === "editActivity" && <ConfirmButton onClick={editarAtividade} disabled={processando}>{processando ? "Salvando..." : "Salvar alterações"}</ConfirmButton>}
+                {modal === "deleteActivity" && <DangerButton onClick={excluirAtividade} disabled={processando}>{processando ? "Excluindo..." : "Excluir atividade"}</DangerButton>}
                 {modal === "enroll" && <ConfirmButton onClick={matricularAluno} disabled={processando}>{processando ? "Matriculando..." : "Matricular"}</ConfirmButton>}
                 {modal === "joinCode" && <ConfirmButton onClick={gerarJoinCode} disabled={processando}>{processando ? "Gerando..." : "Gerar novo código"}</ConfirmButton>}
                 {modal === "delete" && <DangerButton onClick={excluirTurma} disabled={processando}>{processando ? "Excluindo..." : "Excluir turma"}</DangerButton>}

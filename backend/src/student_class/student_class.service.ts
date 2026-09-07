@@ -203,6 +203,7 @@ export class StudentClassService {
     const students = await this.studentClassRepository
       .createQueryBuilder('student_class')
       .leftJoinAndSelect('student_class.student', 'student')
+      .leftJoinAndSelect('student.user', 'user')
       .where('student_class.classId = :classId', { classId })
       .getMany();
 
@@ -213,21 +214,60 @@ export class StudentClassService {
       .leftJoin('checkin.student', 'student')
       .leftJoin('checkin.activity', 'activity')
       .where('activity.classId = :classId', { classId })
+      .orderBy('checkin.createdAt', 'ASC')
       .getMany();
 
-    // Conta check-ins por aluno
+    // Cada check-in vale 100 pontos. A ordem de realização em cada atividade
+    // concede um bônus para desempatar alunos com a mesma quantidade.
+    const bonusPorCheckin = new Map<string, number>();
+    const checkinsPorAtividade = new Map<string, Checkin[]>();
+
+    for (const checkin of checkins) {
+      const grupo = checkinsPorAtividade.get(checkin.activityId) ?? [];
+      grupo.push(checkin);
+      checkinsPorAtividade.set(checkin.activityId, grupo);
+    }
+
+    for (const grupo of checkinsPorAtividade.values()) {
+      grupo
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .forEach((checkin, index) => {
+          const bonus = index === 0 ? 10 : index === 1 ? 7 : index === 2 ? 5 : 3;
+          bonusPorCheckin.set(checkin.checkinId, bonus);
+        });
+    }
+
     const ranking = students.map((sc) => {
-      const count = checkins.filter((c) => c.studentId === sc.studentId).length;
+      const checkinsDoAluno = checkins.filter(
+        (checkin) => checkin.studentId === sc.studentId,
+      );
+      const bonusVelocidade = checkinsDoAluno.reduce(
+        (total, checkin) => total + (bonusPorCheckin.get(checkin.checkinId) ?? 0),
+        0,
+      );
+      const ultimoCheckin =
+        checkinsDoAluno[checkinsDoAluno.length - 1]?.createdAt ?? null;
+
       return {
         studentId: sc.studentId,
         registrationStudent: sc.student.registrationStudent,
         name: sc.student.user?.name,
-        checkins: count,
+        checkins: checkinsDoAluno.length,
+        points: checkinsDoAluno.length * 100 + bonusVelocidade,
+        lastCheckinAt: ultimoCheckin,
       };
     });
 
-    // Ordena do maior para o menor
-    ranking.sort((a, b) => b.checkins - a.checkins);
+    ranking.sort((a, b) => {
+      if (b.checkins !== a.checkins) return b.checkins - a.checkins;
+      if (b.points !== a.points) return b.points - a.points;
+      if (a.lastCheckinAt && b.lastCheckinAt) {
+        return a.lastCheckinAt.getTime() - b.lastCheckinAt.getTime();
+      }
+      if (a.lastCheckinAt) return -1;
+      if (b.lastCheckinAt) return 1;
+      return (a.name ?? '').localeCompare(b.name ?? '');
+    });
 
     if (ranking.length === 0) {
       throw new NotFoundException('Ainda não há participantes nessa turma');

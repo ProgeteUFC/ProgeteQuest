@@ -185,9 +185,15 @@ export class ClassService {
   }
 
   async getClassById(id: string, user: any): Promise<Class> {
+    const userType = String(user.type ?? '').toLowerCase();
     const whereCondition = user.isAdmin
       ? { classId: id }
-      : { classId: id, teacherId: user.userId };
+      : userType === 'student'
+        ? {
+            classId: id,
+            studentClasses: { studentId: user.userId },
+          }
+        : { classId: id, teacherId: user.userId };
     const turma = await this.classRepository.findOne({
       where: whereCondition,
     });

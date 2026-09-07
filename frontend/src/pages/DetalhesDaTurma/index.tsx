@@ -15,6 +15,7 @@ import {
   QuantAlunos,
   QuantAlunosValor,
   ProfessorEturma,
+  AcoesEturma,
   OpcoesTurma,
   VizualizarAtividades,
   VizualizarMembros,
@@ -22,9 +23,17 @@ import {
   ColocacaoTexto,
   RankingAlunos,
   Estrelas,
+  PageState,
+  ModalOverlay,
+  MembersModal,
+  ModalHeader,
+  CloseModalButton,
+  MembersList,
+  MemberItem,
+  EmptyMembers,
 } from "./style";
 import ProgetePng from "../../assets/progete.png";
-import ProgeteAzulClaro from "../../assets/planeta-azul-claro.png";
+import ProgeteAzulClaro from "../../assets/planet_blue_anel.png";
 import userIcon from "../../assets/icons/user-icon.svg";
 import peopleGroup from "../../assets/icons/people-group-icon.svg";
 import medalIcon from "../../assets/icons/medal-icon.svg";
@@ -42,7 +51,19 @@ export default function DetalhesDaTurma() {
   const [atividades, setAtividades] = useState<any[]>([]);
   const [minhaPosicao, setMinhaPosicao] = useState<number | null>(null);
   const [erro, setErro] = useState("");
+  const [mostrarMembros, setMostrarMembros] = useState(false);
   const userId = localStorage.getItem("userId") || "";
+
+  useEffect(() => {
+    if (!mostrarMembros) return;
+
+    function fecharComEsc(event: KeyboardEvent) {
+      if (event.key === "Escape") setMostrarMembros(false);
+    }
+
+    window.addEventListener("keydown", fecharComEsc);
+    return () => window.removeEventListener("keydown", fecharComEsc);
+  }, [mostrarMembros]);
 
   useEffect(() => {
     async function fetchDados() {
@@ -83,9 +104,8 @@ export default function DetalhesDaTurma() {
   }, [id, userId]);
 
   return (
-    <>
-      <Header />
-      <Pagina>
+    <Pagina>
+        <Header />
         <TituloPagina>{turma?.name || "Turma"}</TituloPagina>
         <SubTituloPagina>
           Aqui você visualiza suas atividades e informações <br />
@@ -94,15 +114,18 @@ export default function DetalhesDaTurma() {
         <LogoProgete src={ProgetePng} alt="Logo Progete" />
         <PlanetaAzulClaro src={ProgeteAzulClaro} alt="" />
         <PageContent>
+          {erro && <PageState $error>{erro}</PageState>}
           <ProfessorEturma>
             <InfosProfessor>
               <img src={userIcon} width={60} alt="Ícone de perfil" />
               <div>
                 <NomeProfessor>
-                  Professor(a): {professor?.name || "Carregando..."}
+                  <strong>Professor(a):</strong>{" "}
+                  {professor?.name || "Carregando..."}
                 </NomeProfessor>
                 <ContatoProfessor>
-                  Contato: {professor?.email || "Carregando..."}
+                  <strong>Contato:</strong>{" "}
+                  {professor?.email || "Carregando..."}
                 </ContatoProfessor>
               </div>
             </InfosProfessor>
@@ -117,21 +140,17 @@ export default function DetalhesDaTurma() {
               </QuantAlunosValor>
             </QuantAlunos>
           </ProfessorEturma>
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <AcoesEturma>
             <OpcoesTurma>
               <VizualizarAtividades
+                type="button"
                 onClick={() => navigate(`/minhasAtividades?turma=${id}`)}
               >
                 Visualizar atividades
               </VizualizarAtividades>
               <VizualizarMembros
-                onClick={() =>
-                  alert(
-                    participantes
-                      .map((p) => `${p.name} (${p.registrationStudent})`)
-                      .join("\n") || "Nenhum membro encontrado"
-                  )
-                }
+                type="button"
+                onClick={() => setMostrarMembros(true)}
               >
                 Visualizar membros
               </VizualizarMembros>
@@ -144,7 +163,7 @@ export default function DetalhesDaTurma() {
                   : "Você ainda não está no ranking desta turma."}
               </ColocacaoTexto>
             </ColocacaoAluno>
-          </div>
+          </AcoesEturma>
           <RankingAlunos>
             <Estrelas>
               <img src={starIcon} width={30} alt="icone de estrela" />
@@ -153,16 +172,63 @@ export default function DetalhesDaTurma() {
               <img src={starIcon} width={40} alt="icone de estrela" />
               <img src={starIcon} width={30} alt="icone de estrela" />
             </Estrelas>
-            {ranking.slice(0, 5).map((aluno, idx) => (
+            {ranking.slice(0, 4).map((aluno, idx) => (
               <AlunoRanking
                 key={aluno.studentId}
                 posicaoAluno={idx + 1}
-                nomeAluno={aluno.name}
+                nomeAluno={aluno.name || "Aluno sem nome"}
+                pontuacao={aluno.points || 0}
               />
             ))}
+            {ranking.length === 0 && (
+              <PageState>Ainda não há alunos no ranking.</PageState>
+            )}
           </RankingAlunos>
         </PageContent>
-      </Pagina>
-    </>
+
+        {mostrarMembros && (
+          <ModalOverlay onMouseDown={() => setMostrarMembros(false)}>
+            <MembersModal
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="titulo-lista-membros"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <ModalHeader>
+                <div>
+                  <h2 id="titulo-lista-membros">Alunos matriculados</h2>
+                  <p>{participantes.length} aluno(s) na turma</p>
+                </div>
+                <CloseModalButton
+                  type="button"
+                  aria-label="Fechar lista de alunos"
+                  onClick={() => setMostrarMembros(false)}
+                >
+                  ×
+                </CloseModalButton>
+              </ModalHeader>
+
+              {participantes.length > 0 ? (
+                <MembersList>
+                  {participantes.map((participante) => (
+                    <MemberItem key={participante.studentId}>
+                      <span aria-hidden="true">
+                        {participante.name?.charAt(0).toUpperCase() || "A"}
+                      </span>
+                      <div>
+                        <strong>{participante.name}</strong>
+                        <p>Matrícula: {participante.registrationStudent}</p>
+                        {participante.email && <p>{participante.email}</p>}
+                      </div>
+                    </MemberItem>
+                  ))}
+                </MembersList>
+              ) : (
+                <EmptyMembers>Nenhum aluno matriculado nesta turma.</EmptyMembers>
+              )}
+            </MembersModal>
+          </ModalOverlay>
+        )}
+    </Pagina>
   );
 }

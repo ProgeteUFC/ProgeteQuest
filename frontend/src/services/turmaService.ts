@@ -86,6 +86,16 @@ export const turmaService = {
   async listarAtividades(classId: string, token: string) {
     return axios.get<AtividadeTurma[]>(`${API_URL}/activity/class/${classId}`, auth(token));
   },
+  async editarAtividade(
+    activityId: string,
+    dados: Pick<AtividadeTurma, "name" | "date" | "type">,
+    token: string
+  ) {
+    return axios.put<AtividadeTurma>(`${API_URL}/activity/${activityId}`, dados, auth(token));
+  },
+  async excluirAtividade(activityId: string, token: string) {
+    return axios.delete<AtividadeTurma[]>(`${API_URL}/activity/${activityId}`, auth(token));
+  },
   async listarEntregas(activityId: string, token: string) {
     return axios.get<EntregaAtividade[]>(`${API_URL}/checkin/activity/${activityId}`, auth(token));
   },

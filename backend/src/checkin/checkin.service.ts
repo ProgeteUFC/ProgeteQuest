@@ -29,10 +29,13 @@ export class CheckinService {
 
   async createCheckin(dto: CreateCheckinDto, user: UserPayload) {
     const now = new Date();
+    const studentId = user.isAdmin && dto.studentId ? dto.studentId : user.userId;
 
     // Verifica se o código existe e é válido (ativo e data)
     const code = await this.codeRepository.findOne({
-      where: { codeId: dto.codeId },
+      where: dto.codeId
+        ? { codeId: dto.codeId, activityId: dto.activityId }
+        : { code: dto.code.trim(), activityId: dto.activityId },
     });
 
     if (!code) {
@@ -70,7 +73,7 @@ export class CheckinService {
     }
 
     const alreadyChecked = await this.checkinRepository.findOne({
-      where: { activityId: dto.activityId, studentId: dto.studentId },
+      where: { activityId: dto.activityId, studentId },
     });
     if (alreadyChecked)
       // MODIFICADO: Troca BadRequest por Conflict
@@ -78,7 +81,7 @@ export class CheckinService {
 
     // Validação Bônus (Já existia): Verifica se o aluno está matriculado (Admin ignora)
     const studentClass = await this.studentClassRepository.findOne({
-      where: { studentId: dto.studentId, classId: activity.classId },
+      where: { studentId, classId: activity.classId },
     });
     if (!user.isAdmin && !studentClass)
       throw new BadRequestException('Aluno não está matriculado na turma');
@@ -87,8 +90,8 @@ export class CheckinService {
     const checkin = this.checkinRepository.create({
       checkinId: generateUuid(),
       activityId: dto.activityId,
-      studentId: dto.studentId,
-      codeId: dto.codeId,
+      studentId,
+      codeId: code.codeId,
     });
     return this.checkinRepository.save(checkin);
   }

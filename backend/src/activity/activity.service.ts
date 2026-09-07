@@ -7,7 +7,7 @@ import { CreateActivityDto } from './dtos/createActivity.dto';
 import { UpdateActivityDto } from './dtos/updateActivity.dto';
 import { generateUuid } from '../utils/generateUuid';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, MoreThan } from 'typeorm';
 import { Activity } from './entities/activity.entity';
 import { ActivityType } from '../Enums/activity.enum';
 import { validate as isUuid } from 'uuid';
@@ -15,6 +15,7 @@ import { Class } from 'src/class/entities/class.entity';
 import { Assessment } from 'src/assessment/entities/assessment.entity';
 import { UserPayload } from 'src/decorators/user.decorator';
 import { Checkin } from 'src/checkin/entities/checkin.entity';
+import { Code } from 'src/code/entities/code.entity';
 
 @Injectable()
 export class ActivityService {
@@ -30,11 +31,18 @@ export class ActivityService {
 
     @InjectRepository(Checkin)
     private readonly checkinRepository: Repository<Checkin>,
+
+    @InjectRepository(Code)
+    private readonly codeRepository: Repository<Code>,
   ) {}
 
   async getAllActivities(user: UserPayload): Promise<Activity[]> {
+    const now = new Date();
+
     if (user.isAdmin) {
-      return this.activityRepository.find();
+      return this.activityRepository.find({
+        where: { date: MoreThan(now) },
+      });
     }
 
     const myClasses = await this.classRepository.find({
@@ -47,7 +55,7 @@ export class ActivityService {
     if (classIds.length === 0) return [];
 
     return this.activityRepository.find({
-      where: { classId: In(classIds) },
+      where: { classId: In(classIds), date: MoreThan(now) },
     });
   }
 
@@ -62,11 +70,9 @@ export class ActivityService {
       throw new BadRequestException('Data inválida');
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (date < today) {
+    if (date <= new Date()) {
       throw new BadRequestException(
-        'A data da atividade não pode estar no passado',
+        'A data limite da atividade deve estar no futuro',
       );
     }
 
@@ -155,11 +161,9 @@ export class ActivityService {
         );
       }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (parsedDate < today) {
+      if (parsedDate <= new Date()) {
         throw new BadRequestException(
-          'A data da atividade não pode estar no passado.',
+          'A data limite da atividade deve estar no futuro.',
         );
       }
 
@@ -227,7 +231,16 @@ export class ActivityService {
       }
     }
 
-    return await this.activityRepository.save(existing);
+    const savedActivity = await this.activityRepository.save(existing);
+
+    if (updateDto.date !== undefined) {
+      await this.codeRepository.update(
+        { activityId: id, active: true },
+        { validity: savedActivity.date.toISOString() },
+      );
+    }
+
+    return savedActivity;
   }
 
   async deleteActivity(id: string, user: UserPayload): Promise<Activity[]> {
@@ -258,6 +271,8 @@ export class ActivityService {
     assessmentId?: string;
   }, user: UserPayload) {
     const qb = this.activityRepository.createQueryBuilder('activity');
+
+    qb.andWhere('activity.date > :now', { now: new Date() });
 
     if (!user.isAdmin) {
       const myClasses = await this.classRepository.find({
@@ -294,9 +309,13 @@ export class ActivityService {
     studentId?: string,
     user?: UserPayload
   ) {
-    if (user && !user.isAdmin && user.type === 'teacher') {
+    if (user && !user.isAdmin) {
+      const userType = String(user.type).toLowerCase();
       const classEntity = await this.classRepository.findOne({
-        where: { classId, teacherId: user.userId },
+        where:
+          userType === 'student'
+            ? { classId, studentClasses: { studentId: user.userId } }
+            : { classId, teacherId: user.userId },
       });
       if (!classEntity) {
         throw new NotFoundException('Turma não encontrada ou acesso negado');
@@ -304,7 +323,7 @@ export class ActivityService {
     }
 
     const atividades = await this.activityRepository.find({
-      where: { classId },
+      where: { classId, date: MoreThan(new Date()) },
       order: { [orderBy]: order },
       select: [
         'activityId',

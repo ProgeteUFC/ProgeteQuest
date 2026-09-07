@@ -15,7 +15,7 @@ import {
 export class CheckinController {
   constructor(private readonly checkinService: CheckinService) {}
 
-  @Roles('student', 'teacher', 'admin')
+  @Roles('student', 'admin')
   @ApiOperation({
     summary: 'Realizar check-in',
     description:
@@ -28,8 +28,7 @@ export class CheckinController {
       exemplo: {
         value: {
           activityId: 'uuid-da-atividade',
-          studentId: 'uuid-do-estudante',
-          codeId: 'uuid-do-codigo',
+          code: 'ABC123',
         },
       },
     },

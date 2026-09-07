@@ -1,225 +1,268 @@
-import React, { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { FaCheckCircle } from "react-icons/fa";
 import Header from "../../components/Header";
-import { TitleDescription } from "../../components/TitleDescription";
-import { TitleName } from "../../components/TitleName";
+import planetBlue from "../../assets/planet_blue_anel.png";
+import progeteLogo from "../../assets/progete.png";
+import { alunoService } from "../../services/alunoService";
 import {
+  ActionButton,
+  AtividadeCard,
+  AtividadeInfo,
+  AtividadeNome,
+  AtividadesContainer,
+  CheckinForm,
+  CodeInput,
   Container,
   Content,
-  AtividadesContainer,
-  AtividadeCard,
-  AtividadeNome,
-  AtividadeInfo,
-  StatusIcon,
+  DateInfo,
   Disciplina,
+  LogoProgete,
+  PageState,
   PlanetImage,
+  StatusBadge,
+  StatusRow,
+  Subtitle,
+  Title,
 } from "./styles";
-import planet_blue_anel from "../../assets/planet_blue_anel.png";
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import { alunoService } from "../../services/alunoService";
+
+interface AtividadeAluno {
+  activityId: string;
+  name: string;
+  date: string;
+  createdAt?: string;
+  concludedAt?: string | null;
+  status: "ok" | "pending";
+}
 
 export function MinhasAtividades() {
   const location = useLocation();
   const turmaId = new URLSearchParams(location.search).get("turma");
-  const [atividades, setAtividades] = useState<any[]>([]);
-  const [nomeTurma, setNomeTurma] = useState<string>("");
+  const [atividades, setAtividades] = useState<AtividadeAluno[]>([]);
+  const [nomeTurma, setNomeTurma] = useState("");
+  const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
   const [atividadeCheckin, setAtividadeCheckin] = useState<string | null>(null);
   const [codigoCheckin, setCodigoCheckin] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
-  function formatarDataCompleta(data: string | Date | undefined) {
-    if (!data) return "-";
-    const d = new Date(data);
-    return `${d.toLocaleDateString("pt-BR")} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}h`;
+  useEffect(() => {
+    const removerAtividadesExpiradas = () => {
+      const agora = Date.now();
+      setAtividades((atuais) =>
+        atuais.filter((atividade) => new Date(atividade.date).getTime() > agora)
+      );
+    };
+
+    removerAtividadesExpiradas();
+    const intervalId = window.setInterval(removerAtividadesExpiradas, 15000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  function formatarDataCompleta(data?: string | Date | null) {
+    if (!data) return "Não informada";
+    const date = new Date(data);
+    if (Number.isNaN(date.getTime())) return "Data inválida";
+
+    return `${date.toLocaleDateString("pt-BR")} às ${date.toLocaleTimeString(
+      "pt-BR",
+      { hour: "2-digit", minute: "2-digit" }
+    )}`;
   }
 
   useEffect(() => {
+    let ativo = true;
+
     async function fetchAtividades() {
-      try {
-        const token = localStorage.getItem("token") || "";
-        if (!turmaId) return;
-        // Buscar atividades
-        const res = await alunoService.listarAtividades(turmaId, token);
-        setAtividades(res.data);
-
-        // Buscar nome da turma
-        const turmaRes = await alunoService.buscarTurma(turmaId, token);
-        setNomeTurma(turmaRes.data.name);
-      } catch (err: any) {
-        setErro("Erro ao buscar atividades.");
-      }
-    }
-    fetchAtividades();
-  }, [turmaId, sucesso]);
-
-  async function handleCheckin(activityId: string, codigo: string) {
-    setErro("");
-    setSucesso("");
-    try {
-      const token = localStorage.getItem("token") || "";
-      const studentId = localStorage.getItem("userId") || "";
-
-      // Buscar o código pelo valor digitado e validar se está ativo
-      const codeRes = await alunoService.buscarCodigoAtividade(activityId, token);
-      const codeObj = codeRes.data.find((c: any) => c.code === codigo && c.active);
-
-      if (!codeObj) {
-        setErro("Código inválido ou inativo para esta atividade.");
+      if (!turmaId) {
+        setErro("Turma não informada. Volte aos detalhes da turma e tente novamente.");
+        setCarregando(false);
         return;
       }
 
-      await alunoService.realizarCheckin(
-        { activityId, studentId, codeId: codeObj.codeId },
+      try {
+        const token = localStorage.getItem("token") || "";
+        const [atividadesResponse, turmaResponse] = await Promise.all([
+          alunoService.listarAtividades(turmaId, token),
+          alunoService.buscarTurma(turmaId, token),
+        ]);
+
+        if (ativo) {
+          setAtividades(atividadesResponse.data);
+          setNomeTurma(turmaResponse.data.name);
+        }
+      } catch (error: any) {
+        if (ativo) {
+          setErro(
+            error?.response?.data?.message ||
+              "Não foi possível carregar as atividades desta turma."
+          );
+        }
+      } finally {
+        if (ativo) setCarregando(false);
+      }
+    }
+
+    fetchAtividades();
+    return () => {
+      ativo = false;
+    };
+  }, [turmaId]);
+
+  async function handleCheckin(
+    event: FormEvent<HTMLFormElement>,
+    activityId: string
+  ) {
+    event.preventDefault();
+    const code = codigoCheckin.trim();
+
+    if (!code) {
+      setSucesso("");
+      setErro("Digite o código do check-in.");
+      return;
+    }
+
+    setErro("");
+    setSucesso("");
+    setEnviando(true);
+
+    try {
+      const token = localStorage.getItem("token") || "";
+      const response = await alunoService.realizarCheckin(
+        { activityId, code },
         token
+      );
+
+      setAtividades((atuais) =>
+        atuais.map((atividade) =>
+          atividade.activityId === activityId
+            ? {
+                ...atividade,
+                status: "ok",
+                concludedAt: response.data.createdAt || new Date().toISOString(),
+              }
+            : atividade
+        )
       );
       setSucesso("Check-in realizado com sucesso!");
       setAtividadeCheckin(null);
       setCodigoCheckin("");
-    } catch (err: any) {
+    } catch (error: any) {
       setErro(
-        err?.response?.data?.message ||
-        "Erro ao realizar check-in. Verifique o código e tente novamente."
+        error?.response?.data?.message ||
+          "Não foi possível realizar o check-in. Confira o código e tente novamente."
       );
+    } finally {
+      setEnviando(false);
     }
+  }
+
+  function abrirCheckin(activityId: string) {
+    setErro("");
+    setSucesso("");
+    setAtividadeCheckin(activityId);
+    setCodigoCheckin("");
   }
 
   return (
     <Container>
       <Header />
       <Content>
-        <TitleName titleName="Atividades" />
-        <TitleDescription titleDescription="Aqui você visualiza as atividades/desafios propostos pelo(a) professor(a) na turma de:" />
-        <Disciplina>
-          <span>{nomeTurma || "Turma"}</span>
-        </Disciplina>
+        <Title>Minhas atividades</Title>
+        <Subtitle>
+          Aqui você visualiza as atividades propostas pelo(a) professor(a) na
+          turma:
+        </Subtitle>
+        <Disciplina>{nomeTurma || "Turma"}</Disciplina>
+
         <AtividadesContainer>
-          {atividades.length === 0 && !erro && (
-            <div style={{ color: "#2c0383", fontWeight: "bold", padding: "24px", textAlign: "center" }}>
-              Nenhuma atividade cadastrada para esta turma.
-            </div>
+          {carregando && <PageState>Carregando atividades...</PageState>}
+          {!carregando && erro && atividades.length === 0 && (
+            <PageState $error role="alert">{erro}</PageState>
           )}
-          {atividades.map((a, i) => (
-            <AtividadeCard key={a.activityId}>
-              <AtividadeNome>{a.name}</AtividadeNome>
-              <AtividadeInfo>
-                <div>
-                  <b>Início:</b> {formatarDataCompleta(a.createdAt)}{" "}
-                  <b>Finaliza em:</b> {formatarDataCompleta(a.date)}
-                </div>
-                {a.status === "ok" && (
-                  <>
-                    <StatusIcon
-                      status={a.status}
-                      title={
-                        a.concludedAt
-                          ? `Concluída em: ${formatarDataCompleta(a.concludedAt)}`
-                          : ""
-                      }
-                      style={{ cursor: "pointer" }}
-                    >
-                      <FaCheckCircle />
-                    </StatusIcon>
-                    <span
-                      style={{ color: "#4ade80", marginLeft: 12, cursor: "pointer" }}
-                      title={
-                        a.concludedAt
-                          ? `Concluída em: ${formatarDataCompleta(a.concludedAt)}`
-                          : ""
-                      }
-                    >
-                      Concluída
+          {!carregando && !erro && atividades.length === 0 && (
+            <PageState>Nenhuma atividade cadastrada para esta turma.</PageState>
+          )}
+
+          {atividades.map((atividade) => {
+            const concluida = atividade.status === "ok";
+
+            return (
+              <AtividadeCard key={atividade.activityId}>
+                <AtividadeNome>{atividade.name}</AtividadeNome>
+                <AtividadeInfo>
+                  <DateInfo>
+                    <span>
+                      <strong>Início:</strong>{" "}
+                      {formatarDataCompleta(atividade.createdAt)}
                     </span>
-                  </>
-                )}
-                {a.status !== "ok" && (
-                  <>
-                    {atividadeCheckin === a.activityId ? (
-                      <form
-                        onSubmit={e => {
-                          e.preventDefault();
-                          handleCheckin(a.activityId, codigoCheckin);
-                        }}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+                    <span>
+                      <strong>Prazo:</strong>{" "}
+                      {formatarDataCompleta(atividade.date)}
+                    </span>
+                  </DateInfo>
+
+                  <StatusRow>
+                    {concluida ? (
+                      <StatusBadge $completed>
+                        <FaCheckCircle /> Check-in realizado em{" "}
+                        {formatarDataCompleta(atividade.concludedAt)}
+                      </StatusBadge>
+                    ) : atividadeCheckin === atividade.activityId ? (
+                      <CheckinForm
+                        onSubmit={(event) =>
+                          handleCheckin(event, atividade.activityId)
+                        }
                       >
-                        <input
-                          type="text"
+                        <CodeInput
+                          aria-label={`Código de check-in para ${atividade.name}`}
+                          autoFocus
+                          autoComplete="off"
                           placeholder="Código do check-in"
                           value={codigoCheckin}
-                          onChange={e => setCodigoCheckin(e.target.value)}
-                          style={{
-                            borderRadius: 8,
-                            border: "1px solid #aaa",
-                            padding: "4px 8px",
-                            fontSize: 14,
-                            width: 120,
-                          }}
-                          required
+                          onChange={(event) =>
+                            setCodigoCheckin(event.target.value)
+                          }
                         />
-                        <button
-                          type="submit"
-                          style={{
-                            background: "#4ade80",
-                            color: "#222",
-                            border: "none",
-                            borderRadius: 8,
-                            padding: "4px 12px",
-                            fontWeight: "bold",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Enviar
-                        </button>
-                        <button
+                        <ActionButton type="submit" disabled={enviando}>
+                          {enviando ? "Enviando..." : "Confirmar"}
+                        </ActionButton>
+                        <ActionButton
                           type="button"
-                          style={{
-                            background: "#fff",
-                            color: "#2c0383",
-                            border: "1px solid #2c0383",
-                            borderRadius: 8,
-                            padding: "4px 12px",
-                            fontWeight: "bold",
-                            cursor: "pointer",
-                            marginLeft: 4,
-                          }}
+                          $secondary
+                          disabled={enviando}
                           onClick={() => {
                             setAtividadeCheckin(null);
                             setCodigoCheckin("");
                           }}
                         >
                           Cancelar
-                        </button>
-                      </form>
+                        </ActionButton>
+                      </CheckinForm>
                     ) : (
-                      <button
-                        style={{
-                          marginLeft: 16,
-                          background: "#4ade80",
-                          color: "#222",
-                          border: "none",
-                          borderRadius: 12,
-                          padding: "6px 16px",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => {
-                          setAtividadeCheckin(a.activityId);
-                          setCodigoCheckin("");
-                        }}
+                      <ActionButton
+                        type="button"
+                        onClick={() => abrirCheckin(atividade.activityId)}
                       >
                         Fazer check-in
-                      </button>
+                      </ActionButton>
                     )}
-                  </>
-                )}
-              </AtividadeInfo>
-            </AtividadeCard>
-          ))}
-          {erro && <div style={{ color: "red" }}>{erro}</div>}
-          {sucesso && <div style={{ color: "green" }}>{sucesso}</div>}
+                  </StatusRow>
+                </AtividadeInfo>
+              </AtividadeCard>
+            );
+          })}
+
+          {erro && atividades.length > 0 && (
+            <PageState $error role="alert">{erro}</PageState>
+          )}
+          {sucesso && <PageState $success>{sucesso}</PageState>}
         </AtividadesContainer>
       </Content>
-      <PlanetImage src={planet_blue_anel} alt="Planeta Azul" />
+
+      <LogoProgete src={progeteLogo} alt="Progete" />
+      <PlanetImage src={planetBlue} alt="" aria-hidden="true" />
     </Container>
   );
 }

@@ -1,111 +1,231 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
-  background-color: ${(props) => props.theme.colors.kingfisherDaisy};
+export const Container = styled.main`
   min-height: 100vh;
-  width: 100vw;
   position: relative;
+  overflow-x: hidden;
+  background: ${({ theme }) => theme.colors.primaryDark};
+  color: white;
+  font-family: "Baloo Paaji 2", sans-serif;
 `;
 
-export const Content = styled.div`
-  padding: 40px 0 0 0;
-  max-width: 900px;
-  margin: 0 auto;
-`;
+export const Content = styled.section`
+  position: relative;
+  z-index: 2;
+  width: min(900px, calc(100% - 48px));
+  margin-left: 180px;
+  padding: 40px 0 120px;
 
-export const Disciplina = styled.div`
-  font-size: 2rem;
-  font-weight: bold;
-  color: ${(props) => props.theme.colors.challengeOrange};
-  margin-bottom: 2rem;
-  margin-top: 0.5rem;
-  span {
-    color: ${(props) => props.theme.colors.challengeOrange};
+  @media (max-width: 1100px) {
+    width: calc(100% - 48px);
+    margin: 0 24px;
   }
+
+  @media (max-width: 768px) {
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    padding-top: 52px;
+    padding-bottom: 110px;
+  }
+`;
+
+export const Title = styled.h1`
+  margin: 0;
+  font: inherit;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.2;
+`;
+
+export const Subtitle = styled.p`
+  max-width: 760px;
+  margin: 8px 0 0;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+`;
+
+export const Disciplina = styled.p`
+  margin: 8px 0 0;
+  color: ${({ theme }) => theme.colors.challengeOrange};
+  font-size: 24px;
+  font-weight: 800;
 `;
 
 export const AtividadesContainer = styled.div`
-  background: #fff;
-  border-radius: 40px;
-  padding: 20px 20px;
-  margin-top: 1.2rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   display: flex;
+  width: 100%;
+  max-height: 520px;
   flex-direction: column;
-  gap: 0.7rem;
-  width: 900px;
-  max-width: 95%;
-  min-height: 180px;
+  gap: 14px;
+  margin-top: 30px;
+  padding: 20px;
   overflow-y: auto;
+  border-radius: 30px;
+  background: ${({ theme }) => theme.colors.white};
+  scrollbar-color: ${({ theme }) => theme.colors.indigo} transparent;
   scrollbar-width: thin;
-  scrollbar-color: ${(props) => props.theme.colors.indigo} #eee;
-  z-index: 1;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-    border-radius: 8px;
-    background: #eee;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: ${(props) => props.theme.colors.indigo};
-    border-radius: 8px;
+  @media (max-width: 768px) {
+    max-height: none;
+    margin-top: 36px;
+    padding: 14px 12px;
+    border-radius: 24px;
   }
 `;
 
-export const AtividadeCard = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: ${(props) => props.theme.colors.indigo};
-  border-radius: 20px;
-  padding: 0.5rem 1.2rem;
-  color: #fff;
-  font-size: 1.05rem;
-  font-family: "Baloo Paaji 2", sans-serif;
-  z-index: 2;
+export const AtividadeCard = styled.article`
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(280px, 1.5fr);
+  gap: 18px;
+  padding: 16px 20px;
+  border-radius: 22px;
+  background: ${({ theme }) => theme.colors.indigo};
+  color: white;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 16px;
+  }
 `;
 
-export const AtividadeNome = styled.div`
-  font-weight: bold;
-  font-size: 1.2rem;
-  flex: 1;
+export const AtividadeNome = styled.h2`
+  margin: 0;
+  overflow-wrap: anywhere;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
 `;
 
 export const AtividadeInfo = styled.div`
   display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  font-size: 1rem;
-  b {
-    font-weight: bold;
-    margin: 0 0.2rem;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.35;
+`;
+
+export const DateInfo = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+
+  span {
+    white-space: nowrap;
   }
 `;
 
-export const StatusIcon = styled.span<{ status: string }>`
-  margin-left: 1rem;
-  font-size: 1.5rem;
+export const StatusRow = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  color: ${({ status, theme }) =>
-    status === "ok" ? "#4ade80" : theme.colors.challengeOrange};
+  gap: 10px;
+`;
+
+export const StatusBadge = styled.span<{ $completed?: boolean; $expired?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: ${({ $completed, $expired }) =>
+    $completed ? "#8df0ad" : $expired ? "#ffd1d1" : "white"};
+  font-size: 15px;
+  font-weight: 800;
+`;
+
+export const CheckinForm = styled.form`
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const CodeInput = styled.input`
+  min-width: 150px;
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  outline: none;
+  background: white;
+  color: ${({ theme }) => theme.colors.primaryDark};
+  font: inherit;
+  font-weight: 700;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.challengeOrange};
+  }
+`;
+
+export const ActionButton = styled.button<{ $secondary?: boolean }>`
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 18px;
+  background: ${({ $secondary, theme }) =>
+    $secondary ? theme.colors.white : theme.colors.primaryDark};
+  color: ${({ $secondary, theme }) =>
+    $secondary ? theme.colors.primaryDark : theme.colors.white};
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: ${({ theme }) => theme.colors.challengeOrange};
+    color: white;
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+`;
+
+export const PageState = styled.p<{ $error?: boolean; $success?: boolean }>`
+  margin: 0;
+  padding: 16px;
+  color: ${({ $error, $success, theme }) =>
+    $error
+      ? theme.colors.challengeOrange
+      : $success
+        ? "#18753a"
+        : theme.colors.primaryDark};
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+`;
+
+export const LogoProgete = styled.img`
+  position: fixed;
+  z-index: 3;
+  bottom: 31px;
+  left: 52px;
+  height: 48px;
+
+  @media (max-width: 768px) {
+    bottom: 28px;
+    left: 36px;
+    height: 30px;
+  }
 `;
 
 export const PlanetImage = styled.img`
   position: fixed;
-  width: 700px;
-  z-index: 0;
-  bottom: 0;
-  right: 0;
-  transform: translate(20%, 20%);
+  z-index: 1;
+  right: -100px;
+  bottom: -150px;
+  width: 1100px;
+  max-width: 50vw;
   pointer-events: none;
+  user-select: none;
 
-  @media (max-width: 1400px) {
-    width: 500px;
-    transform: translate(10%, 10%);
-  }
-  @media (max-width: 900px) {
-    width: 350px;
-    transform: translate(10%, 10%);
+  @media (max-width: 1439px) {
+    display: none;
   }
 `;

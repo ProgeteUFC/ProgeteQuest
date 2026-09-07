@@ -337,6 +337,8 @@ export const DataList = styled.div`
     font-family: inherit; font-weight: 700; cursor: pointer;
   }
   button:hover { background: ${(props) => props.theme.colors.challengeOrange}; }
+  button.danger { background: #e74c3c; }
+  button.danger:hover { background: #c0392b; }
   .deliveries { border: 3px solid ${(props) => props.theme.colors.lightOrange}; }
   .deliveries span { margin-top: 6px; }
 `;

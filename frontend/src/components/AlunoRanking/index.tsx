@@ -1,34 +1,29 @@
-import React from "react";
+import {
+  Position,
+  RankingItem,
+  StudentData,
+  StudentName,
+  StudentPoints,
+} from "./styles";
 
 interface AlunoRankingProps {
   posicaoAluno: number;
   nomeAluno: string;
+  pontuacao: number;
 }
 
-export function AlunoRanking({ posicaoAluno, nomeAluno }: AlunoRankingProps) {
+export function AlunoRanking({
+  posicaoAluno,
+  nomeAluno,
+  pontuacao,
+}: AlunoRankingProps) {
   return (
-    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-      <p
-        style={{
-          color: "white",
-          fontSize: "24px",
-          fontWeight: "bold",
-          backgroundColor: "#2c0383",
-          borderRadius: "10px",
-          padding: "4px 14px",
-        }}
-      >
-        {posicaoAluno}°
-      </p>
-      <p
-        style={{
-          color: "#2c0383",
-          fontSize: "18px",
-          fontWeight: "bold",
-        }}
-      >
-        {nomeAluno}
-      </p>
-    </div>
+    <RankingItem>
+      <Position>{posicaoAluno}º</Position>
+      <StudentData>
+        <StudentName title={nomeAluno}>{nomeAluno}</StudentName>
+        <StudentPoints>{pontuacao} pontos</StudentPoints>
+      </StudentData>
+    </RankingItem>
   );
 }
