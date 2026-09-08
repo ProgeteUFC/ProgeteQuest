@@ -8,7 +8,7 @@ import {
   LoginCard,
   Astronaut,
   AboutUs,
-  SmokeRight,
+  Feedback,
 } from "./style";
 import progete from "../../assets/progete.png";
 import astronaut from "../../assets/astronaut.png";
@@ -20,11 +20,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
+  const [processando, setProcessando] = useState(false);
   const navigate = useNavigate();
 
 async function handleLogin(e: React.FormEvent) {
   e.preventDefault();
   setErro("");
+  setProcessando(true);
   try {
     const res = await alunoService.login(email, senha);
     
@@ -34,7 +36,7 @@ async function handleLogin(e: React.FormEvent) {
     localStorage.setItem("userType", res.data.user.type);
 
     //Lógica de Redirecionamento Dinâmico
-    const userType = res.data.user.type; // Pega o tipo que veio da API
+    const userType = String(res.data.user.type).toLowerCase();
 
     if (userType === "teacher") {
       navigate("/paginaInicialProfessor"); // Rota para professores
@@ -47,6 +49,8 @@ async function handleLogin(e: React.FormEvent) {
       err?.response?.data?.message ||
         "Erro ao fazer login. Verifique suas credenciais."
     );
+  } finally {
+    setProcessando(false);
   }
 }
 
@@ -72,11 +76,13 @@ async function handleLogin(e: React.FormEvent) {
               onChange={(e) => setSenha(e.target.value)}
               required
             />
-            <a className="forgot" href="#">
+            <a className="forgot" href="#" onClick={(event) => event.preventDefault()}>
               Esqueci minha senha
             </a>
             <div className="actions-row">
-                <button type="submit" className="login-btn">LOGIN</button>
+                <button type="submit" className="login-btn" disabled={processando}>
+                  {processando ? "ENTRANDO..." : "LOGIN"}
+                </button>
                 <button
                   type="button"
                   className="register-btn"
@@ -85,7 +91,7 @@ async function handleLogin(e: React.FormEvent) {
                   CRIAR CONTA
                 </button>
             </div>
-            {erro && <div style={{ color: "red", marginTop: 8 }}>{erro}</div>}
+            {erro && <Feedback role="alert">{erro}</Feedback>}
           </form>
         </LoginCard>
       </Login>
@@ -116,7 +122,6 @@ async function handleLogin(e: React.FormEvent) {
         <img src={astronaut} alt="Astronauta" />
         <img src={smoke} alt="Fumaça" className="smoke" />
       </Astronaut>
-      <SmokeRight src={smoke} alt="Fumaça direita" />
     </Container>
   );
 }

@@ -1,446 +1,328 @@
 import styled from "styled-components";
-import { Link } from "react-router-dom";
 
 export const Container = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  grid-template-columns: minmax(390px, 0.85fr) minmax(560px, 1.15fr);
   align-items: center;
-  height: 100vh;
-  width: 100vw;
-  background-color: ${({ theme }) => theme.colors.kingfisherDaisy};
-  padding: 2rem;
-  box-sizing: border-box;
+  gap: clamp(28px, 5vw, 90px);
+  padding: 100px clamp(32px, 6vw, 110px) 70px;
   overflow: hidden;
+  background: ${({ theme }) => theme.colors.kingfisherDaisy};
+  font-family: "Baloo Paaji 2", sans-serif;
 
-  
-  @media (max-width: 1024px) {
+  @media (max-width: 1100px) {
+    display: flex;
+    min-height: 100dvh;
     flex-direction: column;
-    height: auto;
-    padding: 1rem;
+    justify-content: center;
+    gap: 24px;
+    padding: 100px 24px 36px;
+    overflow-y: auto;
   }
 
- 
-
+  @media (max-width: 600px) {
+    justify-content: flex-start;
+    gap: 18px;
+    padding: 28px 16px 24px;
+  }
 `;
 
-export const Login = styled.div`
+export const Login = styled.section`
+  position: relative;
+  z-index: 4;
   display: flex;
-  margin-bottom: 120px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   width: 100%;
-  max-width: 500px;
-  gap: 2rem;
-  
+  justify-content: center;
 
-  // > img:first-child {
-  //   width: 120px;
-  //   height: auto;    
-  // }
- 
-  @media (max-width: 1024px) {
-    max-width: 100%;
+  @media (max-width: 1100px) {
+    order: 2;
+    max-width: 460px;
   }
 `;
 
 export const LoginCard = styled.div`
-  background: rgba(79, 65, 146, 0.8);
+  width: min(430px, 100%);
+  padding: 28px 20px 22px;
   border-radius: 28px;
-  padding: 28px 20px 22px 20px;
-  width: 430px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  gap: 14px;
+  background: rgba(79, 65, 146, 0.92);
+  box-shadow: 0 12px 35px rgba(22, 4, 68, 0.25);
 
-  .user-type-row {
+  form {
     display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
-    justify-content: center;
-
-    button {
-      flex: 1;
-      border: none;
-      border-radius: 24px;
-      background: transparent;
-      color: #fff;
-      font-weight: bold;
-      font-size: 1.3rem;
-      padding: 8px 0;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-
-      &.active {
-        background: #fff;
-        color: #2c0383;
-        cursor: default;
-        box-shadow: 0 2px 8px rgba(44, 3, 131, 0.08);
-      }
-
-      &:not(.active):hover {
-        background: rgba(255, 255, 255, 0.18);
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(44, 3, 131, 0.18);
-      }
-    }
+    flex-direction: column;
   }
 
   input {
     width: 100%;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 18px;
-    font-size: 1rem;
-    background: #fff;
-    color: #2c0383;
-    font-family: "Baloo Paaji 2", sans-serif;
+    min-height: 46px;
     margin-bottom: 15px;
-    margin-top: 0;
+    padding: 10px 18px;
+    border: 2px solid transparent;
+    border-radius: 23px;
+    outline: none;
+    background: white;
+    color: ${({ theme }) => theme.colors.primaryDark};
+    font: inherit;
+    font-size: 16px;
+
     &::placeholder {
-      color: #4f4192;
+      color: ${({ theme }) => theme.colors.indigo};
       opacity: 1;
+    }
+
+    &:focus {
+      border-color: ${({ theme }) => theme.colors.challengeOrange};
     }
   }
 
   .forgot {
-    color: #fff;
-    font-size: 0.98rem;
-    margin: 1px 0 1px 8px;
+    align-self: flex-start;
+    margin: 0 0 12px 8px;
+    color: white;
+    font: inherit;
+    font-size: 15px;
     text-decoration: none;
-    font-family: "Baloo Paaji 2", sans-serif;
-    &:hover {
-      color: #f97316;
+
+    &:hover,
+    &:focus-visible {
+      color: ${({ theme }) => theme.colors.challengeOrange};
+      outline: none;
     }
   }
 
   .actions-row {
     display: flex;
-    justify-content: space-between;
     gap: 10px;
-    margin-top: 1px;
 
-    .login-btn,
-    .register-btn {
+    button {
+      min-height: 38px;
       flex: 1;
-      border: none;
-      border-radius: 16px;
-      padding: 3px 0;
-      font-size: 1rem;
-      font-weight: 700;
-      font-family: "Baloo Paaji 2", sans-serif;
-      background: #fff;
-      color: #2c0383;
+      padding: 5px 12px;
+      border: 0;
+      border-radius: 19px;
+      background: white;
+      color: ${({ theme }) => theme.colors.primaryDark};
+      font: inherit;
+      font-size: 15px;
+      font-weight: 800;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
+      transition: background-color 0.2s ease, color 0.2s ease;
 
-    .login-btn:hover,
-    .register-btn:hover {
-      background: #f97316;
-      color: #fff;
+      &:hover,
+      &:focus-visible {
+        background: ${({ theme }) => theme.colors.challengeOrange};
+        color: white;
+        outline: none;
+      }
+
+      &:disabled {
+        cursor: wait;
+        opacity: 0.65;
+      }
     }
   }
-`;
 
-export const ButtonGroup = styled.div`
-  display: flex;
-  gap: 1rem;
-  width: 100%;
+  @media (max-width: 420px) {
+    padding: 22px 16px 18px;
+    border-radius: 24px;
 
-  button {
-    flex: 1;
-    padding: 0.8rem 1rem;
-    border-radius: 50px;
-    border: 2px solid transparent;
-    background-color: ${({ theme }) => theme.colors.white};
-    color: ${({ theme }) => theme.colors.kingfisherDaisy};
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    &.active {
-      background-color: ${({ theme }) => theme.colors.challengeOrange};
-      color: ${({ theme }) => theme.colors.white};
+    .actions-row {
+      flex-direction: column;
     }
   }
 `;
 
-export const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-
-  input {
-    padding: 0.9rem 1.2rem;
-    border: none;
-    border-radius: 30px;
-    background-color: ${({ theme }) => theme.colors.white};
-    color: ${({ theme }) => theme.colors.kingfisherDaisy};
-    font-size: 1rem;
-    font-family: "Baloo Paaji 2", sans-serif;
-    transition: all 0.3s ease;
-
-    &:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-    }
-
-    &::placeholder {
-      color: ${({ theme }) => theme.colors.kingfisherDaisy};
-      opacity: 0.7;
-    }
-  }
-
-  a {
-    color: ${({ theme }) => theme.colors.white};
-    font-size: 0.85rem;
-    text-decoration: none;
-    align-self: flex-start;
-    transition: color 0.3s ease;
-
-    &:hover {
-      color: ${({ theme }) => theme.colors.challengeOrange};
-      text-decoration: underline;
-    }
-  }
+export const Feedback = styled.p`
+  margin: 10px 7px 0;
+  color: #ffd1d1;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
 `;
 
-export const LoginButton = styled.button`
-  padding: 1rem;
-  border: none;
-  border-radius: 30px;
-  background-color: ${({ theme }) => theme.colors.white};
-  color: ${({ theme }) => theme.colors.kingfisherDaisy};
-  font-weight: bold;
-  font-size: 1rem;
-  font-family: "Baloo Paaji 2", sans-serif;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 0.5rem;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-`;
-
-export const RegisterLink = styled(Link)`
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: 30px;
-  background-color: ${({ theme }) => theme.colors.white};
-  color: ${({ theme }) => theme.colors.kingfisherDaisy};
-  font-weight: bold;
-  font-size: 0.95rem;
-  font-family: "Baloo Paaji 2", sans-serif;
-  text-decoration: none;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-`;
-
-export const AboutUs = styled.div`
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+export const AboutUs = styled.section`
   position: relative;
-  height: 100vh;
-  background: none;
+  z-index: 3;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  color: white;
 
   .welcome-area {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    text-align: left;
     position: relative;
-    padding-top: 60px;
-    padding-left: 0;
-    color: #fff;
-    font-family: "Baloo Paaji 2", sans-serif;
+    width: min(600px, 100%);
+    padding-top: 55px;
   }
 
   .planet {
     position: absolute;
-    top: 4px;
-    right: 0;
-    width: 350px;
-    z-index: 2;
+    z-index: -1;
+    top: -45px;
+    right: -20px;
+    width: min(350px, 58%);
+    pointer-events: none;
+  }
+
+  .bemvindo,
+  .desafie,
+  .descricao,
+  .copyright {
+    margin: 0;
   }
 
   .bemvindo {
-    font-size: 2.3rem;
-    font-weight: bold;
     padding-left: 10px;
-    margin-top: 60px;
-    margin-bottom: 6px;
-    color: #fff;
-    font-family: "Baloo Paaji 2", sans-serif;
+    font-size: clamp(28px, 2.3vw, 37px);
+    font-weight: 800;
   }
 
   .logo-progetequest {
     display: block;
-    width: 530px;
-    max-width: 100%;
-    margin: 0 200px 18px 0;
+    width: min(530px, 90%);
+    margin: 2px 0 18px;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
   }
 
   .desafie {
-    font-size: 2.1rem;
-    font-weight: bold;
     padding-left: 10px;
-    margin: 24px 0 6px 0;
-    color: #fff;
-    font-family: "Baloo Paaji 2", sans-serif;
+    font-size: clamp(25px, 2vw, 34px);
+    font-weight: 800;
   }
 
   .descricao {
-    font-size: 1.1rem;
-    font-family: "Baloo Paaji 2", sans-serif;
-    font-weight: 600;
-    padding-left: 10px;
-    margin-bottom: 40px;
+    max-width: 580px;
     margin-top: 10px;
-    color: #fff;
+    padding-left: 10px;
+    font-size: 17px;
+    font-weight: 600;
     line-height: 1.4;
   }
 
   .copyright {
     position: fixed;
-    bottom: 18px;
     right: 32px;
-    left: auto;
-    width: auto;
-    text-align: right;
-    font-size: 0.95rem;
+    bottom: 18px;
     color: #d1cbe7;
-    font-family: "Baloo Paaji 2", sans-serif;
+    font-size: 14px;
     opacity: 0.8;
-    z-index: 10;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1100px) {
+    order: 1;
+    max-width: 600px;
+    text-align: center;
+
+    .welcome-area {
+      padding-top: 0;
+    }
+
     .planet {
-      width: 120px;
-      top: 10px;
+      top: -75px;
+      right: 0;
+      width: 180px;
     }
+
     .logo-progetequest {
-      width: 250px;
+      width: min(360px, 80%);
+      margin: 0 auto 6px;
     }
+
     .bemvindo,
-    .desafie {
-      font-size: 1.3rem;
-    }
+    .desafie,
     .descricao {
-      font-size: 0.95rem;
+      padding-left: 0;
+    }
+
+    .bemvindo {
+      font-size: 25px;
+    }
+
+    .desafie {
+      font-size: 22px;
+    }
+
+    .descricao {
+      margin: 8px auto 0;
+      font-size: 15px;
+    }
+
+    .copyright {
+      position: static;
+      margin-top: 16px;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .bemvindo {
+      font-size: 20px;
+    }
+
+    .logo-progetequest {
+      width: min(280px, 78%);
+    }
+
+    .desafie {
+      font-size: 18px;
+    }
+
+    .descricao,
+    .planet {
+      display: none;
+    }
+
+    .copyright {
+      margin-top: 8px;
+      font-size: 11px;
     }
   }
 `;
 
 export const LogoTopLeft = styled.div`
   position: fixed;
+  z-index: 10;
   top: 32px;
   left: 40px;
-  z-index: 10;
 
   img {
     width: 180px;
     height: auto;
+  }
+
+  @media (max-width: 600px) {
+    display: none;
   }
 `;
 
 export const Astronaut = styled.div`
   position: fixed;
-  left: 0;
-  bottom: 0;
-  padding-top: 82px;
-
-  z-index: 5;
-  width: 320px;
-  height: 340px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  z-index: 2;
+  bottom: -15px;
+  left: 30px;
+  width: 330px;
   pointer-events: none;
 
-  img {
-    width: 500px;
-    height: auto;
-    margin-left: 30px;
-    margin-bottom: -250;
+  > img:first-child {
+    position: relative;
     z-index: 2;
-    pointer-events: none;
-    user-select: none;
+    width: 100%;
   }
 
   .smoke {
-    width: 1200px;
-    height: 1000px;
-    margin-top: -440px;
-    margin-left: 500px;
-    opacity: 0.7;
-    filter: blur(2px);
+    position: absolute;
     z-index: 1;
-    pointer-events: none;
-    user-select: none;
+    bottom: -50px;
+    left: 50px;
+    width: 500px;
+    opacity: 0.65;
+    filter: blur(2px);
   }
 
-  @media (max-width: 900px) {
-    width: 180px;
-    height: 180px;
-    img {
-      width: 120px;
-    }
-    .smoke {
-      width: 160px;
-      height: 80px;
-      margin-top: -20px;
-    }
-  }
-`;
-
-export const SmokeRight = styled.img`
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  width: 1000px;
-  height: 900px;
-  opacity: 0.7;
-  filter: blur(2px);
-  z-index: 1;
-  pointer-events: none;
-  user-select: none;
-  margin-right: -380px;
-  margin-bottom: -410px;
-
-  @media (max-width: 900px) {
-    width: 160px;
-    height: 80px;
-    margin-right: -20px;
-    margin-bottom: -20px;
+  @media (max-width: 1100px) {
+    display: none;
   }
 `;

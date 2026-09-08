@@ -11,7 +11,6 @@ export const alunoService = {
 async login(email: string, password: string) {
   return axios.post(`${API_URL}/auth/login`, { email, password });
 },
-
 async listarTurmas(studentId: string, token: string) {
     return axios.get(`${API_URL}/student-class/student/${studentId}`, {
         headers: { Authorization: `Bearer ${token}` },

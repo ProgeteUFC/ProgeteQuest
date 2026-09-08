@@ -1,317 +1,294 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
+  position: relative;
+  display: flex;
   width: 100%;
   min-height: 100vh;
-  background-color: ${(props) => props.theme.colors.kingfisherDaisy};
-  display: flex;
+  min-height: 100dvh;
   align-items: center;
   justify-content: center;
-  position: relative;
-  padding: 2rem;
+  padding: 88px 32px 72px;
   overflow: hidden;
+  background: ${({ theme }) => theme.colors.kingfisherDaisy};
+  font-family: "Baloo Paaji 2", sans-serif;
 
-  @media (max-width: 768px) {
-    overflow-y: auto;
-    padding: 1rem;
+  @media (max-width: 1439px) {
     align-items: flex-start;
-    height: auto;
-    min-height: 100dvh;
+    padding-top: 110px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 600px) {
+    padding: 88px 16px 28px;
   }
 `;
 
 export const PageContent = styled.div`
-  width: 100%;
-  max-width: 1200px;
-  display: flex;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: min(1200px, 100%);
+  grid-template-columns: minmax(420px, 600px) minmax(300px, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 4rem;
-  z-index: 1;
+  gap: clamp(45px, 8vw, 120px);
 
-  @media (max-width: 1000px) {
-    flex-direction: column;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 4rem;
-  }
-
-  @media (max-width: 768px) {
-    max-width: 402px; /* Força a adaptação ao formato mobile solicitado */
-    margin-top: 5rem;
-    margin-left: auto;
-    margin-right: auto;
+  @media (max-width: 1439px) {
+    display: block;
+    width: min(600px, 100%);
   }
 `;
 
-export const LeftColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  flex: 1;
-  max-width: 600px;
-  margin-left: 4rem;
+export const LeftColumn = styled.section`
+  width: 100%;
 
   .button-group-vertical {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    align-items: flex-end;
-    width: 100%;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 14px;
   }
 
-  @media (max-width: 768px) {
-    margin-left: 0;
-    max-width: 100%;
-    width: 100%;
-
+  @media (max-width: 600px) {
     .button-group-vertical {
-      align-items: center;
-      margin-top: 1.5rem;
+      flex-direction: column-reverse;
+      justify-content: stretch;
     }
   }
 `;
 
-export const HeaderContainer = styled.div`
-  color: ${({ theme }) => theme.colors.white};
-  margin-top: 1rem;
+export const HeaderContainer = styled.header`
+  margin-bottom: 14px;
+  color: white;
 
-  .title-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 0;
-    font-family: "Baloo Paaji 2", sans-serif;
+  .title-wrapper p {
+    margin: 0;
   }
 
   .subtitle {
-    font-family: "Baloo Paaji 2", sans-serif;
-    color: ${({ theme }) => theme.colors.white};
+    margin: 8px 0 0;
+    color: white;
     font-size: 24px;
     font-weight: 800;
-    padding-bottom: 10px;
     line-height: 1.2;
-    margin-bottom: 0.2rem;
-
-    span {
-      color: #00ffb3;
-      font-weight: bold;
-    }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 600px) {
     text-align: center;
-    margin-bottom: 1rem;
 
     .title-wrapper {
+      display: flex;
       justify-content: center;
     }
+
     .subtitle {
-      font-size: 18px; /* Ajuste para caber nos 402px */
-      padding-bottom: 0;
+      font-size: 18px;
     }
-  }
-`;
-
-export const LogoTop = styled.img`
-  position: absolute;
-  left: 2rem;
-  top: 2rem;
-  height: 48px;
-
-  @media (max-width: 768px) {
-    left: 50%;
-    transform: translateX(-50%);
-    top: 1.5rem;
-    height: 40px;
-  }
-`;
-
-/* Escondido apenas no mobile */
-export const LogoBottom = styled.img`
-  position: absolute;
-  left: 2rem;
-  bottom: 0.7rem;
-  height: 48px;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-/* Escondido apenas no mobile */
-export const Planet = styled.img`
-  position: absolute;
-  right: 2rem;
-  top: 2rem;
-  height: 200px;
-  width: 380px;
-
-  @media (max-width: 768px) {
-    display: none;
   }
 `;
 
 export const Register = styled.div`
-  background: ${({ theme }) => theme.colors.white};
-  padding: 1.7rem 1.5rem;
-  border-radius: 1.5rem;
   width: 100%;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  padding: 24px;
+  border-radius: 28px;
+  background: white;
+  box-shadow: 0 12px 35px rgba(22, 4, 68, 0.25);
 
   form {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 9px;
   }
 
-  @media (max-width: 768px) {
-    padding: 1.5rem 1.2rem;
-    form {
-      gap: 0.6rem; /* Mais espaço vertical para o toque */
-    }
+  @media (max-width: 600px) {
+    padding: 18px 14px;
+    border-radius: 24px;
   }
 `;
 
-export const InputWrapper = styled.div`
+export const InputWrapper = styled.label`
   display: flex;
-  align-items: center;
-  background: #4a4385;
-  padding: 0 1rem;
-  border-radius: 1rem;
-  height: 36px;
   width: 100%;
+  min-height: 42px;
+  align-items: center;
+  padding: 0 16px;
   border: 2px solid transparent;
+  border-radius: 18px;
+  background: ${({ theme }) => theme.colors.indigo};
 
   &:focus-within {
-    border-color: ${({ theme }) => theme.colors.secondary || "#00ffb3"};
+    border-color: ${({ theme }) => theme.colors.challengeOrange};
   }
 
-  label {
-    color: #fff;
-    font-weight: 500;
+  > span,
+  > label {
+    flex: 0 0 auto;
+    margin-right: 6px;
+    color: white;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 800;
     white-space: nowrap;
-    margin-right: 0.5rem;
-    font-family: "Codec Pro", sans-serif;
-    font-size: 14px;
   }
 
   input {
+    min-width: 0;
+    min-height: 38px;
+    flex: 1;
+    border: 0;
+    outline: none;
     background: transparent;
-    border: none;
-    color: ${(props) => props.theme.colors.lightOrange};
-    width: 100%;
-    font-family: "Codec Pro", sans-serif;
-    font-size: 14px;
-    font-weight: 300;
-    height: 100%;
-
-    &:focus {
-      outline: none;
-    }
-
-    &::placeholder {
-      color: red;
-      font-family: "Codec Pro", sans-serif;
-    }
+    color: white;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 400;
   }
 
-  @media (max-width: 768px) {
-    height: 48px; /* Padrão mínimo de touch target mobile */
+  @media (max-width: 480px) {
+    min-height: 48px;
+    padding: 0 12px;
+
+    > span,
+    > label,
     input {
-      font-size: 16px; /* Evita zoom automático no iOS */
+      font-size: 14px;
     }
-  }
-`;
-
-/* Escondido apenas no mobile */
-export const RightArtwork = styled.img`
-  width: 450px;
-  height: auto;
-  object-fit: contain;
-  margin-top: 4rem;
-
-  @media (max-width: 1000px) {
-    display: none;
-  }
-`;
-
-export const CadastrarButton = styled.button`
-  background-color: ${(props) => props.theme.colors.secondary};
-  color: ${(props) => props.theme.colors.white};
-  border: none;
-  border-radius: 20px;
-  font-size: 16px;
-  font-family: "Baloo Paaji 2", sans-serif;
-  font-weight: bold;
-  letter-spacing: 1px;
-  cursor: pointer;
-  padding: 4px 0;
-  width: 160px;
-  margin-top: 5px;
-  transition: background 0.2s, color 0.2s;
-
-  &:hover {
-    background-color: ${(props) => props.theme.colors.challengeOrange};
-    color: #fff;
-  }
-
-  @media (max-width: 768px) {
-    width: 100%; /* Largura total para facilitar o clique */
-    height: 48px;
-    font-size: 18px;
-    padding: 0;
   }
 `;
 
 export const UserTypeRow = styled.div`
   display: flex;
-  gap: 0;
-  margin-bottom: 24px;
-  background: #4f4192;
-  border-radius: 24px;
-  padding: 6px;
   width: 100%;
-  box-sizing: border-box;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 5px;
+  border-radius: 24px;
+  background: ${({ theme }) => theme.colors.indigo};
+`;
 
-  @media (max-width: 768px) {
-    margin-bottom: 1.5rem;
+export const UserTypeButton = styled.button<{ $active: boolean }>`
+  min-height: 38px;
+  flex: 1;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 20px;
+  outline: none;
+  background: ${({ $active }) => ($active ? "white" : "transparent")};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.primaryDark : theme.colors.white};
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: ${({ $active }) => ($active ? "default" : "pointer")};
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    background: ${({ $active }) =>
+      $active ? "white" : "rgba(255, 255, 255, 0.18)"};
   }
 `;
 
-export const UserTypeButton = styled.button<{ active: boolean }>`
-  flex: 1;
-  border: none;
-  border-radius: 24px;
-  background: ${({ active }) => (active ? "#fff" : "transparent")};
-  color: ${({ active }) => (active ? "#2c0383" : "#fff")};
-  font-weight: bold;
-  font-size: 1.1rem;
-  padding: 4px 0;
-  cursor: ${({ active }) => (active ? "default" : "pointer")};
-  box-shadow: none;
-  transition: background 0.2s, color 0.2s;
-  outline: none;
-  margin: 0;
-  font-family: "Baloo Paaji 2", sans-serif;
-  letter-spacing: 0.01em;
-  
-  &:not(:last-child) {
-    border-right: 2px solid transparent;
-  }
-  &.active {
-    background: #fff;
-    color: #2c0383;
-    font-weight: 700;
-  }
-  &:hover:not(.active) {
-    background: rgba(255,255,255,0.18);
-    color: #fff;
+export const CadastrarButton = styled.button`
+  width: 170px;
+  min-height: 38px;
+  padding: 5px 18px;
+  border: 0;
+  border-radius: 20px;
+  background: ${({ theme }) => theme.colors.indigo};
+  color: white;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: ${({ theme }) => theme.colors.challengeOrange};
+    outline: none;
   }
 
-  @media (max-width: 768px) {
-    padding: 8px 0; /* Maior área de toque */
-    font-size: 1rem;
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  @media (max-width: 600px) {
+    width: 100%;
+    min-height: 46px;
+  }
+`;
+
+export const LoginButton = styled(CadastrarButton)`
+  width: 170px;
+
+  @media (max-width: 600px) {
+    width: 100%;
+  }
+`;
+
+export const Feedback = styled.p<{ $success?: boolean }>`
+  margin: 8px 4px 0;
+  color: ${({ $success }) => ($success ? "#18753a" : "#c62828")};
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+`;
+
+export const LogoTop = styled.img`
+  position: absolute;
+  z-index: 5;
+  top: 28px;
+  left: 32px;
+  height: 48px;
+
+  @media (max-width: 600px) {
+    top: 22px;
+    left: 50%;
+    height: 38px;
+    transform: translateX(-50%);
+  }
+`;
+
+export const LogoBottom = styled.img`
+  position: absolute;
+  z-index: 3;
+  bottom: 20px;
+  left: 32px;
+  height: 42px;
+
+  @media (max-width: 1000px) {
+    display: none;
+  }
+`;
+
+export const Planet = styled.img`
+  position: absolute;
+  z-index: 1;
+  top: 60px;
+  right: 73px;
+  width: 410px;
+  pointer-events: none;
+
+  @media (max-width: 1439px) {
+    width: 250px;
+    display: none;
+  }
+
+  @media (max-width: 700px) {
+    display: none;
+  }
+`;
+
+export const RightArtwork = styled.img`
+  width: min(480px, 100%);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
+
+  @media (max-width: 1439px) {
+    display: none;
   }
 `;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Container,
   LeftColumn,
@@ -11,14 +12,16 @@ import {
   RightArtwork,
   HeaderContainer,
   CadastrarButton,
+  LoginButton,
+  UserTypeRow,
+  UserTypeButton,
+  Feedback,
 } from "./styles";
 import { TitleName } from "../../components/TitleName";
 import { alunoService } from "../../services/alunoService";
 import logo from "../../assets/progete.png";
 import planet from "../../assets/planet_orange.png";
 import artwork from "../../assets/logo.png";
-import styled from "styled-components";
-import { UserTypeRow, UserTypeButton } from "./styles";
 
 export default function RegisterPage() {
   const [nome, setNome] = useState("");
@@ -29,6 +32,8 @@ export default function RegisterPage() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
   const [tipo, setTipo] = useState<"student" | "teacher">("student");
+  const [processando, setProcessando] = useState(false);
+  const navigate = useNavigate();
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +43,7 @@ export default function RegisterPage() {
       setErro("As senhas não coincidem.");
       return;
     }
+    setProcessando(true);
     try {
       await alunoService.cadastrar({
         name: nome,
@@ -54,15 +60,19 @@ export default function RegisterPage() {
       localStorage.setItem("userType", res.data.user.type);
       setSucesso("Cadastro realizado com sucesso! Você foi logado.");
       // Redireciona para Minhas Turmas
-      window.location.href =
-        res.data.user.type === "teacher"
+      navigate(
+        String(res.data.user.type).toLowerCase() === "teacher"
           ? "/paginaInicialProfessor"
-          : "/minhasTurmas";
+          : "/minhasTurmas",
+        { replace: true }
+      );
     } catch (err: any) {
       setErro(
         err?.response?.data?.message ||
           "Erro ao cadastrar. Verifique os dados e tente novamente."
       );
+    } finally {
+      setProcessando(false);
     }
   }
 
@@ -86,7 +96,7 @@ export default function RegisterPage() {
               <UserTypeButton
                 type="button"
                 className={tipo === "student" ? "active" : ""}
-                active={tipo === "student"}
+                $active={tipo === "student"}
                 onClick={() => setTipo("student")}
               >
                 Sou aluno(a)
@@ -94,7 +104,7 @@ export default function RegisterPage() {
               <UserTypeButton
                 type="button"
                 className={tipo === "teacher" ? "active" : ""}
-                active={tipo === "teacher"}
+                $active={tipo === "teacher"}
                 onClick={() => setTipo("teacher")}
               >
                 Sou professor(a)
@@ -102,7 +112,7 @@ export default function RegisterPage() {
             </UserTypeRow>
             <form onSubmit={handleRegister}>
               <InputWrapper>
-                <label>Nome:</label>
+                <span>Nome:</span>
                 <input
                   type="text"
                   name="nome"
@@ -112,7 +122,7 @@ export default function RegisterPage() {
                 />
               </InputWrapper>
               <InputWrapper>
-                <label>{tipo === "student" ? "Matrícula:" : "Registro:"}</label>
+                <span>{tipo === "student" ? "Matrícula:" : "SIAPE:"}</span>
                 <input
                   type="text"
                   name="matricula"
@@ -122,7 +132,7 @@ export default function RegisterPage() {
                 />
               </InputWrapper>
               <InputWrapper>
-                <label>E-mail:</label>
+                <span>E-mail:</span>
                 <input
                   type="email"
                   name="email"
@@ -132,7 +142,7 @@ export default function RegisterPage() {
                 />
               </InputWrapper>
               <InputWrapper>
-                <label>Senha:</label>
+                <span>Senha:</span>
                 <input
                   type="password"
                   name="senha"
@@ -142,7 +152,7 @@ export default function RegisterPage() {
                 />
               </InputWrapper>
               <InputWrapper>
-                <label>Repita sua senha:</label>
+                <span>Repita sua senha:</span>
                 <input
                   type="password"
                   name="senhaConfirm"
@@ -152,12 +162,15 @@ export default function RegisterPage() {
                 />
               </InputWrapper>
               <div className="button-group-vertical">
-                <CadastrarButton type="submit">CADASTRAR</CadastrarButton>
+                <LoginButton type="button" onClick={() => navigate("/")}>
+                  FAZER LOGIN
+                </LoginButton>
+                <CadastrarButton type="submit" disabled={processando}>
+                  {processando ? "CADASTRANDO..." : "CADASTRAR"}
+                </CadastrarButton>
               </div>
-              {erro && <div style={{ color: "red", marginTop: 8 }}>{erro}</div>}
-              {sucesso && (
-                <div style={{ color: "green", marginTop: 8 }}>{sucesso}</div>
-              )}
+              {erro && <Feedback role="alert">{erro}</Feedback>}
+              {sucesso && <Feedback $success>{sucesso}</Feedback>}
             </form>
           </Register>
         </LeftColumn>
