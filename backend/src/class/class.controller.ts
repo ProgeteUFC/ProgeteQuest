@@ -21,9 +21,13 @@ import {
   ApiResponse,
   ApiBody,
   ApiParam,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 @ApiTags('Turmas')
+@ApiBearerAuth('JWT')
+@ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
 @Controller('class')
 export class ClassController {
   constructor(private readonly classService: ClassService) {}
@@ -53,9 +57,7 @@ export class ClassController {
     examples: {
       exemplo: {
         value: {
-          name: 'Turma 1',
-          classId: 'uuid-da-turma',
-          teacherId: 'uuid-do-professor',
+          name: 'Requisitos de Software',
         },
       },
     },
@@ -74,7 +76,7 @@ export class ClassController {
     summary: 'Regenerar código de ingresso',
     description: 'Gera um novo código de ingresso para a turma.',
   })
-  @ApiParam({ name: 'id', description: 'ID da turma' })
+  @ApiParam({ name: 'id', description: 'ID da turma.', format: 'uuid' })
   @ApiResponse({
     status: 200,
     description: 'Código de ingresso regenerado.',
@@ -92,17 +94,14 @@ export class ClassController {
     summary: 'Atualizar turma',
     description: 'Atualiza os dados de uma turma existente.',
   })
-  @ApiParam({ name: 'id', description: 'ID da turma a ser atualizada' })
+  @ApiParam({ name: 'id', description: 'ID da turma a ser atualizada.', format: 'uuid' })
   @ApiBody({
     type: UpdateClassDto,
     description: 'Novos dados da turma',
     examples: {
       exemplo: {
         value: {
-          name: 'Turma 1',
-          classId: 'uuid-da-turma',
-          teacherId: 'uuid-do-professor',
-          assessmentId: 'uuid-da-avaliacao',
+          name: 'Requisitos de Software — 2026.2',
         },
       },
     },
@@ -125,7 +124,7 @@ export class ClassController {
     summary: 'Remover turma',
     description: 'Remove uma turma pelo ID.',
   })
-  @ApiParam({ name: 'id', description: 'ID da turma a ser removida' })
+  @ApiParam({ name: 'id', description: 'ID da turma a ser removida.', format: 'uuid' })
   @ApiResponse({
     status: 200,
     description: 'Turma removida com sucesso.',
@@ -140,7 +139,7 @@ export class ClassController {
     summary: 'Buscar turma por ID',
     description: 'Retorna os dados de uma turma específica.',
   })
-  @ApiParam({ name: 'id', description: 'ID da turma' })
+  @ApiParam({ name: 'id', description: 'ID da turma.', format: 'uuid' })
   @ApiResponse({
     status: 200,
     description: 'Turma encontrada com sucesso.',

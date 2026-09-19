@@ -19,9 +19,13 @@ import {
   ApiResponse,
   ApiBody,
   ApiParam,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 @ApiTags('Avaliações')
+@ApiBearerAuth('JWT')
+@ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
 @Controller('assessment')
 export class AssessmentController {
   constructor(private readonly assessmentService: AssessmentService) {}

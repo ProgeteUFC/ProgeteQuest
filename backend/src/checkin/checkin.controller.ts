@@ -8,9 +8,14 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBody,
+  ApiBearerAuth,
+  ApiParam,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-@ApiTags('Check-in')
+@ApiTags('Check-ins')
+@ApiBearerAuth('JWT')
+@ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
 @Controller('checkin')
 export class CheckinController {
   constructor(private readonly checkinService: CheckinService) {}
@@ -43,6 +48,13 @@ export class CheckinController {
   }
 
   @Roles('teacher', 'admin')
+  @ApiOperation({
+    summary: 'Listar check-ins de uma atividade',
+    description: 'Perfis permitidos: teacher e admin. Retorna os alunos que já fizeram check-in na atividade.',
+  })
+  @ApiParam({ name: 'activityId', description: 'ID da atividade.', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Check-ins retornados com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Atividade não encontrada.' })
   @Get('activity/:activityId')
   async listByActivity(
     @Param('activityId') activityId: string,

@@ -9,9 +9,13 @@ import {
   ApiResponse,
   ApiBody,
   ApiParam,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-@ApiTags('Códigos')
+@ApiTags('Códigos de check-in')
+@ApiBearerAuth('JWT')
+@ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
 @Controller('code')
 export class CodeController {
   constructor(private readonly codeService: CodeService) {}
@@ -23,18 +27,7 @@ export class CodeController {
   })
   @ApiBody({
     type: CreateCodeDto,
-    description: 'Dados para criação do código',
-    examples: {
-      exemplo: {
-        value: {
-          code: 'ABC123',
-          validity: '2024-05-10T23:59:59Z',
-          active: true,
-          score: 10,
-          activityId: 'uuid-da-atividade',
-        },
-      },
-    },
+    description: 'O valor do código e seu estado ativo são gerados automaticamente.',
   })
   @ApiResponse({ status: 201, description: 'Código criado com sucesso.' })
   @Post()
@@ -47,7 +40,7 @@ export class CodeController {
     summary: 'Invalidar código',
     description: 'Invalida um código pelo ID.',
   })
-  @ApiParam({ name: 'id', description: 'ID do código a ser invalidado' })
+  @ApiParam({ name: 'id', description: 'ID do código a ser invalidado.', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Código invalidado com sucesso.' })
   @Patch(':id/invalidate')
   async invalidate(@Param('id') id: string, @User() user: UserPayload) {
@@ -59,7 +52,7 @@ export class CodeController {
     summary: 'Renovar código',
     description: 'Renova um código pelo ID.',
   })
-  @ApiParam({ name: 'id', description: 'ID do código a ser renovado' })
+  @ApiParam({ name: 'id', description: 'ID do código a ser renovado.', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Código renovado com sucesso.' })
   @Patch(':id/renew')
   async renew(@Param('id') id: string, @User() user: UserPayload) {
@@ -71,7 +64,7 @@ export class CodeController {
     summary: 'Listar códigos por atividade',
     description: 'Lista todos os códigos de uma atividade.',
   })
-  @ApiParam({ name: 'activityId', description: 'ID da atividade' })
+  @ApiParam({ name: 'activityId', description: 'ID da atividade.', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Lista de códigos da atividade.' })
   @Get('activity/:activityId')
   async listByActivity(

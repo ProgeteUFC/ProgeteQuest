@@ -33,7 +33,7 @@ import {
 import { ForumService } from './forum.service';
 
 @ApiTags('Fórum')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT')
 @Controller()
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class ForumController {
@@ -78,6 +78,19 @@ export class ForumController {
   }
 
   @Roles('teacher', 'admin', 'student')
+  @ApiOperation({
+    summary: 'Consultar fórum de uma turma',
+    description: 'Retorna o fórum da turma. O usuário precisa ser professor responsável, administrador ou aluno matriculado.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da turma.',
+    format: 'uuid',
+    example: '9a8b7c6d-5e4f-3210-abcd-ef1234567890',
+  })
+  @ApiResponse({ status: 200, description: 'Fórum retornado com sucesso.', type: ForumResponseDto })
+  @ApiResponse({ status: 403, description: 'Usuário não pertence à turma.' })
+  @ApiResponse({ status: 404, description: 'Turma ou fórum não encontrado.' })
   @Get('turmas/:id/forum')
   async getForum(
     @Param('id') turmaId: string,

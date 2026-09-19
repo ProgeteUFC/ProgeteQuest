@@ -14,20 +14,24 @@ export const Container = styled.div`
   background: ${({ theme }) => theme.colors.kingfisherDaisy};
   font-family: "Baloo Paaji 2", sans-serif;
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1439px) {
     display: flex;
     min-height: 100dvh;
     flex-direction: column;
     justify-content: center;
-    gap: 24px;
-    padding: 100px 24px 36px;
+    gap: 26px;
+    padding: 96px 24px 40px;
     overflow-y: auto;
   }
 
   @media (max-width: 600px) {
     justify-content: flex-start;
     gap: 18px;
-    padding: 28px 16px 24px;
+    padding: 72px 16px 24px;
+  }
+
+  @media (max-height: 720px) and (min-width: 601px) {
+    justify-content: flex-start;
   }
 `;
 
@@ -38,7 +42,7 @@ export const Login = styled.section`
   width: 100%;
   justify-content: center;
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1439px) {
     order: 2;
     max-width: 460px;
   }
@@ -127,6 +131,7 @@ export const LoginCard = styled.div`
   }
 
   @media (max-width: 420px) {
+    width: 100%;
     padding: 22px 16px 18px;
     border-radius: 24px;
 
@@ -211,7 +216,7 @@ export const AboutUs = styled.section`
     opacity: 0.8;
   }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1439px) {
     order: 1;
     max-width: 600px;
     text-align: center;
@@ -221,9 +226,7 @@ export const AboutUs = styled.section`
     }
 
     .planet {
-      top: -75px;
-      right: 0;
-      width: 180px;
+      display: none;
     }
 
     .logo-progetequest {
@@ -254,6 +257,16 @@ export const AboutUs = styled.section`
       position: static;
       margin-top: 16px;
       text-align: center;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .descricao {
+      display: none;
+    }
+
+    .copyright {
+      margin-top: 8px;
     }
   }
 
@@ -293,7 +306,26 @@ export const LogoTopLeft = styled.div`
     height: auto;
   }
 
+  @media (max-width: 1439px) {
+    top: 24px;
+    left: 28px;
+
+    img {
+      width: 140px;
+    }
+  }
+
   @media (max-width: 600px) {
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    img {
+      width: 120px;
+    }
+  }
+
+  @media (max-width: 360px) {
     display: none;
   }
 `;
@@ -322,7 +354,7 @@ export const Astronaut = styled.div`
     filter: blur(2px);
   }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1439px) {
     display: none;
   }
 `;

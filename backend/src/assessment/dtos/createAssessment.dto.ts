@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAssessmentDto {
-  @ApiProperty({ example: 'Avaliação 1', description: 'Nome da avaliação' })
+  @ApiProperty({ example: 'Avaliação 1', description: 'Nome da avaliação.', maxLength: 50 })
   name: string;
 
-  @ApiProperty({ example: 'uuid-da-turma', description: 'ID da turma relacionada' })
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000', description: 'ID da turma relacionada.', format: 'uuid' })
   classId: string;
 }

@@ -5,12 +5,15 @@ import {
   ApiResponse,
   ApiBody,
   ApiParam,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { UserService } from './user.service';
+import { DeleteUserDto } from './dtos/deleteUser.dto';
 
 @ApiTags('Usuários')
 @Controller('user')
@@ -70,6 +73,8 @@ export class UserController {
   }
 
   @Roles('teacher')
+  @ApiBearerAuth('JWT')
+  @ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
   @Get()
   @ApiOperation({
     summary: 'Listar todos os usuários',
@@ -84,6 +89,8 @@ export class UserController {
   }
 
   @Roles('teacher', 'student')
+  @ApiBearerAuth('JWT')
+  @ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
   @Put()
   @ApiOperation({
     summary: 'Atualizar usuário',
@@ -124,27 +131,22 @@ export class UserController {
   }
 
   @Roles('teacher', 'student')
+  @ApiBearerAuth('JWT')
+  @ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
   @Post('delete')
   @ApiOperation({
     summary: 'Remover usuário',
     description: 'Remove o usuário autenticado (requer senha).',
   })
-  @ApiBody({
-    description: 'Senha para confirmação',
-    examples: {
-      exemplo: {
-        value: {
-          password: 'senha123',
-        },
-      },
-    },
-  })
+  @ApiBody({ type: DeleteUserDto })
   @ApiResponse({ status: 200, description: 'Usuário removido com sucesso.' })
-  async remove(@User() user: UserPayload, @Body() body: { password: string }) {
+  async remove(@User() user: UserPayload, @Body() body: DeleteUserDto) {
     return this.userService.remove(user.userId, body.password);
   }
 
   @Roles('teacher', 'student')
+  @ApiBearerAuth('JWT')
+  @ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar usuário por ID',

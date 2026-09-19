@@ -12,9 +12,13 @@ import {
   ApiResponse,
   ApiBody,
   ApiParam,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 @ApiTags('Atividades')
+@ApiBearerAuth('JWT')
+@ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
 @Controller('activity')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
@@ -44,11 +48,10 @@ export class ActivityController {
     examples: {
       exemplo: {
         value: {
-          name: 'Seminário de Matemática',
-          date: '2024-05-10T00:00:00Z',
+          name: 'Seminário de Requisitos',
+          date: '2030-05-10T23:59:59.000Z',
           type: 'seminar',
-          classId: 'uuid-da-turma',
-          assessmentId: 'uuid-da-avaliacao',
+          classId: '550e8400-e29b-41d4-a716-446655440000',
         },
       },
     },
@@ -72,7 +75,8 @@ export class ActivityController {
   })
   @ApiParam({
     name: 'id',
-    description: 'ID da atividade a ser atualizada',
+    description: 'ID da atividade a ser atualizada.',
+    format: 'uuid',
   })
   @ApiBody({
     type: UpdateActivityDto,
@@ -81,10 +85,9 @@ export class ActivityController {
       exemplo: {
         value: {
           name: 'Seminário de Matemática',
-          date: '2024-05-10T00:00:00Z',
+          date: '2030-05-12T23:59:59.000Z',
           type: 'seminar',
-          classId: 'uuid-da-turma',
-          assessmentId: 'uuid-da-avaliacao',
+          classId: '550e8400-e29b-41d4-a716-446655440000',
         },
       },
     },
@@ -109,7 +112,8 @@ export class ActivityController {
   })
   @ApiParam({
     name: 'id',
-    description: 'ID da atividade a ser removida',
+    description: 'ID da atividade a ser removida.',
+    format: 'uuid',
   })
   @ApiResponse({
     status: 200,
@@ -160,7 +164,8 @@ export class ActivityController {
   })
   @ApiParam({
     name: 'classId',
-    description: 'ID da turma',
+    description: 'ID da turma.',
+    format: 'uuid',
   })
   @ApiResponse({
     status: 200,

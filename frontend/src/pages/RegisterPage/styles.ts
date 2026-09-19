@@ -15,12 +15,18 @@ export const Container = styled.div`
 
   @media (max-width: 1439px) {
     align-items: flex-start;
-    padding-top: 110px;
+    padding: 100px 24px 40px;
     overflow-y: auto;
   }
 
   @media (max-width: 600px) {
-    padding: 88px 16px 28px;
+    padding: 76px 16px 28px;
+  }
+
+  @media (max-height: 720px) and (min-width: 1440px) {
+    align-items: flex-start;
+    padding-top: 42px;
+    overflow-y: auto;
   }
 `;
 
@@ -36,6 +42,7 @@ export const PageContent = styled.div`
   @media (max-width: 1439px) {
     display: block;
     width: min(600px, 100%);
+    margin: 0 auto;
   }
 `;
 
@@ -145,12 +152,21 @@ export const InputWrapper = styled.label`
   }
 
   @media (max-width: 480px) {
-    min-height: 48px;
-    padding: 0 12px;
+    min-height: 58px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    padding: 7px 14px;
 
     > span,
-    > label,
+    > label {
+      margin: 0;
+      line-height: 1.1;
+    }
+
     input {
+      width: 100%;
+      min-height: 28px;
       font-size: 14px;
     }
   }
@@ -164,6 +180,11 @@ export const UserTypeRow = styled.div`
   padding: 5px;
   border-radius: 24px;
   background: ${({ theme }) => theme.colors.indigo};
+
+  @media (max-width: 420px) {
+    gap: 2px;
+    padding: 4px;
+  }
 `;
 
 export const UserTypeButton = styled.button<{ $active: boolean }>`
@@ -186,6 +207,12 @@ export const UserTypeButton = styled.button<{ $active: boolean }>`
   &:focus-visible {
     background: ${({ $active }) =>
       $active ? "white" : "rgba(255, 255, 255, 0.18)"};
+  }
+
+  @media (max-width: 420px) {
+    min-height: 42px;
+    padding: 4px;
+    font-size: 14px;
   }
 `;
 
@@ -250,6 +277,10 @@ export const LogoTop = styled.img`
     height: 38px;
     transform: translateX(-50%);
   }
+
+  @media (max-width: 360px) {
+    height: 32px;
+  }
 `;
 
 export const LogoBottom = styled.img`
@@ -290,5 +321,9 @@ export const RightArtwork = styled.img`
 
   @media (max-width: 1439px) {
     display: none;
+  }
+
+  @media (max-height: 760px) {
+    width: min(400px, 100%);
   }
 `;
