@@ -1,6 +1,6 @@
 import React from "react";
 import { ThemeProvider } from "styled-components";
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { GlobalStyle } from "./styles/global";
@@ -19,6 +19,11 @@ import LoginProfessor from "./pages/LoginProfessor";
 import ForumTurmaPage from "./pages/ForumTurmaPage";
 import ViewClasses from './pages/VisualizarTurmasProfessor';
 import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminHome from "./pages/Admin/AdminHome";
+import AdminUsers from "./pages/Admin/AdminUsers";
+import AdminUserForm from "./pages/Admin/AdminUserForm";
+import AdminTeacherClasses from "./pages/Admin/AdminTeacherClasses";
 
 export default function App() {
   return (
@@ -29,36 +34,32 @@ export default function App() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/detalhesDaTurma/:id" element={<DetalhesDaTurma />} />
-          <Route path="/seuRanking" element={<PrivateRouteAluno><SeuRanking /></PrivateRouteAluno>} />
+          <Route path="/seuRanking" element={<ProtectedRoute allowedRoles={["student"]}><SeuRanking /></ProtectedRoute>} />
           <Route path="/meusDados" element={<MeusDados />} />
           <Route path="/entrarEmTurma" element={<EntraEmTurma />} />
-          <Route path="/minhasTurmas" element={<PrivateRouteAluno><MinhasTurmas /></PrivateRouteAluno>} />
-          <Route path="/minhasAtividades" element={<PrivateRouteAluno><MinhasAtividades /></PrivateRouteAluno>} />
+          <Route path="/minhasTurmas" element={<ProtectedRoute allowedRoles={["student"]}><MinhasTurmas /></ProtectedRoute>} />
+          <Route path="/minhasAtividades" element={<ProtectedRoute allowedRoles={["student"]}><MinhasAtividades /></ProtectedRoute>} />
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
-          <Route path="/paginaInicialProfessor" element={<PaginaInicialProfessor />} />
-          <Route path="/cadastrarDisciplina" element={<CadastrarDisciplina />} />
-          <Route path="/visualizarTurmasProfessor" element={<ViewClasses />} />
-          <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
-          <Route path="/visualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
           <Route path="/loginProfessor" element={<LoginProfessor />} />
+
+          {/* Rotas de professor */}
+          <Route path="/paginaInicialProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><PaginaInicialProfessor /></ProtectedRoute>} />
+          <Route path="/cadastrarDisciplina" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><CadastrarDisciplina /></ProtectedRoute>} />
+          <Route path="/visualizarTurmasProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><ViewClasses /></ProtectedRoute>} />
+          <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><VisualizandoTurmasProfessor /></ProtectedRoute>} />
+          <Route path="/visualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><VisualizandoTurmasProfessor /></ProtectedRoute>} />
+
+          {/* Rotas de admin */}
+          <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminHome /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUsers /></ProtectedRoute>} />
+          <Route path="/admin/users/new" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUserForm /></ProtectedRoute>} />
+          <Route path="/admin/users/:id" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUserForm /></ProtectedRoute>} />
+          <Route path="/admin/teachers/:id/classes" element={<ProtectedRoute allowedRoles={["admin"]}><AdminTeacherClasses /></ProtectedRoute>} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
   );
-}
-
-function PrivateRouteAluno({ children }: { children: React.ReactElement }) {
-  const userType = localStorage.getItem("userType")?.toLowerCase();
-  const token = localStorage.getItem("token");
-
-  if (!token) return <Navigate to="/" replace />;
-  if (userType === "teacher" || userType === "admin") {
-    return <Navigate to="/paginaInicialProfessor" replace />;
-  }
-  if (userType !== "student") return <Navigate to="/" replace />;
-
-  return children;
 }
 
 const KeyedRouter = ({ children }: { children: React.ReactNode }) => {
