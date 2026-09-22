@@ -20,9 +20,9 @@ cd frontend
 npm install
 ```
 
-### 2. Configurar variáveis de ambiente do backend
+### 2. Configurar variáveis de ambiente
 
-Crie um arquivo .env dentro da pasta backend com o seguinte conteúdo (ajuste os valores conforme seu ambiente):
+Crie um arquivo `.env` dentro da pasta `backend` com o seguinte conteúdo (ajuste os valores conforme seu ambiente). Há um `backend/.env.example` com o mesmo modelo:
 
 ```env
 DB_HOST=localhost
@@ -34,6 +34,12 @@ DB_DATABASE=progetequest
 JWT_SECRET=chave_secreta
 
 PORT=3000
+```
+
+Crie também um arquivo `.env` dentro da pasta `frontend` (há um `frontend/.env.example` com o mesmo modelo), apontando para o endereço onde o backend está rodando:
+
+```env
+VITE_API_URL=http://localhost:3000
 ```
 
 ### 3. Rodar o backend
