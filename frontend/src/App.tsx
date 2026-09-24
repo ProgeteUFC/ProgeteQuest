@@ -19,6 +19,7 @@ import LoginProfessor from "./pages/LoginProfessor";
 import ForumTurmaPage from "./pages/ForumTurmaPage";
 import ViewClasses from './pages/VisualizarTurmasProfessor';
 import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
+import PaginaInicialAdmin from "./pages/PaginaInicialAdmin";
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
           <Route path="/visualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
           <Route path="/loginProfessor" element={<LoginProfessor />} />
+          <Route path="/admin" element={<PrivateRouteAdmin><PaginaInicialAdmin /></PrivateRouteAdmin>} />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
@@ -53,10 +55,29 @@ function PrivateRouteAluno({ children }: { children: React.ReactElement }) {
   const token = localStorage.getItem("token");
 
   if (!token) return <Navigate to="/" replace />;
-  if (userType === "teacher" || userType === "admin") {
-    return <Navigate to="/paginaInicialProfessor" replace />;
-  }
+  if (userType === "teacher") {
+  return <Navigate to="/paginaInicialProfessor" replace />;
+}
+
+if (userType === "admin") {
+  return <Navigate to="/admin" replace />;
+}
   if (userType !== "student") return <Navigate to="/" replace />;
+
+  return children;
+}
+
+function PrivateRouteAdmin({ children }: { children: React.ReactElement }) {
+  const userType = localStorage.getItem("userType")?.toLowerCase();
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (userType !== "admin") {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 }
