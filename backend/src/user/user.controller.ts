@@ -10,6 +10,7 @@ import {
 } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
+import { Public } from 'src/decorators/public.decorator';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { UserService } from './user.service';
@@ -20,6 +21,7 @@ import { DeleteUserDto } from './dtos/deleteUser.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Public()
   @Post()
   @ApiOperation({
     summary: 'Criar novo usuário',
