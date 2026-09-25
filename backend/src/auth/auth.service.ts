@@ -47,7 +47,8 @@ export class AuthService {
         lastAttempt: now,
       };
 
-      throw new UnauthorizedException('Não existe cadastro com esse e-mail.');
+      // Mensagem genérica para não revelar existência do e-mail
+      throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
     const passwordValid = await bcrypt.compare(password, user.password);
@@ -58,6 +59,11 @@ export class AuthService {
         lastAttempt: now,
       };
 
+      throw new UnauthorizedException('E-mail ou senha incorretos');
+    }
+
+    // Fail-closed: o usuário só pode logar se active === true.
+    if (user.active !== true) {
       throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
