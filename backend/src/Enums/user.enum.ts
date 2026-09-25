@@ -3,3 +3,8 @@ export enum UserType {
   TEACHER = 'teacher',
   ADMIN = 'admin',
 }
+
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
