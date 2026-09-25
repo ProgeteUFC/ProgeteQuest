@@ -13,6 +13,7 @@ import { generateUuid } from '../utils/generateUuid';
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
+import { UserStatus } from 'src/Enums/user.enum';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -359,5 +360,86 @@ export class UserService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  async deactivate(userId: string, adminId: string, reason: string) {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+      relations: ['admins'],
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    // Idempotente: se já está inativo, não faz nada e retorna sucesso
+    if (user.status === UserStatus.INACTIVE) {
+      return {
+        userId: user.userId,
+        status: user.status,
+        message: 'Usuário já estava inativo',
+      };
+    }
+
+    // Não permite desativar o último admin ativo
+    if (user.admins && user.admins.length > 0) {
+      const activeAdminsCount = await this.userRepository.count({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        where: { type: 'admin' as any, status: UserStatus.ACTIVE },
+      });
+
+      if (activeAdminsCount <= 1) {
+        throw new BadRequestException(
+          'Não é possível desativar o último administrador ativo',
+        );
+      }
+    }
+
+    // Opcional: impede que o admin desative a própria conta.
+    // Remova este bloco se essa regra não for adotada pelo time.
+    if (userId === adminId) {
+      throw new BadRequestException('Você não pode desativar a própria conta');
+    }
+
+    user.status = UserStatus.INACTIVE;
+    user.deactivatedAt = new Date();
+    user.deactivatedBy = adminId;
+    user.deactivationReason = reason;
+
+    await this.userRepository.save(user);
+
+    return {
+      userId: user.userId,
+      status: user.status,
+      deactivatedAt: user.deactivatedAt,
+      deactivatedBy: user.deactivatedBy,
+      deactivationReason: user.deactivationReason,
+    };
+  }
+
+  async activate(userId: string) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    // Idempotente: se já está ativo, não faz nada e retorna sucesso
+    if (user.status === UserStatus.ACTIVE) {
+      return {
+        userId: user.userId,
+        status: user.status,
+        message: 'Usuário já estava ativo',
+      };
+    }
+
+    user.status = UserStatus.ACTIVE;
+    user.deactivatedAt = null;
+    user.deactivatedBy = null;
+    user.deactivationReason = null;
+
+    await this.userRepository.save(user);
+
+    return { userId: user.userId, status: user.status };
   }
 }

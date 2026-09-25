@@ -1,7 +1,7 @@
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
-import { UserType } from 'src/Enums/user.enum';
+import { UserType, UserStatus } from 'src/Enums/user.enum';
 import {
   Entity,
   PrimaryColumn,
@@ -9,6 +9,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -52,6 +54,42 @@ export class User {
     name: 'type',
   })
   type: UserType;
+
+  @Column({
+    type: 'enum',
+    enum: UserStatus,
+    enumName: 'user_status_enum',
+    default: UserStatus.ACTIVE,
+    nullable: false,
+    name: 'status',
+  })
+  status: UserStatus;
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+    name: 'deactivated_at',
+  })
+  deactivatedAt: Date | null;
+
+  @Column({
+    type: 'varchar',
+    length: 36,
+    nullable: true,
+    name: 'deactivated_by',
+  })
+  deactivatedBy: string | null;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'deactivated_by' })
+  deactivatedByUser?: User;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+    name: 'deactivation_reason',
+  })
+  deactivationReason: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
