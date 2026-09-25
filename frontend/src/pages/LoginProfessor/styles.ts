@@ -111,7 +111,7 @@ export const EsqueciSenha = styled.button`
 
 export const Actions = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 10px;
 `;
@@ -138,26 +138,13 @@ export const BtnLogin = styled.button`
   }
 `;
 
-export const BtnCriarConta = styled.button`
-  background-color: #00c4cc;
+export const AvisoCadastro = styled.p`
+  margin: 14px 0 0;
   color: ${(props) => props.theme.colors.white};
-  border: none;
-  border-radius: 25px;
-  padding: 10px 18px;
   font-size: 13px;
-  font-weight: 700;
   font-family: "Baloo Paaji 2", sans-serif;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #00adb5;
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
+  line-height: 1.5;
+  text-align: center;
 `;
 
 export const Descricao = styled.p`
