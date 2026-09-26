@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Get, Param, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Param,
+  Put,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -10,8 +19,9 @@ import {
 } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
-import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
+import { LegacyRegisterStudentDto } from './dtos/legacyRegisterStudent.dto';
+import { UserType } from 'src/Enums/user.enum';
 import { UserService } from './user.service';
 import { DeleteUserDto } from './dtos/deleteUser.dto';
 
@@ -21,55 +31,26 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({
-    summary: 'Criar novo usuário',
+    summary: '[Descontinuada] Cadastrar-se como aluno',
+    deprecated: true,
     description:
-      'Cria um usuário do tipo aluno, professor ou administrador. Para admin, envie apenas os dados básicos e type como admin.',
+      'Mantida apenas enquanto o frontend não migra para POST /auth/register/student, que é a rota oficial. Cria exclusivamente contas de aluno: o tipo é definido pelo servidor e tentar se cadastrar como professor ou administrador resulta em 400.',
   })
-  @ApiBody({
-    type: CreateUserDto,
-    description: 'Dados para criação do usuário',
-    examples: {
-      estudante: {
-        summary: 'Criar aluno',
-        description:
-          'Use type student e informe registrationStudent com 6 dígitos.',
-        value: {
-          name: 'Maria Silva',
-          email: 'maria@exemplo.com',
-          password: 'senha123',
-          type: 'student',
-          registrationStudent: '123456',
-        },
-      },
-      professor: {
-        summary: 'Criar professor',
-        description:
-          'Use type teacher e informe registrationTeacher com 6 dígitos.',
-        value: {
-          name: 'Carlos Souza',
-          email: 'carlos@exemplo.com',
-          password: 'senha123',
-          type: 'teacher',
-          registrationTeacher: '654321',
-        },
-      },
-      administrador: {
-        summary: 'Criar administrador',
-        description:
-          'Use type admin. Administradores não precisam de matrícula.',
-        value: {
-          name: 'Ana Admin',
-          email: 'ana.admin@exemplo.com',
-          password: 'senha123',
-          type: 'admin',
-        },
-      },
-    },
+  @ApiBody({ type: LegacyRegisterStudentDto })
+  @ApiResponse({ status: 201, description: 'Aluno cadastrado com sucesso.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos ou tentativa de cadastrar não-aluno.',
   })
-  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso.' })
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @ApiResponse({ status: 409, description: 'E-mail ou matrícula já em uso.' })
+  async createStudent(@Body() body: LegacyRegisterStudentDto) {
+    // Mesma garantia da rota nova: o tipo vem do servidor, não do cliente.
+    return this.userService.create({
+      ...body,
+      type: UserType.STUDENT,
+    });
   }
 
   @Roles('teacher')
