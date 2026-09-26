@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { generateUuid } from '../utils/generateUuid';
@@ -29,6 +29,8 @@ export class UserService {
 
     @InjectRepository(Admin)
     private readonly adminRepository: Repository<Admin>,
+
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -106,35 +108,41 @@ export class UserService {
     // Criação e salvamento do usuário
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    const user = this.userRepository.create({
-      userId: generateUuid(),
-      name: createUserDto.name.trim(),
-      email,
-      password: hashedPassword,
-      type: createUserDto.type,
+    // O usuário e o seu perfil nascem juntos: se o perfil falhar, o usuário
+    // não fica gravado pela metade (sem perfil ele nem conseguiria logar).
+    const user = await this.dataSource.transaction(async (manager) => {
+      const novoUsuario = manager.create(User, {
+        userId: generateUuid(),
+        name: createUserDto.name.trim(),
+        email,
+        password: hashedPassword,
+        type: createUserDto.type,
+      });
+
+      await manager.save(novoUsuario);
+
+      // Criação do vínculo com estudante, professor ou admin
+      if (createUserDto.type === 'student') {
+        await manager.save(Student, {
+          userId: novoUsuario.userId,
+          registrationStudent: createUserDto.registrationStudent?.trim(),
+          user: novoUsuario,
+        });
+      } else if (createUserDto.type === 'teacher') {
+        await manager.save(Teacher, {
+          userId: novoUsuario.userId,
+          registrationTeacher: createUserDto.registrationTeacher?.trim(),
+          user: novoUsuario,
+        });
+      } else if (createUserDto.type === 'admin') {
+        await manager.save(Admin, {
+          userId: novoUsuario.userId,
+          user: novoUsuario,
+        });
+      }
+
+      return novoUsuario;
     });
-
-    await this.userRepository.save(user);
-
-    // Criação do vínculo com estudante, professor ou admin
-    if (createUserDto.type === 'student') {
-      await this.studentRepository.save({
-        userId: user.userId,
-        registrationStudent: createUserDto.registrationStudent?.trim(),
-        user,
-      });
-    } else if (createUserDto.type === 'teacher') {
-      await this.teacherRepository.save({
-        userId: user.userId,
-        registrationTeacher: createUserDto.registrationTeacher?.trim(),
-        user,
-      });
-    } else if (createUserDto.type === 'admin') {
-      await this.adminRepository.save({
-        userId: user.userId,
-        user,
-      });
-    }
 
     // Retorno dos dados públicos
     return {

@@ -11,5 +11,6 @@ import { Admin } from '../admin/entities/admin.entity';
   imports: [TypeOrmModule.forFeature([User, Student, Teacher, Admin])],
   providers: [UserService],
   controllers: [UserController],
+  exports: [UserService],
 })
 export class UserModule {}

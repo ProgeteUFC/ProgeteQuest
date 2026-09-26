@@ -1,12 +1,48 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LoginDto } from './dtos/login.dto';
+import { RegisterStudentDto } from './dtos/registerStudent.dto';
+import { UserService } from 'src/user/user.service';
+import { UserType } from 'src/Enums/user.enum';
 
 @ApiTags('Autenticação')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
+
+  @Post('register/student')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({
+    summary: 'Cadastrar-se como aluno',
+    description:
+      'Cadastro público, aberto a qualquer pessoa. Cria sempre uma conta de aluno: o tipo é definido pelo servidor e não pode ser escolhido na requisição. Para criar professores, use Administração → POST /admin/users.',
+  })
+  @ApiBody({ type: RegisterStudentDto })
+  @ApiResponse({ status: 201, description: 'Aluno cadastrado com sucesso.' })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Dados inválidos. Enviar o campo type nesta rota também resulta em 400.',
+  })
+  @ApiResponse({ status: 409, description: 'E-mail ou matrícula já em uso.' })
+  async registerStudent(@Body() registerStudentDto: RegisterStudentDto) {
+    // O tipo é fixado aqui, no servidor: nada do corpo da requisição
+    // influencia o perfil criado.
+    return this.userService.create({
+      ...registerStudentDto,
+      type: UserType.STUDENT,
+    });
+  }
 
   @Post('login')
   @ApiOperation({
