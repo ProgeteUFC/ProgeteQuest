@@ -19,6 +19,7 @@ import LoginProfessor from "./pages/LoginProfessor";
 import ForumTurmaPage from "./pages/ForumTurmaPage";
 import ViewClasses from './pages/VisualizarTurmasProfessor';
 import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
+import CadastroAdministrativoPage from "./pages/CadastroAdministrativo";
 
 export default function App() {
   return (
@@ -42,6 +43,12 @@ export default function App() {
           <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
           <Route path="/visualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
           <Route path="/loginProfessor" element={<LoginProfessor />} />
+          <Route path="/cadastroAdministrativo" element={
+              <PrivateRouteStaff>
+                <CadastroAdministrativoPage />
+              </PrivateRouteStaff>
+            }
+          />
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
@@ -57,6 +64,18 @@ function PrivateRouteAluno({ children }: { children: React.ReactElement }) {
     return <Navigate to="/paginaInicialProfessor" replace />;
   }
   if (userType !== "student") return <Navigate to="/" replace />;
+
+  return children;
+}
+
+function PrivateRouteStaff({ children }: { children: React.ReactElement }) {
+  const userType = localStorage.getItem("userType")?.toLowerCase();
+  const token = localStorage.getItem("token");
+
+  if (!token) return <Navigate to="/" replace />;
+  if (userType !== "teacher" && userType !== "admin") {
+    return <Navigate to="/minhasTurmas" replace />;
+  }
 
   return children;
 }
