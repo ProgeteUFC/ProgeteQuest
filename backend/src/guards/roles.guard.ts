@@ -71,8 +71,7 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    // Falha fechada: requer explícito `active === true`.
-    if (foundUser.active !== true) {
+    if (foundUser.status !== UserStatus.ACTIVE) {
       return false;
     }
 
