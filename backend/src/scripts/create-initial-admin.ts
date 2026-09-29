@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from 'src/user/entities/user.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
 import { UserType } from 'src/Enums/user.enum';
+import { UserStatus } from 'src/Enums/user.enum';
 
 function validateEmail(email: string) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -76,6 +77,7 @@ async function run() {
       email,
       password: hashed,
       type: UserType.ADMIN,
+      status: UserStatus.ACTIVE,
     });
 
     await userRepo.save(user);
