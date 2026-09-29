@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
+import { UserStatus } from 'src/Enums/user.enum';
 import * as bcrypt from 'bcrypt';
 
 const loginAttempts: Record<string, { count: number; lastAttempt: number }> = {};
@@ -62,8 +63,8 @@ export class AuthService {
       throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
-    // Fail-closed: o usuário só pode logar se active === true.
-    if (user.active !== true) {
+    // Fail-closed: o usuário só pode logar se status === UserStatus.ACTIVE.
+    if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
