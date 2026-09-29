@@ -27,7 +27,7 @@ import { ForumModule } from './forum/forum.module';
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,
       entities: [`${__dirname}/**/*.entity{.js,.ts}`],
-      migrations: [`${__dirname}/migrations/{.ts,*.js}`],
+      migrations: [`${__dirname}/migrations/*.{ts,js}`],
       migrationsRun: true,
     }),
     UserModule,
