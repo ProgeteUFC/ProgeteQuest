@@ -52,13 +52,6 @@ export class User {
     name: 'type',
   })
   type: UserType;
-  
-  @Column({
-    type: 'boolean',
-    name: 'active',
-    default: true,
-  })
-  active: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
