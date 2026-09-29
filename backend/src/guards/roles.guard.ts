@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { UserStatus } from 'src/Enums/user.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
