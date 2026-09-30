@@ -4,16 +4,16 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { generateUuid } from '../utils/generateUuid';
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
-import { UserStatus } from 'src/Enums/user.enum';
+import { UserStatus, UserType } from 'src/Enums/user.enum';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -30,6 +30,9 @@ export class UserService {
 
     @InjectRepository(Admin)
     private readonly adminRepository: Repository<Admin>,
+
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -363,58 +366,57 @@ export class UserService {
   }
 
   async deactivate(userId: string, adminId: string, reason: string) {
-    const user = await this.userRepository.findOne({
-      where: { userId },
-      relations: ['admins'],
-    });
-
-    if (!user) {
-      throw new BadRequestException('Usuário não encontrado');
-    }
-
-    // Idempotente: se já está inativo, não faz nada e retorna sucesso
-    if (user.status === UserStatus.INACTIVE) {
-      return {
-        userId: user.userId,
-        status: user.status,
-        message: 'Usuário já estava inativo',
-      };
-    }
-
-    // Não permite desativar o último admin ativo
-    if (user.admins && user.admins.length > 0) {
-      const activeAdminsCount = await this.userRepository.count({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        where: { type: 'admin' as any, status: UserStatus.ACTIVE },
-      });
-
-      if (activeAdminsCount <= 1) {
-        throw new BadRequestException(
-          'Não é possível desativar o último administrador ativo',
-        );
-      }
-    }
-
-    // Opcional: impede que o admin desative a própria conta.
-    // Remova este bloco se essa regra não for adotada pelo time.
     if (userId === adminId) {
       throw new BadRequestException('Você não pode desativar a própria conta');
     }
 
-    user.status = UserStatus.INACTIVE;
-    user.deactivatedAt = new Date();
-    user.deactivatedBy = adminId;
-    user.deactivationReason = reason;
+    return this.dataSource.transaction(async (manager) => {
+      const activeAdmins = await manager
+        .createQueryBuilder(User, 'user')
+        .setLock('pessimistic_write')
+        .where('user.type = :type', { type: UserType.ADMIN })
+        .andWhere('user.status = :status', { status: UserStatus.ACTIVE })
+        .orderBy('user.user_id', 'ASC')
+        .getMany();
 
-    await this.userRepository.save(user);
+      const user = await manager.findOne(User, {
+        where: { userId },
+        lock: { mode: 'pessimistic_write' },
+      });
 
-    return {
-      userId: user.userId,
-      status: user.status,
-      deactivatedAt: user.deactivatedAt,
-      deactivatedBy: user.deactivatedBy,
-      deactivationReason: user.deactivationReason,
-    };
+      if (!user) {
+        throw new BadRequestException('Usuário não encontrado');
+      }
+
+      if (user.status === UserStatus.INACTIVE) {
+        return {
+          userId: user.userId,
+          status: user.status,
+          message: 'Usuário já estava inativo',
+        };
+      }
+
+      if (user.type === UserType.ADMIN && activeAdmins.length <= 1) {
+        throw new BadRequestException(
+          'Não é possível desativar o último administrador ativo',
+        );
+      }
+
+      user.status = UserStatus.INACTIVE;
+      user.deactivatedAt = new Date();
+      user.deactivatedBy = adminId;
+      user.deactivationReason = reason;
+
+      await manager.save(user);
+
+      return {
+        userId: user.userId,
+        status: user.status,
+        deactivatedAt: user.deactivatedAt,
+        deactivatedBy: user.deactivatedBy,
+        deactivationReason: user.deactivationReason,
+      };
+    });
   }
 
   async activate(userId: string) {
