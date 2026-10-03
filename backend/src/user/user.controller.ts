@@ -30,6 +30,7 @@ import { DeleteUserDto } from './dtos/deleteUser.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Public()
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({

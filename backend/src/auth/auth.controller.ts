@@ -12,6 +12,7 @@ import { RegisterStudentDto } from './dtos/registerStudent.dto';
 import { UserService } from 'src/user/user.service';
 import { UserType } from 'src/Enums/user.enum';
 
+
 @ApiTags('Autenticação')
 @Controller('auth')
 export class AuthController {
@@ -44,6 +45,7 @@ export class AuthController {
     });
   }
 
+  @Public()
   @Post('login')
   @ApiOperation({
     summary: 'Entrar no sistema',
