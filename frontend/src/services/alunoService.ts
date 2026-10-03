@@ -1,11 +1,18 @@
 import axios from "axios";
-import { data } from "react-router";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 
+interface CadastroAluno {
+  name: string;
+  email: string;
+  password: string;
+  type: "student";
+  registrationStudent: string;
+}
+
 export const alunoService = {
-  async cadastrar(dados: any) {
+  async cadastrar(dados: CadastroAluno) {
     return axios.post(`${API_URL}/user`, dados);
   },
 async login(email: string, password: string) {
