@@ -11,6 +11,8 @@ import { AdminUserController } from './admin-user.controller';
 @Module({
   imports: [TypeOrmModule.forFeature([User, Student, Teacher, Admin])],
   providers: [UserService],
-  controllers: [UserController, AdminUserController],
+  controllers: [UserController],
+  exports: [UserService],
+
 })
 export class UserModule {}
