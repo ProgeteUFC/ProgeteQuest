@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
+import { UserStatus } from 'src/Enums/user.enum';
 import * as bcrypt from 'bcrypt';
 
 const loginAttempts: Record<string, { count: number; lastAttempt: number }> = {};
@@ -47,7 +48,8 @@ export class AuthService {
         lastAttempt: now,
       };
 
-      throw new UnauthorizedException('Não existe cadastro com esse e-mail.');
+      // Mensagem genérica para não revelar existência do e-mail
+      throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
     const passwordValid = await bcrypt.compare(password, user.password);
@@ -58,6 +60,11 @@ export class AuthService {
         lastAttempt: now,
       };
 
+      throw new UnauthorizedException('E-mail ou senha incorretos');
+    }
+
+    // Fail-closed: o usuário só pode logar se status === UserStatus.ACTIVE.
+    if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 

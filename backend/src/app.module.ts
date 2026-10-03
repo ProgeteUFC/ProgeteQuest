@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RolesGuard } from './guards/roles.guard';
+import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { StudentModule } from './student/student.module';
 import { TeacherModule } from './teacher/teacher.module';
@@ -25,10 +27,11 @@ import { ForumModule } from './forum/forum.module';
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,
       entities: [`${__dirname}/**/*.entity{.js,.ts}`],
-      migrations: [`${__dirname}/migrations/{.ts,*.js}`],
+      migrations: [`${__dirname}/migrations/*.{ts,js}`],
       migrationsRun: true,
     }),
     UserModule,
+    TypeOrmModule.forFeature([User]),
     StudentModule,
     TeacherModule,
     StudentClassModule,
@@ -40,5 +43,6 @@ import { ForumModule } from './forum/forum.module';
     ClassModule,
     ForumModule,
   ],
+  providers: [RolesGuard],
 })
 export class AppModule {}
