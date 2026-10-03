@@ -65,3 +65,12 @@ export const MenuOption = styled.a`
     scale: 0.97;
   }
 `;
+
+export const AdminFooter = styled.div`
+  width: 100%;
+  margin-top: auto;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;

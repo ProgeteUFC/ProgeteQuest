@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
 import Footer from "../../components/Footer";
@@ -14,19 +14,12 @@ import {
   PlanetImage,
   DescriptionContainer,
   DescriptionText,
+  AdminFooter,
 } from "./styles";
 
 import planetOrange from "../../assets/planet_orange.png";
 
 const PaginaInicialAdmin = () => {
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
   return (
     <>
       <PlanetImage src={planetOrange} alt="Planeta Laranja" />
@@ -77,7 +70,9 @@ const PaginaInicialAdmin = () => {
           </DescriptionContainer>
         </Content>
 
-        <Footer />
+        <AdminFooter>
+          <Footer />
+        </AdminFooter>
       </Container>
     </>
   );
