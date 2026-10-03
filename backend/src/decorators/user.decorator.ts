@@ -16,6 +16,17 @@ export interface UserPayload {
 export const User = createParamDecorator(
   async (_: unknown, ctx: ExecutionContext): Promise<UserPayload> => {
     const req = ctx.switchToHttp().getRequest();
+    
+    // Se o RolesGuard já anexou o usuário apoiado pelo banco de dados ao `req.user`, prefira-o.
+    if (req && req.user && typeof req.user === 'object') {
+      const u = req.user as UserPayload;
+      if (!u.userId) {
+        throw new UnauthorizedException('Token inválido ou expirado');
+      }
+      return u;
+    }
+
+    // Fallback: quando a guarda não foi executada (por exemplo, uso direto do decorador), decodifique o JWT.
     const authHeader: string | undefined = req.headers['authorization'];
 
     if (!authHeader) {

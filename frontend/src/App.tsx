@@ -19,11 +19,15 @@ import LoginProfessor from "./pages/LoginProfessor";
 import ForumTurmaPage from "./pages/ForumTurmaPage";
 import ViewClasses from './pages/VisualizarTurmasProfessor';
 import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminHome from "./pages/Admin/AdminHome";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminUserForm from "./pages/Admin/AdminUserForm";
 import AdminTeacherClasses from "./pages/Admin/AdminTeacherClasses";
+
+import CadastroAdministrativoPage from "./pages/CadastroAdministrativo";
+
 
 export default function App() {
   return (
@@ -43,6 +47,7 @@ export default function App() {
           <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
           <Route path="/loginProfessor" element={<LoginProfessor />} />
 
+
           {/* Rotas de professor */}
           <Route path="/paginaInicialProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><PaginaInicialProfessor /></ProtectedRoute>} />
           <Route path="/cadastrarDisciplina" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><CadastrarDisciplina /></ProtectedRoute>} />
@@ -56,11 +61,20 @@ export default function App() {
           <Route path="/admin/users/new" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUserForm /></ProtectedRoute>} />
           <Route path="/admin/users/:id" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUserForm /></ProtectedRoute>} />
           <Route path="/admin/teachers/:id/classes" element={<ProtectedRoute allowedRoles={["admin"]}><AdminTeacherClasses /></ProtectedRoute>} />
+
+          <Route path="/cadastroAdministrativo" element={
+              <PrivateRouteStaff>
+                <CadastroAdministrativoPage />
+              </PrivateRouteStaff>
+            }
+          />
+
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
   );
 }
+
 
 const KeyedRouter = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();

@@ -14,7 +14,7 @@ import {
   EsqueciSenha,
   Actions,
   BtnLogin,
-  BtnCriarConta,
+  AvisoCadastro,
   Descricao,
   Astronauta,
   Footer,
@@ -55,10 +55,6 @@ const LoginProfessor = () => {
           "Erro ao fazer login. Verifique suas credenciais."
       );
     }
-  };
-
-  const handleCriarConta = () => {
-    navigate("/register");
   };
 
   const handleEsqueciSenha = () => {
@@ -102,10 +98,10 @@ const LoginProfessor = () => {
           <BtnLogin type="button" onClick={handleLogin}>
             LOGIN
           </BtnLogin>
-          <BtnCriarConta type="button" onClick={handleCriarConta}>
-            CRIAR CONTA
-          </BtnCriarConta>
         </Actions>
+        <AvisoCadastro>
+          O cadastro de professores é realizado pela administração.
+        </AvisoCadastro>
         {erro && <div style={{ color: "red", marginTop: 8 }}>{erro}</div>}
       </Card>
 

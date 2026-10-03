@@ -13,8 +13,6 @@ import {
   HeaderContainer,
   CadastrarButton,
   LoginButton,
-  UserTypeRow,
-  UserTypeButton,
   Feedback,
 } from "./styles";
 import { TitleName } from "../../components/TitleName";
@@ -31,7 +29,6 @@ export default function RegisterPage() {
   const [senhaConfirm, setSenhaConfirm] = useState("");
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
-  const [tipo, setTipo] = useState<"student" | "teacher">("student");
   const [processando, setProcessando] = useState(false);
   const navigate = useNavigate();
 
@@ -49,9 +46,8 @@ export default function RegisterPage() {
         name: nome,
         email,
         password: senha,
-        type: tipo,
-        registrationStudent: tipo === "student" ? matricula : undefined,
-        registrationTeacher: tipo === "teacher" ? matricula : undefined,
+        type: "student",
+        registrationStudent: matricula,
       });
       // Realiza login automático após cadastro
       const res = await alunoService.login(email, senha);
@@ -60,12 +56,7 @@ export default function RegisterPage() {
       localStorage.setItem("userType", res.data.user.type);
       setSucesso("Cadastro realizado com sucesso! Você foi logado.");
       // Redireciona para Minhas Turmas
-      navigate(
-        String(res.data.user.type).toLowerCase() === "teacher"
-          ? "/paginaInicialProfessor"
-          : "/minhasTurmas",
-        { replace: true }
-      );
+      navigate("/minhasTurmas", { replace: true });
     } catch (err: any) {
       setErro(
         err?.response?.data?.message ||
@@ -85,31 +76,13 @@ export default function RegisterPage() {
         <LeftColumn>
           <HeaderContainer>
             <div className="title-wrapper">
-              <TitleName titleName="Cadastro" />
+              <TitleName titleName="Cadastro de aluno" />
             </div>
             <p className="subtitle">
               Novo usuário? Insira seus dados abaixo e confirme seu cadastro.
             </p>
           </HeaderContainer>
           <Register>
-            <UserTypeRow>
-              <UserTypeButton
-                type="button"
-                className={tipo === "student" ? "active" : ""}
-                $active={tipo === "student"}
-                onClick={() => setTipo("student")}
-              >
-                Sou aluno(a)
-              </UserTypeButton>
-              <UserTypeButton
-                type="button"
-                className={tipo === "teacher" ? "active" : ""}
-                $active={tipo === "teacher"}
-                onClick={() => setTipo("teacher")}
-              >
-                Sou professor(a)
-              </UserTypeButton>
-            </UserTypeRow>
             <form onSubmit={handleRegister}>
               <InputWrapper>
                 <span>Nome:</span>
@@ -122,7 +95,7 @@ export default function RegisterPage() {
                 />
               </InputWrapper>
               <InputWrapper>
-                <span>{tipo === "student" ? "Matrícula:" : "SIAPE:"}</span>
+                <span>Matrícula:</span>
                 <input
                   type="text"
                   name="matricula"
