@@ -11,6 +11,7 @@ import { LoginDto } from './dtos/login.dto';
 import { RegisterStudentDto } from './dtos/registerStudent.dto';
 import { UserService } from 'src/user/user.service';
 import { UserType } from 'src/Enums/user.enum';
+import { Public } from 'src/decorators/public.decorator';
 
 
 @ApiTags('Autenticação')
@@ -21,6 +22,7 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
+  @Public()
   @Post('register/student')
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({

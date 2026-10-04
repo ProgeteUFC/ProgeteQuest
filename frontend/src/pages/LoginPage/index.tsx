@@ -38,7 +38,9 @@ async function handleLogin(e: React.FormEvent) {
     //Lógica de Redirecionamento Dinâmico
     const userType = String(res.data.user.type).toLowerCase();
 
-    if (userType === "teacher") {
+    if (userType === "admin") {
+      navigate("/admin");
+    } else if (userType === "teacher") {
       navigate("/paginaInicialProfessor"); // Rota para professores
     } else {
       navigate("/minhasTurmas"); // Rota padrão dos alunos

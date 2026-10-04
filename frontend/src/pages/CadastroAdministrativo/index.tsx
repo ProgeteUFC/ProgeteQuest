@@ -1,22 +1,18 @@
 import React, { useState } from "react";
 // Reaproveitando os estilos já existentes da RegisterPage
 import {
-  Container,
   LeftColumn,
   PageContent,
   InputWrapper,
   Register,
   LogoTop,
-  LogoBottom,
   Planet,
   RightArtwork,
   HeaderContainer,
   CadastrarButton,
-  UserTypeRow,
-  UserTypeButton,
   Feedback,
 } from "../RegisterPage/styles";
-import { GerarSenhaButton, PasswordResultBox } from "./styles";
+import { Container, GerarSenhaButton, PasswordResultBox, UserTypeRow, UserTypeButton } from "./styles";
 import { TitleName } from "../../components/TitleName";
 import {
   adminService,
@@ -92,7 +88,6 @@ export default function CadastroAdministrativoPage() {
   return (
     <Container>
       <LogoTop src={logo} alt="Progete logo topo" />
-      <LogoBottom src={logo} alt="Progete logo rodapé" />
       <Planet src={planet} alt="planet" />
       <PageContent>
         <LeftColumn>
@@ -178,7 +173,7 @@ export default function CadastroAdministrativoPage() {
                 type="button"
                 onClick={() => setSenha(gerarSenhaTemporaria())}
               >
-                GERAR SENHA TEMPORÁRIA
+                GERAR SENHA INICIAL
               </GerarSenhaButton>
 
               <CadastrarButton type="submit" disabled={processando}>

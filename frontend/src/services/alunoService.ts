@@ -7,13 +7,12 @@ interface CadastroAluno {
   name: string;
   email: string;
   password: string;
-  type: "student";
   registrationStudent: string;
 }
 
 export const alunoService = {
   async cadastrar(dados: CadastroAluno) {
-    return axios.post(`${API_URL}/user`, dados);
+    return axios.post(`${API_URL}/auth/register/student`, dados);
   },
 async login(email: string, password: string) {
   return axios.post(`${API_URL}/auth/login`, { email, password });

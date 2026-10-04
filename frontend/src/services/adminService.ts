@@ -11,8 +11,10 @@ function delay(ms = DELAY_MS): Promise<void> {
 export function gerarSenhaTemporaria(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
   let senha = "";
-  for (let i = 0; i < 10; i++) {
-    senha += chars[Math.floor(Math.random() * chars.length)];
+  const limit = 256 - (256 % chars.length);
+  while (senha.length < 12) {
+    const value = crypto.getRandomValues(new Uint8Array(1))[0];
+    if (value < limit) senha += chars[value % chars.length];
   }
   return senha;
 }

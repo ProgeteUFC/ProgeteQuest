@@ -43,6 +43,10 @@ Os endpoints indicam nos textos quais perfis podem usá-los: **student**, **teac
     )
     .addTag('Autenticação', 'Login e cadastro público de alunos.')
     .addTag('Administração', 'Cadastro de usuários pelo administrador.')
+    .addTag(
+      'Administração de Usuários',
+      'Ativação e desativação de usuários sem excluir seus dados ou relações.',
+    )
     .addTag('Usuários', 'Cadastro, consulta, atualização e exclusão de contas.')
     .addTag('Turmas', 'Criação e gerenciamento das turmas do professor.')
     .addTag('Matrículas', 'Entrada, matrícula, membros e ranking das turmas.')

@@ -10,8 +10,9 @@ interface ProtectedRouteProps {
 
 function getHomeForRole(role?: string) {
   switch (role) {
-    case "teacher":
     case "admin":
+      return "/admin";
+    case "teacher":
       return "/paginaInicialProfessor";
     case "student":
       return "/minhasTurmas";

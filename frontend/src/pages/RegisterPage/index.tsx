@@ -46,7 +46,6 @@ export default function RegisterPage() {
         name: nome,
         email,
         password: senha,
-        type: "student",
         registrationStudent: matricula,
       });
       // Realiza login automático após cadastro

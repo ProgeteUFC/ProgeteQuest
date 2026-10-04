@@ -22,6 +22,7 @@ import { User, UserPayload } from 'src/decorators/user.decorator';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { LegacyRegisterStudentDto } from './dtos/legacyRegisterStudent.dto';
 import { UserType } from 'src/Enums/user.enum';
+import { Public } from 'src/decorators/public.decorator';
 import { UserService } from './user.service';
 import { DeleteUserDto } from './dtos/deleteUser.dto';
 

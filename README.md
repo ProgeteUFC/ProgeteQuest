@@ -1,61 +1,50 @@
 # ProgeteQuest
 
-## Passo a passo para rodar o projeto
+## Executando o projeto
 
-### 1. Instalar dependências
+### Backend
 
-Abra o terminal na raiz do projeto e execute os comandos abaixo:
-
-#### Backend
-
-```sh
+```bash
 cd backend
 npm install
+npm run start:dev
 ```
 
-#### Frontend
-
-```sh
-cd frontend
-npm install
-```
-
-### 2. Configurar variáveis de ambiente
-
-Crie um arquivo `.env` dentro da pasta `backend` com o seguinte conteúdo (ajuste os valores conforme seu ambiente). Há um `backend/.env.example` com o mesmo modelo:
+Crie um arquivo `backend/.env` com base nas variáveis necessárias para o ambiente:
 
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_USERNAME=seu_usuario
-DB_PASSWORD=sua_senha
+DB_USERNAME=<usuario>
+DB_PASSWORD=<senha>
 DB_DATABASE=progetequest
 
-JWT_SECRET=chave_secreta
-
+JWT_SECRET=<chave_jwt>
 PORT=3000
 ```
 
-Crie também um arquivo `.env` dentro da pasta `frontend` (há um `frontend/.env.example` com o mesmo modelo), apontando para o endereço onde o backend está rodando:
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Crie um arquivo `frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:3000
 ```
 
-### 3. Rodar o backend
+Por padrão:
 
-No terminal dentro da pasta backend:
+- Backend: `http://localhost:3000`
+- Frontend: `http://localhost:5173`
 
-```sh
-npm run start:dev
-```
+## Documentação da API
 
-### 4. Rodar o frontend
+Com o backend em execução, o Swagger está disponível em:
 
-No terminal dentro da pasta frontend:
-
-```sh
-npm run dev
-```
-
-O backend estará disponível em http://localhost:3000 e o frontend em http://localhost:5173 (ou a porta exibida no terminal).
+- `http://localhost:3000/api`
+- `http://localhost:3000/api-json`

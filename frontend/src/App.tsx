@@ -1,6 +1,6 @@
 import React from "react";
 import { ThemeProvider } from "styled-components";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { GlobalStyle } from "./styles/global";
@@ -21,6 +21,8 @@ import ViewClasses from './pages/VisualizarTurmasProfessor';
 import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLayout from "./components/AdminLayout";
+import AdminSection from "./pages/Admin/AdminSection";
 import AdminHome from "./pages/Admin/AdminHome";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminUserForm from "./pages/Admin/AdminUserForm";
@@ -37,14 +39,14 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/detalhesDaTurma/:id" element={<DetalhesDaTurma />} />
+          <Route path="/detalhesDaTurma/:id" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><DetalhesDaTurma /></ProtectedRoute>} />
           <Route path="/seuRanking" element={<ProtectedRoute allowedRoles={["student"]}><SeuRanking /></ProtectedRoute>} />
-          <Route path="/meusDados" element={<MeusDados />} />
-          <Route path="/entrarEmTurma" element={<EntraEmTurma />} />
+          <Route path="/meusDados" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><MeusDados /></ProtectedRoute>} />
+          <Route path="/entrarEmTurma" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><EntraEmTurma /></ProtectedRoute>} />
           <Route path="/minhasTurmas" element={<ProtectedRoute allowedRoles={["student"]}><MinhasTurmas /></ProtectedRoute>} />
           <Route path="/minhasAtividades" element={<ProtectedRoute allowedRoles={["student"]}><MinhasAtividades /></ProtectedRoute>} />
-          <Route path="/forum" element={<ForumPage />} />
-          <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
+          <Route path="/forum" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><ForumPage /></ProtectedRoute>} />
+          <Route path="/forum/:turmaId" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><ForumTurmaPage /></ProtectedRoute>} />
           <Route path="/loginProfessor" element={<LoginProfessor />} />
 
 
@@ -55,19 +57,19 @@ export default function App() {
           <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><VisualizandoTurmasProfessor /></ProtectedRoute>} />
           <Route path="/visualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><VisualizandoTurmasProfessor /></ProtectedRoute>} />
 
-          {/* Rotas de admin */}
-          <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminHome /></ProtectedRoute>} />
-          <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUsers /></ProtectedRoute>} />
-          <Route path="/admin/users/new" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUserForm /></ProtectedRoute>} />
-          <Route path="/admin/users/:id" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUserForm /></ProtectedRoute>} />
-          <Route path="/admin/teachers/:id/classes" element={<ProtectedRoute allowedRoles={["admin"]}><AdminTeacherClasses /></ProtectedRoute>} />
-
-          <Route path="/cadastroAdministrativo" element={
-              <PrivateRouteStaff>
-                <CadastroAdministrativoPage />
-              </PrivateRouteStaff>
-            }
-          />
+          <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
+            <Route index element={<AdminHome />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="users/new" element={<CadastroAdministrativoPage />} />
+            <Route path="users/:id" element={<AdminUserForm />} />
+            <Route path="teachers/:id/classes" element={<AdminTeacherClasses />} />
+            <Route path="classes" element={<AdminSection title="Turmas" />} />
+            <Route path="activities" element={<AdminSection title="Atividades" />} />
+            <Route path="forums" element={<AdminSection title="Fóruns" />} />
+            <Route path="audit" element={<AdminSection title="Auditoria" />} />
+            <Route path="profile" element={<AdminSection title="Meus dados" />} />
+          </Route>
+          <Route path="/cadastroAdministrativo" element={<Navigate to="/admin/users/new" replace />} />
 
         </Routes>
       </KeyedRouter>
@@ -80,8 +82,3 @@ const KeyedRouter = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   return <div key={location.pathname}>{children}</div>;
 };
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>;
