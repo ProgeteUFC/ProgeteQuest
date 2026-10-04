@@ -20,6 +20,17 @@ import ForumTurmaPage from "./pages/ForumTurmaPage";
 import ViewClasses from './pages/VisualizarTurmasProfessor';
 import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLayout from "./components/AdminLayout";
+import AdminSection from "./pages/Admin/AdminSection";
+import AdminHome from "./pages/Admin/AdminHome";
+import AdminUsers from "./pages/Admin/AdminUsers";
+import AdminUserForm from "./pages/Admin/AdminUserForm";
+import AdminTeacherClasses from "./pages/Admin/AdminTeacherClasses";
+
+import CadastroAdministrativoPage from "./pages/CadastroAdministrativo";
+
+
 export default function App() {
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -28,45 +39,46 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/detalhesDaTurma/:id" element={<DetalhesDaTurma />} />
-          <Route path="/seuRanking" element={<PrivateRouteAluno><SeuRanking /></PrivateRouteAluno>} />
-          <Route path="/meusDados" element={<MeusDados />} />
-          <Route path="/entrarEmTurma" element={<EntraEmTurma />} />
-          <Route path="/minhasTurmas" element={<PrivateRouteAluno><MinhasTurmas /></PrivateRouteAluno>} />
-          <Route path="/minhasAtividades" element={<PrivateRouteAluno><MinhasAtividades /></PrivateRouteAluno>} />
-          <Route path="/forum" element={<ForumPage />} />
-          <Route path="/forum/:turmaId" element={<ForumTurmaPage />} />
-          <Route path="/paginaInicialProfessor" element={<PaginaInicialProfessor />} />
-          <Route path="/cadastrarDisciplina" element={<CadastrarDisciplina />} />
-          <Route path="/visualizarTurmasProfessor" element={<ViewClasses />} />
-          <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
-          <Route path="/visualizandoTurmasProfessor/:turmaId" element={<VisualizandoTurmasProfessor />} />
+          <Route path="/detalhesDaTurma/:id" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><DetalhesDaTurma /></ProtectedRoute>} />
+          <Route path="/seuRanking" element={<ProtectedRoute allowedRoles={["student"]}><SeuRanking /></ProtectedRoute>} />
+          <Route path="/meusDados" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><MeusDados /></ProtectedRoute>} />
+          <Route path="/entrarEmTurma" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><EntraEmTurma /></ProtectedRoute>} />
+          <Route path="/minhasTurmas" element={<ProtectedRoute allowedRoles={["student"]}><MinhasTurmas /></ProtectedRoute>} />
+          <Route path="/minhasAtividades" element={<ProtectedRoute allowedRoles={["student"]}><MinhasAtividades /></ProtectedRoute>} />
+          <Route path="/forum" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><ForumPage /></ProtectedRoute>} />
+          <Route path="/forum/:turmaId" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><ForumTurmaPage /></ProtectedRoute>} />
           <Route path="/loginProfessor" element={<LoginProfessor />} />
+
+
+          {/* Rotas de professor */}
+          <Route path="/paginaInicialProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><PaginaInicialProfessor /></ProtectedRoute>} />
+          <Route path="/cadastrarDisciplina" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><CadastrarDisciplina /></ProtectedRoute>} />
+          <Route path="/visualizarTurmasProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><ViewClasses /></ProtectedRoute>} />
+          <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><VisualizandoTurmasProfessor /></ProtectedRoute>} />
+          <Route path="/visualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><VisualizandoTurmasProfessor /></ProtectedRoute>} />
+
+          <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
+            <Route index element={<AdminHome />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="users/new" element={<CadastroAdministrativoPage />} />
+            <Route path="users/:id" element={<AdminUserForm />} />
+            <Route path="teachers/:id/classes" element={<AdminTeacherClasses />} />
+            <Route path="classes" element={<AdminSection title="Turmas" />} />
+            <Route path="activities" element={<AdminSection title="Atividades" />} />
+            <Route path="forums" element={<AdminSection title="Fóruns" />} />
+            <Route path="audit" element={<AdminSection title="Auditoria" />} />
+            <Route path="profile" element={<AdminSection title="Meus dados" />} />
+          </Route>
+          <Route path="/cadastroAdministrativo" element={<Navigate to="/admin/users/new" replace />} />
+
         </Routes>
       </KeyedRouter>
     </ThemeProvider>
   );
 }
 
-function PrivateRouteAluno({ children }: { children: React.ReactElement }) {
-  const userType = localStorage.getItem("userType")?.toLowerCase();
-  const token = localStorage.getItem("token");
-
-  if (!token) return <Navigate to="/" replace />;
-  if (userType === "teacher" || userType === "admin") {
-    return <Navigate to="/paginaInicialProfessor" replace />;
-  }
-  if (userType !== "student") return <Navigate to="/" replace />;
-
-  return children;
-}
 
 const KeyedRouter = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   return <div key={location.pathname}>{children}</div>;
 };
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>;

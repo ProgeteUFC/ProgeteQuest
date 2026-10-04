@@ -1,8 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { RolesGuard } from './guards/roles.guard';
-import { JwtService } from '@nestjs/jwt';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -14,10 +13,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const reflector = app.get(Reflector);
-  const jwtService = app.get(JwtService);
+  const rolesGuard = app.get(RolesGuard);
 
-  app.useGlobalGuards(new RolesGuard(reflector, jwtService));
+  app.useGlobalGuards(rolesGuard);
   app.useGlobalPipes(new ValidationPipe());
 
   // Configuração do Swagger
@@ -27,7 +25,7 @@ async function bootstrap() {
 API REST do **ProgeteQuest**, organizada por domínio para facilitar testes manuais.
 
 ### Como testar rotas protegidas
-1. Crie um usuário em **Usuários → POST /user** (caso ainda não exista).
+1. Crie uma conta de aluno em **Autenticação → POST /auth/register/student** (caso ainda não exista).
 2. Faça login em **Autenticação → POST /auth/login**.
 3. Copie somente o valor de \`token\` retornado.
 4. Clique em **Authorize** e cole o token no campo JWT. O Swagger adicionará \`Bearer\` automaticamente.
@@ -43,7 +41,12 @@ Os endpoints indicam nos textos quais perfis podem usá-los: **student**, **teac
       },
       'JWT',
     )
-    .addTag('Autenticação', 'Login e obtenção do token JWT.')
+    .addTag('Autenticação', 'Login e cadastro público de alunos.')
+    .addTag('Administração', 'Cadastro de usuários pelo administrador.')
+    .addTag(
+      'Administração de Usuários',
+      'Ativação e desativação de usuários sem excluir seus dados ou relações.',
+    )
     .addTag('Usuários', 'Cadastro, consulta, atualização e exclusão de contas.')
     .addTag('Turmas', 'Criação e gerenciamento das turmas do professor.')
     .addTag('Matrículas', 'Entrada, matrícula, membros e ranking das turmas.')

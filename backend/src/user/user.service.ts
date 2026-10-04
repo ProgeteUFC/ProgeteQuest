@@ -5,14 +5,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { generateUuid } from '../utils/generateUuid';
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
+import { UserStatus, UserType } from 'src/Enums/user.enum';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -29,6 +30,7 @@ export class UserService {
 
     @InjectRepository(Admin)
     private readonly adminRepository: Repository<Admin>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -106,35 +108,41 @@ export class UserService {
     // Criação e salvamento do usuário
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    const user = this.userRepository.create({
-      userId: generateUuid(),
-      name: createUserDto.name.trim(),
-      email,
-      password: hashedPassword,
-      type: createUserDto.type,
+    // O usuário e o seu perfil nascem juntos: se o perfil falhar, o usuário
+    // não fica gravado pela metade (sem perfil ele nem conseguiria logar).
+    const user = await this.dataSource.transaction(async (manager) => {
+      const novoUsuario = manager.create(User, {
+        userId: generateUuid(),
+        name: createUserDto.name.trim(),
+        email,
+        password: hashedPassword,
+        type: createUserDto.type,
+      });
+
+      await manager.save(novoUsuario);
+
+      // Criação do vínculo com estudante, professor ou admin
+      if (createUserDto.type === 'student') {
+        await manager.save(Student, {
+          userId: novoUsuario.userId,
+          registrationStudent: createUserDto.registrationStudent?.trim(),
+          user: novoUsuario,
+        });
+      } else if (createUserDto.type === 'teacher') {
+        await manager.save(Teacher, {
+          userId: novoUsuario.userId,
+          registrationTeacher: createUserDto.registrationTeacher?.trim(),
+          user: novoUsuario,
+        });
+      } else if (createUserDto.type === 'admin') {
+        await manager.save(Admin, {
+          userId: novoUsuario.userId,
+          user: novoUsuario,
+        });
+      }
+
+      return novoUsuario;
     });
-
-    await this.userRepository.save(user);
-
-    // Criação do vínculo com estudante, professor ou admin
-    if (createUserDto.type === 'student') {
-      await this.studentRepository.save({
-        userId: user.userId,
-        registrationStudent: createUserDto.registrationStudent?.trim(),
-        user,
-      });
-    } else if (createUserDto.type === 'teacher') {
-      await this.teacherRepository.save({
-        userId: user.userId,
-        registrationTeacher: createUserDto.registrationTeacher?.trim(),
-        user,
-      });
-    } else if (createUserDto.type === 'admin') {
-      await this.adminRepository.save({
-        userId: user.userId,
-        user,
-      });
-    }
 
     // Retorno dos dados públicos
     return {
@@ -359,5 +367,85 @@ export class UserService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  async deactivate(userId: string, adminId: string, reason: string) {
+    if (userId === adminId) {
+      throw new BadRequestException('Você não pode desativar a própria conta');
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const activeAdmins = await manager
+        .createQueryBuilder(User, 'user')
+        .setLock('pessimistic_write')
+        .where('user.type = :type', { type: UserType.ADMIN })
+        .andWhere('user.status = :status', { status: UserStatus.ACTIVE })
+        .orderBy('user.user_id', 'ASC')
+        .getMany();
+
+      const user = await manager.findOne(User, {
+        where: { userId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!user) {
+        throw new BadRequestException('Usuário não encontrado');
+      }
+
+      if (user.status === UserStatus.INACTIVE) {
+        return {
+          userId: user.userId,
+          status: user.status,
+          message: 'Usuário já estava inativo',
+        };
+      }
+
+      if (user.type === UserType.ADMIN && activeAdmins.length <= 1) {
+        throw new BadRequestException(
+          'Não é possível desativar o último administrador ativo',
+        );
+      }
+
+      user.status = UserStatus.INACTIVE;
+      user.deactivatedAt = new Date();
+      user.deactivatedBy = adminId;
+      user.deactivationReason = reason;
+
+      await manager.save(user);
+
+      return {
+        userId: user.userId,
+        status: user.status,
+        deactivatedAt: user.deactivatedAt,
+        deactivatedBy: user.deactivatedBy,
+        deactivationReason: user.deactivationReason,
+      };
+    });
+  }
+
+  async activate(userId: string) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    // Idempotente: se já está ativo, não faz nada e retorna sucesso
+    if (user.status === UserStatus.ACTIVE) {
+      return {
+        userId: user.userId,
+        status: user.status,
+        message: 'Usuário já estava ativo',
+      };
+    }
+
+    user.status = UserStatus.ACTIVE;
+    user.deactivatedAt = null;
+    user.deactivatedBy = null;
+    user.deactivationReason = null;
+
+    await this.userRepository.save(user);
+
+    return { userId: user.userId, status: user.status };
   }
 }

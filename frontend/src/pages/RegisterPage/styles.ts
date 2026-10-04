@@ -172,50 +172,6 @@ export const InputWrapper = styled.label`
   }
 `;
 
-export const UserTypeRow = styled.div`
-  display: flex;
-  width: 100%;
-  gap: 4px;
-  margin-bottom: 14px;
-  padding: 5px;
-  border-radius: 24px;
-  background: ${({ theme }) => theme.colors.indigo};
-
-  @media (max-width: 420px) {
-    gap: 2px;
-    padding: 4px;
-  }
-`;
-
-export const UserTypeButton = styled.button<{ $active: boolean }>`
-  min-height: 38px;
-  flex: 1;
-  padding: 5px 8px;
-  border: 0;
-  border-radius: 20px;
-  outline: none;
-  background: ${({ $active }) => ($active ? "white" : "transparent")};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.primaryDark : theme.colors.white};
-  font: inherit;
-  font-size: 16px;
-  font-weight: 800;
-  cursor: ${({ $active }) => ($active ? "default" : "pointer")};
-  transition: background-color 0.2s ease, color 0.2s ease;
-
-  &:hover:not(:disabled),
-  &:focus-visible {
-    background: ${({ $active }) =>
-      $active ? "white" : "rgba(255, 255, 255, 0.18)"};
-  }
-
-  @media (max-width: 420px) {
-    min-height: 42px;
-    padding: 4px;
-    font-size: 14px;
-  }
-`;
-
 export const CadastrarButton = styled.button`
   width: 170px;
   min-height: 38px;
