@@ -1,3 +1,4 @@
+import axios from "axios";
 import { AdminFormUserData, CreatedUserResponse } from "../types/user";
 import { mockUsers } from "../mocks/users.mock";
 
@@ -48,5 +49,13 @@ export const adminService = {
 
     mockUsers.push(novoUsuario);
     return novoUsuario;
+  },
+
+  async desativarUsuario(userId: string, reason: string, token: string) {
+    return axios.patch(
+      `${import.meta.env.VITE_API_URL}/admin/users/${userId}/deactivate`,
+      { reason },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
   },
 };
