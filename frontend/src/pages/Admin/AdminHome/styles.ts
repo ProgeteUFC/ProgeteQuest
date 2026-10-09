@@ -99,3 +99,102 @@ export const MenuOption = styled(ProfessorMenuOption)`
     scale: 0.97;
   }
 `;
+
+
+export const DashboardGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 28px 0;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const DashboardCard = styled.article`
+  background: white;
+  color: #252547;
+  border-radius: 20px;
+  padding: 22px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: left;
+
+  h2 {
+    font-size: 16px;
+    margin: 0 0 12px;
+  }
+
+  strong {
+    font-size: 32px;
+    font-weight: 800;
+    color: ${(props) => props.theme.colors.indigo};
+  }
+`;
+
+export const RecentUsersSection = styled.section`
+  margin-top: 32px;
+  padding: 24px;
+  background: white;
+  color: #252547;
+  border-radius: 20px;
+  text-align: left;
+
+  h2 {
+    margin: 0 0 20px;
+    font-size: 22px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
+`;
+
+export const RecentUsersList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+export const RecentUserItem = styled.li`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #e6e6e6;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  div {
+    min-width: 0;
+  }
+
+  strong {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    display: block;
+    color: #626274;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+export const DashboardFeedback = styled.p`
+  margin: 24px 0;
+  text-align: center;
+`;
