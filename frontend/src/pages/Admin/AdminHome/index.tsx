@@ -1,8 +1,8 @@
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiUserPlus } from "react-icons/fi";
 import styled from "styled-components";
+import { adminTypography } from "../../../styles/admin";
 
 import { TitleName } from "../../../components/TitleName";
 import { adminMenu } from "../../../components/HeaderAdmin/menu";
@@ -25,6 +25,7 @@ import {
 } from "./styles";
 
 const Content = styled.section`
+  ${adminTypography}
   padding: 32px 16px;
   max-width: 1100px;
   margin: auto;
@@ -56,7 +57,7 @@ export default function AdminHome() {
           setError(
             err instanceof Error
               ? err.message
-              : "Não foi possível carregar o dashboard."
+              : "Não foi possível carregar o dashboard.",
           );
         }
       } finally {
@@ -167,9 +168,9 @@ export default function AdminHome() {
 
                       <span>
                         {usuario.deactivatedAt
-                          ? new Date(
-                              usuario.deactivatedAt
-                            ).toLocaleString("pt-BR")
+                          ? new Date(usuario.deactivatedAt).toLocaleString(
+                              "pt-BR",
+                            )
                           : "Data não informada"}
                       </span>
                     </div>

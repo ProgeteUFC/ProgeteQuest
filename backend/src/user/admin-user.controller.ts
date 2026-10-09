@@ -1,4 +1,13 @@
-import { Body, Controller, Param, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  ParseUUIDPipe,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -14,6 +23,7 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
 import { UserService } from './user.service';
 import { DeactivateUserDto } from './dtos/deactivateUser.dto';
+import { AdminUpdateUserDto } from './dtos/adminUpdateUser.dto';
 
 @ApiTags('Administração de Usuários')
 @ApiBearerAuth('JWT')
@@ -23,6 +33,38 @@ import { DeactivateUserDto } from './dtos/deactivateUser.dto';
 @Controller('admin/users')
 export class AdminUserController {
   constructor(private readonly userService: UserService) {}
+
+  @Roles('admin')
+  @Get()
+  @ApiOperation({ summary: 'Listar usuários para administração' })
+  async list() {
+    return this.userService.findAll();
+  }
+
+  @Roles('admin')
+  @Get(':id')
+  @ApiOperation({ summary: 'Consultar usuário para administração' })
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.userService.findOne(id);
+  }
+
+  @Roles('admin')
+  @Patch(':id')
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @ApiOperation({ summary: 'Editar usuário sem alterar seu perfil' })
+  @ApiBody({ type: AdminUpdateUserDto })
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: AdminUpdateUserDto,
+  ) {
+    return this.userService.update(id, body);
+  }
 
   @Roles('admin')
   @Patch(':id/deactivate')

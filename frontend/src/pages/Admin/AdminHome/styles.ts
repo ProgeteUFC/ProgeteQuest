@@ -20,11 +20,17 @@ export const CreateUserLink = styled(ButtonContainer)`
   font-weight: 700;
   line-height: 1.3;
   text-decoration: none;
-  transition: background-color 0.2s ease, transform 150ms ease;
+  transition:
+    background-color 0.2s ease,
+    transform 150ms ease;
 
-  svg { flex-shrink: 0; }
+  svg {
+    flex-shrink: 0;
+  }
 
-  &:active { transform: translateY(2px); }
+  &:active {
+    transform: translateY(2px);
+  }
   &:focus-visible {
     outline: 3px solid white;
     outline-offset: 4px;
@@ -100,7 +106,6 @@ export const MenuOption = styled(ProfessorMenuOption)`
   }
 `;
 
-
 export const DashboardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -118,14 +123,14 @@ export const DashboardGrid = styled.div`
 
 export const DashboardCard = styled.article`
   background: white;
-  color: #252547;
+  color: ${({ theme }) => theme.colors.kingfisherDaisy};
   border-radius: 20px;
   padding: 22px 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   text-align: left;
 
   h2 {
-    font-size: 16px;
+    font-size: ${({ theme }) => theme.typography.text.base};
     margin: 0 0 12px;
   }
 
@@ -140,13 +145,13 @@ export const RecentUsersSection = styled.section`
   margin-top: 32px;
   padding: 24px;
   background: white;
-  color: #252547;
+  color: ${({ theme }) => theme.colors.kingfisherDaisy};
   border-radius: 20px;
   text-align: left;
 
   h2 {
     margin: 0 0 20px;
-    font-size: 22px;
+    font-size: ${({ theme }) => theme.typography.heading.sm};
   }
 
   @media (max-width: 480px) {
@@ -166,7 +171,7 @@ export const RecentUserItem = styled.li`
   align-items: center;
   gap: 16px;
   padding: 14px 0;
-  border-bottom: 1px solid #e6e6e6;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 
   &:last-child {
     border-bottom: none;
@@ -183,8 +188,8 @@ export const RecentUserItem = styled.li`
 
   span {
     display: block;
-    color: #626274;
-    font-size: 14px;
+    color: ${({ theme }) => theme.colors.indigo};
+    font-size: ${({ theme }) => theme.typography.text.small};
     overflow-wrap: anywhere;
   }
 
@@ -197,4 +202,11 @@ export const RecentUserItem = styled.li`
 export const DashboardFeedback = styled.p`
   margin: 24px 0;
   text-align: center;
+  &[role="alert"] {
+    padding: 14px 18px;
+    border-radius: 18px;
+    border-left: 5px solid ${({ theme }) => theme.colors.error};
+    color: ${({ theme }) => theme.colors.error};
+    background: ${({ theme }) => theme.colors.errorBackground};
+  }
 `;
