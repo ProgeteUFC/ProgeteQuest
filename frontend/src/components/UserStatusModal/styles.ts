@@ -67,6 +67,22 @@ export const Dialog = styled.form`
       outline-offset: 3px;
     }
   }
+  .admin-user-details,
+  .deletion-impact-list {
+    display: grid;
+    grid-template-columns: minmax(130px, 0.8fr) minmax(0, 1.2fr);
+    gap: 10px 16px;
+    margin: 8px 0;
+  }
+  .admin-user-details dt,
+  .deletion-impact-list dt {
+    font-weight: 800;
+  }
+  .admin-user-details dd,
+  .deletion-impact-list dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
   .user-status-actions {
     display: flex;
     justify-content: flex-end;
@@ -97,6 +113,15 @@ export const Dialog = styled.form`
     border-radius: 24px;
     .user-status-actions {
       flex-direction: column-reverse;
+    }
+    .admin-user-details,
+    .deletion-impact-list {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .admin-user-details dd,
+    .deletion-impact-list dd {
+      margin-bottom: 8px;
     }
     button {
       width: 100%;
