@@ -45,7 +45,14 @@ export class AdminUserController {
   @Get(':id')
   @ApiOperation({ summary: 'Consultar usuário para administração' })
   async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.userService.findOne(id);
+    return this.userService.findOneForAdmin(id);
+  }
+
+  @Roles('admin')
+  @Get(':id/deletion-impact')
+  @ApiOperation({ summary: 'Consultar impacto potencial da exclusão' })
+  async getDeletionImpact(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.userService.getDeletionImpact(id);
   }
 
   @Roles('admin')

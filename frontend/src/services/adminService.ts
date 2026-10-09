@@ -14,6 +14,10 @@ export interface ManagedUser {
   registrationStudent?: string;
   registrationTeacher?: string;
   createdAt: string;
+  updatedAt?: string;
+  deactivatedAt?: string | null;
+  deactivatedBy?: string | null;
+  deactivationReason?: string | null;
 }
 
 export type ManagedUserUpdate = Partial<
@@ -21,7 +25,18 @@ export type ManagedUserUpdate = Partial<
     ManagedUser,
     "name" | "email" | "registrationStudent" | "registrationTeacher"
   >
-> & { password?: string };
+>;
+
+export interface UserDeletionImpact {
+  userId: string;
+  classesAsStudent: number;
+  classesAsTeacher: number;
+  activities: number;
+  assessments: number;
+  checkins: number;
+  forumTopics: number;
+  forumPosts: number;
+}
 
 function authorization() {
   const token = localStorage.getItem("token");
@@ -96,6 +111,14 @@ export const adminService = {
   async buscarUsuario(userId: string): Promise<ManagedUser> {
     const response = await axios.get<ManagedUser>(
       `${API_URL}/admin/users/${userId}`,
+      { headers: authorization() },
+    );
+    return response.data;
+  },
+
+  async consultarImpacto(userId: string): Promise<UserDeletionImpact> {
+    const response = await axios.get<UserDeletionImpact>(
+      `${API_URL}/admin/users/${userId}/deletion-impact`,
       { headers: authorization() },
     );
     return response.data;

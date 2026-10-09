@@ -27,14 +27,6 @@ export class AdminUpdateUserDto {
   @MaxLength(100)
   email?: string;
 
-  @ApiPropertyOptional({
-    description: 'Nova senha; omita para manter a atual.',
-  })
-  @ValidateIf((_, value) => value !== undefined)
-  @IsString()
-  @Matches(/\S/, { message: 'Senha não pode estar em branco' })
-  password?: string;
-
   @ApiPropertyOptional({ example: '123456' })
   @ValidateIf((_, value) => value !== undefined)
   @Transform(trim)

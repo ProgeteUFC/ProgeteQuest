@@ -11,8 +11,15 @@ import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { generateUuid } from '../utils/generateUuid';
 import { Student } from 'src/student/entities/student.entity';
+import { StudentClass } from 'src/student_class/entities/studentClass.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
+import { Class as ClassEntity } from 'src/class/entities/class.entity';
+import { Activity } from 'src/activity/entities/activity.entity';
+import { Assessment } from 'src/assessment/entities/assessment.entity';
+import { Checkin } from 'src/checkin/entities/checkin.entity';
+import { Topic } from 'src/forum/entities/topic.entity';
+import { Post } from 'src/forum/entities/post.entity';
 import { UserStatus, UserType } from 'src/Enums/user.enum';
 import * as bcrypt from 'bcrypt';
 
@@ -376,6 +383,78 @@ export class UserService {
       registrationTeacher: user.teachers?.[0]?.registrationTeacher,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+    };
+  }
+
+  async findOneForAdmin(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+      relations: ['students', 'teachers'],
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    return {
+      userId: user.userId,
+      name: user.name,
+      email: user.email,
+      type: user.type,
+      status: user.status,
+      registrationStudent: user.students?.[0]?.registrationStudent,
+      registrationTeacher: user.teachers?.[0]?.registrationTeacher,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      deactivatedAt: user.deactivatedAt,
+      deactivatedBy: user.deactivatedBy,
+      deactivationReason: user.deactivationReason,
+    };
+  }
+
+  async getDeletionImpact(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+      select: ['userId'],
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    const [
+      classesAsStudent,
+      classesAsTeacher,
+      activities,
+      assessments,
+      checkins,
+      forumTopics,
+      forumPosts,
+    ] = await Promise.all([
+      this.dataSource
+        .getRepository(StudentClass)
+        .countBy({ studentId: userId }),
+      this.dataSource.getRepository(ClassEntity).countBy({ teacherId: userId }),
+      this.dataSource
+        .getRepository(Activity)
+        .count({ where: { class: { teacherId: userId } } }),
+      this.dataSource
+        .getRepository(Assessment)
+        .count({ where: { class: { teacherId: userId } } }),
+      this.dataSource.getRepository(Checkin).countBy({ studentId: userId }),
+      this.dataSource.getRepository(Topic).countBy({ autorId: userId }),
+      this.dataSource.getRepository(Post).countBy({ autorId: userId }),
+    ]);
+
+    return {
+      userId,
+      classesAsStudent,
+      classesAsTeacher,
+      activities,
+      assessments,
+      checkins,
+      forumTopics,
+      forumPosts,
     };
   }
 
