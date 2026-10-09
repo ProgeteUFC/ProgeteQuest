@@ -5,10 +5,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import {
+  DataSource,
+  Repository,
+  EntityManager,
+  QueryFailedError,
+} from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
+import { UpdateUserByAdminDto } from './dtos/updateUserByAdmin.dto';
 import { generateUuid } from '../utils/generateUuid';
 import { Student } from 'src/student/entities/student.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
@@ -345,6 +351,183 @@ export class UserService {
       name: user.name,
       email: user.email,
     } as const;
+  }
+
+  async updateByAdmin(userId: string, dto: UpdateUserByAdminDto) {
+    const isProvided = (value: unknown) =>
+      value !== undefined && value !== null;
+
+    const hasAnyField = [
+      dto.name,
+      dto.email,
+      dto.password,
+      dto.registrationStudent,
+      dto.registrationTeacher,
+    ].some(isProvided);
+
+    if (!hasAnyField) {
+      throw new BadRequestException('Nenhum campo válido foi informado.');
+    }
+
+    const name = dto.name?.trim();
+    const email = dto.email?.trim().toLowerCase();
+    const registrationStudent = dto.registrationStudent?.trim();
+    const registrationTeacher = dto.registrationTeacher?.trim();
+
+    // O hash é calculado antes da transação: bcrypt é lento e não deve
+    // manter a transação (e a trava da linha) aberta à toa.
+    const hashedPassword =
+      typeof dto.password === 'string'
+        ? await bcrypt.hash(dto.password, 10)
+        : undefined;
+
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        // Sem `relations` junto com o lock: o Postgres não aceita FOR UPDATE
+        // em consulta com LEFT JOIN (os perfis são carregados à parte).
+        const user = await manager.findOne(User, {
+          where: { userId },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        if (!user) {
+          throw new BadRequestException('Usuário não encontrado');
+        }
+
+        // A matrícula/SIAPE só pode ser editada conforme o perfil do usuário.
+        if (
+          registrationStudent !== undefined &&
+          user.type !== UserType.STUDENT
+        ) {
+          throw new BadRequestException(
+            'registrationStudent só pode ser informado para usuários do tipo student',
+          );
+        }
+
+        if (
+          registrationTeacher !== undefined &&
+          user.type !== UserType.TEACHER
+        ) {
+          throw new BadRequestException(
+            'registrationTeacher só pode ser informado para usuários do tipo teacher',
+          );
+        }
+
+        if (email !== undefined && email !== user.email) {
+          const emailOwner = await manager.findOne(User, { where: { email } });
+
+          if (emailOwner && emailOwner.userId !== userId) {
+            throw new ConflictException('Esse registro já existe');
+          }
+
+          user.email = email;
+        }
+
+        if (name !== undefined) {
+          user.name = name;
+        }
+
+        if (hashedPassword !== undefined) {
+          user.password = hashedPassword;
+        }
+
+        await manager.save(user);
+
+        let currentStudentRegistration: string | undefined;
+        let currentTeacherRegistration: string | undefined;
+
+        if (user.type === UserType.STUDENT) {
+          const student = await manager.findOne(Student, { where: { userId } });
+
+          if (registrationStudent !== undefined) {
+            if (!student) {
+              throw new BadRequestException(
+                'Perfil de aluno não encontrado para este usuário',
+              );
+            }
+
+            if (registrationStudent !== student.registrationStudent) {
+              await this.assertRegistrationAvailable(
+                manager,
+                registrationStudent,
+                userId,
+              );
+              student.registrationStudent = registrationStudent;
+              await manager.save(student);
+            }
+          }
+
+          currentStudentRegistration = student?.registrationStudent;
+        }
+
+        if (user.type === UserType.TEACHER) {
+          const teacher = await manager.findOne(Teacher, { where: { userId } });
+
+          if (registrationTeacher !== undefined) {
+            if (!teacher) {
+              throw new BadRequestException(
+                'Perfil de professor não encontrado para este usuário',
+              );
+            }
+
+            if (registrationTeacher !== teacher.registrationTeacher) {
+              await this.assertRegistrationAvailable(
+                manager,
+                registrationTeacher,
+                userId,
+              );
+              teacher.registrationTeacher = registrationTeacher;
+              await manager.save(teacher);
+            }
+          }
+
+          currentTeacherRegistration = teacher?.registrationTeacher;
+        }
+
+        return {
+          userId: user.userId,
+          name: user.name,
+          email: user.email,
+          type: user.type,
+          registrationStudent: currentStudentRegistration,
+          registrationTeacher: currentTeacherRegistration,
+        };
+      });
+    } catch (error) {
+      // Rede de segurança: duas edições simultâneas com o mesmo e-mail ou
+      // matrícula são barradas pelo UNIQUE do banco (código 23505).
+      if (
+        error instanceof QueryFailedError &&
+        (error as QueryFailedError & { driverError?: { code?: string } })
+          .driverError?.code === '23505'
+      ) {
+        throw new ConflictException('Esse registro já existe');
+      }
+
+      throw error;
+    }
+  }
+
+  private async assertRegistrationAvailable(
+    manager: EntityManager,
+    registration: string,
+    userId: string,
+  ) {
+    const student = await manager.findOne(Student, {
+      where: { registrationStudent: registration },
+    });
+
+    if (student && student.userId !== userId) {
+      throw new ConflictException('Esse registro já existe');
+    }
+
+    const teacher = await manager.findOne(Teacher, {
+      where: { registrationTeacher: registration },
+    });
+
+    if (teacher && teacher.userId !== userId) {
+      throw new ConflictException('Esse registro já existe');
+    }
   }
 
   async findOne(userId: string) {
