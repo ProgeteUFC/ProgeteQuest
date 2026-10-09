@@ -1,11 +1,8 @@
+import axios from "axios";
 import { AdminFormUserData, CreatedUserResponse } from "../types/user";
-import { mockUsers } from "../mocks/users.mock";
 
-const DELAY_MS = 600;
-
-function delay(ms = DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const API_URL = import.meta.env.VITE_API_URL;
+const CREATE_USER_PATH = "/admin/users";
 
 /*Gera uma senha temporária simples (letras e números, sem caracteres ambíguos como 0/O ou 1/l)*/
 export function gerarSenhaTemporaria(): string {
@@ -19,34 +16,46 @@ export function gerarSenhaTemporaria(): string {
   return senha;
 }
 
-/* Serviço MOCKADO de cadastro administrativo de usuários.*/
-export const adminService = {
-  async cadastrarUsuario(
-    data: AdminFormUserData
-  ): Promise<CreatedUserResponse> {
-    await delay(); // simula latência de rede
-
-    const emailJaExiste = mockUsers.some(
-      (u) => u.email.toLowerCase() === data.email.toLowerCase()
-    );
-    if (emailJaExiste) {
-      throw new Error("E-mail já cadastrado.");
+/* Converte erros do axios em mensagens para mostrar no formulário. */
+export function mensagemDeErro(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    if (!err.response) {
+      return "Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.";
     }
 
-    const novoUsuario: CreatedUserResponse = {
-      userId: crypto.randomUUID(),
-      name: data.name,
-      email: data.email,
-      type: data.type,
-      registrationStudent:
-        data.type === "student" ? data.registrationStudent : undefined,
-      registrationTeacher:
-        data.type === "teacher" ? data.registrationTeacher : undefined,
-      temporaryPassword: data.password,
-      createdAt: new Date().toISOString(),
-    };
+    const { status, data } = err.response;
+    // O ValidationPipe do Nest devolve "message" como lista de textos
+    const detalhe: string | undefined = Array.isArray(data?.message)
+      ? data.message.join(" ")
+      : data?.message;
 
-    mockUsers.push(novoUsuario);
-    return novoUsuario;
+    if (status === 401 || status === 403) {
+      return "Você não tem permissão para cadastrar usuários ou sua sessão expirou. Faça login novamente como administrador.";
+    }
+    if (status === 409) {
+      return detalhe || "E-mail ou matrícula já em uso.";
+    }
+    if (status === 400) {
+      return detalhe || "Dados inválidos. Confira os campos e tente novamente.";
+    }
+    return detalhe || "Erro ao cadastrar. Tente novamente.";
+  }
+
+  if (err instanceof Error) return err.message;
+  return "Erro ao cadastrar. Tente novamente.";
+}
+
+/* Serviço de cadastro administrativo de usuários (API real). */
+export const adminService = {
+  async cadastrarUsuario(
+    data: AdminFormUserData,
+    token: string
+  ): Promise<CreatedUserResponse> {
+    const response = await axios.post<CreatedUserResponse>(
+      `${API_URL}${CREATE_USER_PATH}`,
+      data,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
   },
 };

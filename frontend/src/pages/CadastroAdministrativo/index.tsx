@@ -17,15 +17,22 @@ import { TitleName } from "../../components/TitleName";
 import {
   adminService,
   gerarSenhaTemporaria,
+  mensagemDeErro,
 } from "../../services/adminService";
-import {
-  AdminFormUserData,
-  CreatedUserResponse,
-  UserRole,
-} from "../../types/user";
+import { AdminFormUserData, UserRole } from "../../types/user";
 import logo from "../../assets/progete.png";
 import planet from "../../assets/planet_orange.png";
 import artwork from "../../assets/logo.png";
+
+// Mesmas regras que o backend aplica ao cadastrar usuários
+const EMAIL_REGEX = /^.+@.+\.com$/;
+const IDENTIFICACAO_REGEX = /^\d{6}$/; // matrícula e SIAPE: 6 dígitos
+const SENHA_MIN = 8;
+
+interface UsuarioCadastrado {
+  nome: string;
+  senha: string;
+}
 
 export default function CadastroAdministrativoPage() {
   const [nome, setNome] = useState("");
@@ -35,51 +42,70 @@ export default function CadastroAdministrativoPage() {
   const [tipo, setTipo] = useState<UserRole>("student");
   const [erro, setErro] = useState("");
   const [processando, setProcessando] = useState(false);
-  const [usuarioCriado, setUsuarioCriado] =
-    useState<CreatedUserResponse | null>(null);
+  const [cadastrado, setCadastrado] = useState<UsuarioCadastrado | null>(null);
+
+  const rotuloIdentificacao = tipo === "student" ? "Matrícula" : "SIAPE";
 
   function montarPayload(): AdminFormUserData {
+    const base = {
+      name: nome.trim(),
+      email: email.trim().toLowerCase(),
+      password: senha,
+    };
     if (tipo === "student") {
-      return {
-        type: "student",
-        name: nome,
-        email,
-        password: senha,
-        registrationStudent: matricula,
-      };
+      return { ...base, type: "student", registrationStudent: matricula };
     }
     if (tipo === "teacher") {
-      return {
-        type: "teacher",
-        name: nome,
-        email,
-        password: senha,
-        registrationTeacher: matricula,
-      };
+      return { ...base, type: "teacher", registrationTeacher: matricula };
     }
     // administrador não tem matrícula nem SIAPE
-    return { type: "admin", name: nome, email, password: senha };
+    return { ...base, type: "admin" };
+  }
+
+  function validar(): string | null {
+    if (!EMAIL_REGEX.test(email.trim())) {
+      return "O e-mail deve estar no formato exemplo@exemplo.com";
+    }
+    if (tipo !== "admin" && !IDENTIFICACAO_REGEX.test(matricula)) {
+      return `${rotuloIdentificacao} deve conter exatamente 6 dígitos numéricos.`;
+    }
+    if (senha.length < SENHA_MIN) {
+      return `A senha deve ter no mínimo ${SENHA_MIN} caracteres.`;
+    }
+    return null;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro("");
-    setUsuarioCriado(null);
+    setCadastrado(null);
+
+    const erroValidacao = validar();
+    if (erroValidacao) {
+      setErro(erroValidacao);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErro("Sessão não encontrada. Faça login novamente.");
+      return;
+    }
+
     setProcessando(true);
     try {
       const payload = montarPayload();
-      const usuario = await adminService.cadastrarUsuario(payload);
-      setUsuarioCriado(usuario);
-      // Limpa o formulário para o próximo cadastro, mas mantém o tipo selecionado (admin provavelmente vai cadastrar vários do mesmo tipo seguidos)
+      await adminService.cadastrarUsuario(payload, token);
+      // A senha exibida vem do que foi enviado, não da resposta da API
+      // (o backend não devolve senha).
+      setCadastrado({ nome: payload.name, senha: payload.password });
+      // Limpa o formulário para o próximo cadastro, mas mantém o tipo selecionado
       setNome("");
       setMatricula("");
       setEmail("");
       setSenha("");
-    } catch (err: any) {
-      setErro(
-        err?.message ||
-          "Erro ao cadastrar. Verifique os dados e tente novamente."
-      );
+    } catch (err) {
+      setErro(mensagemDeErro(err));
     } finally {
       setProcessando(false);
     }
@@ -131,6 +157,7 @@ export default function CadastroAdministrativoPage() {
                   type="text"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
+                  maxLength={50}
                   required
                 />
               </InputWrapper>
@@ -138,11 +165,15 @@ export default function CadastroAdministrativoPage() {
               {/* Aluno usa matrícula, professor usa SIAPE, administrador não tem esse campo */}
               {tipo !== "admin" && (
                 <InputWrapper>
-                  <span>{tipo === "student" ? "Matrícula:" : "SIAPE:"}</span>
+                  <span>{rotuloIdentificacao}:</span>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={matricula}
-                    onChange={(e) => setMatricula(e.target.value)}
+                    onChange={(e) =>
+                      setMatricula(e.target.value.replace(/\D/g, ""))
+                    }
+                    maxLength={6}
                     required
                   />
                 </InputWrapper>
@@ -154,6 +185,7 @@ export default function CadastroAdministrativoPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  maxLength={100}
                   required
                 />
               </InputWrapper>
@@ -165,7 +197,7 @@ export default function CadastroAdministrativoPage() {
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   required
-                  minLength={8}
+                  minLength={SENHA_MIN}
                 />
               </InputWrapper>
 
@@ -182,12 +214,11 @@ export default function CadastroAdministrativoPage() {
 
               {erro && <Feedback role="alert">{erro}</Feedback>}
 
-              {usuarioCriado && (
+              {cadastrado && (
                 <PasswordResultBox>
-                  <strong>{usuarioCriado.name}</strong> cadastrado(a) com
-                  sucesso.
+                  <strong>{cadastrado.nome}</strong> cadastrado(a) com sucesso.
                   <br />
-                  Senha inicial: <code>{usuarioCriado.temporaryPassword}</code>
+                  Senha inicial: <code>{cadastrado.senha}</code>
                   <small>
                     Repasse essa senha pessoalmente ao usuário. Por
                     segurança, o sistema não envia senhas por e-mail.
