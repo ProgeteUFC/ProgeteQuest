@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
@@ -111,6 +111,18 @@ export class UserService {
     // O usuário e o seu perfil nascem juntos: se o perfil falhar, o usuário
     // não fica gravado pela metade (sem perfil ele nem conseguiria logar).
     const user = await this.dataSource.transaction(async (manager) => {
+      const registration =
+        createUserDto.type === 'student'
+          ? createUserDto.registrationStudent
+          : createUserDto.type === 'teacher'
+            ? createUserDto.registrationTeacher
+            : undefined;
+      if (registration)
+        await this.assertRegistrationAvailable(
+          manager,
+          '',
+          registration.trim(),
+        );
       const novoUsuario = manager.create(User, {
         userId: generateUuid(),
         name: createUserDto.name.trim(),
@@ -154,7 +166,15 @@ export class UserService {
 
   async findAll() {
     const users = await this.userRepository.find({
-      select: ['userId', 'name', 'email', 'type', 'createdAt', 'updatedAt'],
+      select: [
+        'userId',
+        'name',
+        'email',
+        'type',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
       relations: ['students', 'teachers', 'admins'],
     });
 
@@ -165,6 +185,9 @@ export class UserService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       type: user.type,
+      status: user.status,
+      registrationStudent: user.students?.[0]?.registrationStudent,
+      registrationTeacher: user.teachers?.[0]?.registrationTeacher,
     }));
   }
 
@@ -206,145 +229,131 @@ export class UserService {
     return { message: 'Usuário removido com sucesso' };
   }
 
-  async update(userId: string, updateUserDto: UpdateUserDto) {
-    const allowedFields = [
+  async update(userId: string, body: UpdateUserDto) {
+    const fields = [
       'name',
       'email',
       'password',
       'registrationStudent',
       'registrationTeacher',
     ];
-
-    const hasValidField = allowedFields.some((field) => {
-      const value = updateUserDto[field as keyof UpdateUserDto];
-      return typeof value === 'string' && value.trim() !== '';
-    });
-
-    if (!hasValidField) {
-      throw new BadRequestException('Nenhum campo válido foi informado.');
+    if (Object.keys(body).some((key) => !fields.includes(key))) {
+      throw new BadRequestException(
+        'Não é permitido alterar o perfil ou enviar campos desconhecidos',
+      );
     }
-
-    const user = await this.userRepository.findOne({
-      where: { userId },
-      relations: ['students', 'teachers', 'admins'],
-    });
-
-    if (!user) {
-      throw new BadRequestException('Usuário não encontrado');
-    }
-
-    // Email
-    if (typeof updateUserDto.email === 'string') {
-      const email = updateUserDto.email.trim().toLowerCase();
-
-      const existingUser = await this.userRepository.findOne({
-        where: { email },
-      });
-
-      if (existingUser && existingUser.userId !== userId) {
-        throw new ConflictException('Esse registro já existe');
-      }
-
-      user.email = email;
-    }
-
-    // Nome
-    if (typeof updateUserDto.name === 'string') {
-      user.name = updateUserDto.name.trim();
-    }
-
-    // Senha
-    if (typeof updateUserDto.password === 'string') {
-      user.password = await bcrypt.hash(updateUserDto.password.trim(), 10);
-    }
-
-    await this.userRepository.save(user);
-
-    // Matrícula de estudante
+    const entries = Object.entries(body).filter(
+      ([, value]) => value !== undefined,
+    );
     if (
-      user.students &&
-      user.students.length > 0 &&
-      typeof updateUserDto.registrationStudent === 'string'
+      !entries.length ||
+      entries.some(([, value]) => typeof value !== 'string' || !value.trim())
     ) {
-      const registration = updateUserDto.registrationStudent.trim();
-
-      const existingStudent = await this.studentRepository.findOne({
-        where: { registrationStudent: registration },
-        relations: ['user'],
-      });
-
-      if (
-        existingStudent &&
-        existingStudent.user &&
-        existingStudent.user.userId !== userId
-      ) {
-        throw new ConflictException('Esse registro já existe');
-      }
-
-      const existingTeacher = await this.teacherRepository.findOne({
-        where: { registrationTeacher: registration },
-        relations: ['user'],
-      });
-
-      if (
-        existingTeacher &&
-        existingTeacher.user &&
-        existingTeacher.user.userId !== userId
-      ) {
-        throw new ConflictException('Esse registro já existe');
-      }
-
-      const student = user.students[0];
-      student.registrationStudent = registration;
-
-      await this.studentRepository.save(student);
+      throw new BadRequestException('Informe campos válidos e não vazios');
     }
 
-    // Matrícula de professor
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        // A mesma matrícula é reservada em criação e edição, inclusive entre perfis.
+        const registration =
+          body.registrationStudent ?? body.registrationTeacher;
+        if (registration !== undefined) {
+          if (!/^\d{6}$/.test(registration.trim())) {
+            throw new BadRequestException(
+              'Matrícula/SIAPE deve conter exatamente 6 dígitos',
+            );
+          }
+          await this.assertRegistrationAvailable(
+            manager,
+            userId,
+            registration.trim(),
+          );
+        }
+        const user = await manager.findOne(User, {
+          where: { userId },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!user) throw new BadRequestException('Usuário não encontrado');
+        if (
+          body.registrationStudent !== undefined &&
+          user.type !== UserType.STUDENT
+        ) {
+          throw new BadRequestException(
+            'Matrícula de aluno não se aplica a este perfil',
+          );
+        }
+        if (
+          body.registrationTeacher !== undefined &&
+          user.type !== UserType.TEACHER
+        ) {
+          throw new BadRequestException('SIAPE não se aplica a este perfil');
+        }
+        if (body.email !== undefined) {
+          const email = body.email.trim().toLowerCase();
+          const existing = await manager.findOne(User, { where: { email } });
+          if (existing && existing.userId !== userId) {
+            throw new ConflictException('E-mail já cadastrado');
+          }
+          user.email = email;
+        }
+        if (body.name !== undefined) user.name = body.name.trim();
+        if (body.password !== undefined)
+          user.password = await bcrypt.hash(body.password, 10);
+
+        if (body.registrationStudent !== undefined) {
+          const profile = await manager.findOne(Student, { where: { userId } });
+          if (!profile)
+            throw new BadRequestException('Perfil de aluno não encontrado');
+          profile.registrationStudent = body.registrationStudent.trim();
+          await manager.save(Student, profile);
+        }
+        if (body.registrationTeacher !== undefined) {
+          const profile = await manager.findOne(Teacher, { where: { userId } });
+          if (!profile)
+            throw new BadRequestException('Perfil de professor não encontrado');
+          profile.registrationTeacher = body.registrationTeacher.trim();
+          await manager.save(Teacher, profile);
+        }
+        await manager.save(User, user);
+        return {
+          userId: user.userId,
+          name: user.name,
+          email: user.email,
+          type: user.type,
+          status: user.status,
+        };
+      });
+    } catch (error) {
+      if (
+        (error as { driverError?: { code?: string } }).driverError?.code ===
+        '23505'
+      ) {
+        throw new ConflictException('E-mail ou matrícula/SIAPE já cadastrado');
+      }
+      throw error;
+    }
+  }
+
+  private async assertRegistrationAvailable(
+    manager: EntityManager,
+    userId: string,
+    registration: string,
+  ) {
+    await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
+      `registration:${registration}`,
+    ]);
+    const student = await manager.findOne(Student, {
+      where: { registrationStudent: registration },
+    });
+    const teacher = await manager.findOne(Teacher, {
+      where: { registrationTeacher: registration },
+    });
     if (
-      user.teachers &&
-      user.teachers.length > 0 &&
-      typeof updateUserDto.registrationTeacher === 'string'
+      (student && student.userId !== userId) ||
+      (teacher && teacher.userId !== userId)
     ) {
-      const registration = updateUserDto.registrationTeacher.trim();
-
-      const existingTeacher = await this.teacherRepository.findOne({
-        where: { registrationTeacher: registration },
-        relations: ['user'],
-      });
-
-      if (
-        existingTeacher &&
-        existingTeacher.user &&
-        existingTeacher.user.userId !== userId
-      ) {
-        throw new ConflictException('Esse registro já existe');
-      }
-
-      const existingStudent = await this.studentRepository.findOne({
-        where: { registrationStudent: registration },
-        relations: ['user'],
-      });
-
-      if (
-        existingStudent &&
-        existingStudent.user &&
-        existingStudent.user.userId !== userId
-      ) {
-        throw new ConflictException('Esse registro já existe');
-      }
-
-      const teacher = user.teachers[0];
-      teacher.registrationTeacher = registration;
-
-      await this.teacherRepository.save(teacher);
+      throw new ConflictException('Matrícula/SIAPE já cadastrado');
     }
-
-    return {
-      userId: user.userId,
-      name: user.name,
-      email: user.email,
-    } as const;
   }
 
   async findOne(userId: string) {
@@ -362,6 +371,7 @@ export class UserService {
       name: user.name,
       email: user.email,
       type: user.type,
+      status: user.status,
       registrationStudent: user.students?.[0]?.registrationStudent,
       registrationTeacher: user.teachers?.[0]?.registrationTeacher,
       createdAt: user.createdAt,
