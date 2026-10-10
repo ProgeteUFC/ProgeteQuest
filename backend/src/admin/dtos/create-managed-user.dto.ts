@@ -12,7 +12,7 @@ import { UserType } from 'src/Enums/user.enum';
  * Cadastro administrativo: cria aluno ou professor.
  * `admin` não entra aqui — contas de administrador não são criadas por API.
  */
-export class CreateUserByAdminDto {
+export class CreateManagedUserDto {
   @ApiProperty({ example: 'Carlos Souza', description: 'Nome do usuário' })
   @IsNotEmpty({ message: 'Nome é obrigatório' })
   @IsString({ message: 'Nome deve ser uma string' })

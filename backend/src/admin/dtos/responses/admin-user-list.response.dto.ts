@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PostResponseDto } from './post.response.dto';
 import { PaginationMetaDto } from 'src/common/dtos/pagination.response.dto';
+import { AdminUserResponseDto } from './admin-user.response.dto';
 
-export class PostListResponseDto {
+export class AdminUserListResponseDto {
   @ApiProperty({
-    type: [PostResponseDto],
-    description: 'Postagens encontradas no tópico.',
+    type: [AdminUserResponseDto],
+    description: 'Usuários encontrados na página solicitada.',
   })
-  data!: PostResponseDto[];
+  data!: AdminUserResponseDto[];
 
   @ApiProperty({ type: PaginationMetaDto, description: 'Dados de paginação.' })
   meta!: PaginationMetaDto;
