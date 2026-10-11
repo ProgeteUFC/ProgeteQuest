@@ -28,18 +28,19 @@ export class StudentClassController {
   @Roles('student')
   @ApiOperation({
     summary: 'Entrar em uma turma pelo código',
-    description: 'Perfil permitido: student. Vincula o aluno à turma correspondente ao código de entrada.',
+    description:
+      'Perfil permitido: student. O aluno autenticado é identificado pelo token e não por studentId no corpo da requisição.',
   })
   @ApiBody({ type: JoinClassDto })
   @ApiResponse({ status: 201, description: 'Aluno matriculado com sucesso.' })
-  @ApiNotFoundResponse({ description: 'Aluno ou código de turma não encontrado.' })
+  @ApiForbiddenResponse({
+    description: 'Apenas alunos podem ingressar em turmas.',
+  })
+  @ApiNotFoundResponse({ description: 'Código de turma inválido.' })
   @ApiConflictResponse({ description: 'O aluno já está matriculado nessa turma.' })
   @Post('join')
-  async joinClass(@Body() body: JoinClassDto) {
-    return this.studentClassService.joinClassByCode(
-      body.studentId,
-      body.joinCode,
-    );
+  async joinClass(@Body() body: JoinClassDto, @User() user: UserPayload) {
+    return this.studentClassService.joinClassByCode(user.userId, body.joinCode);
   }
 
   @Roles('teacher')
@@ -101,6 +102,18 @@ export class StudentClassController {
     );
   }
 
+  @Roles('student')
+  @Get('me')
+  @ApiOperation({
+    summary: 'Listar minhas turmas',
+    description: 'Perfil permitido: student. O aluno autenticado é identificado pelo token e não por studentId no corpo ou na rota.',
+  })
+  @ApiResponse({ status: 200, description: 'Turmas do aluno retornadas com sucesso.' })
+  @ApiForbiddenResponse({ description: 'Acesso negado.' })
+  async getStudentClasses(@User() user: UserPayload) {
+    return this.studentClassService.getStudentClasses(user.userId);
+  }
+  
   @Roles('teacher', 'student')
   @ApiOperation({
     summary: 'Consultar ranking da turma',
@@ -125,17 +138,5 @@ export class StudentClassController {
   @Get(':id/participants')
   async getParticipants(@Param('id') classId: string) {
     return this.studentClassService.getClassParticipants(classId);
-  }
-
-  @Roles('student')
-  @ApiOperation({
-    summary: 'Listar turmas de um aluno',
-    description: 'Perfil permitido: student. Retorna todas as turmas em que o aluno está matriculado.',
-  })
-  @ApiParam({ name: 'studentId', description: 'ID de usuário do aluno.', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Turmas do aluno retornadas com sucesso.' })
-  @Get('student/:studentId')
-  async getStudentClasses(@Param('studentId') studentId: string) {
-    return this.studentClassService.getStudentClasses(studentId);
   }
 }
