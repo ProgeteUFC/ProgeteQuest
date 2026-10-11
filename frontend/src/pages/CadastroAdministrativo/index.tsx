@@ -39,7 +39,7 @@ export default function CadastroAdministrativoPage() {
   const [matricula, setMatricula] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [tipo, setTipo] = useState<"student" | "teacher">("student");
+  const [tipo, setTipo] = useState<AdminFormUserData["type"]>("student");
   const [erro, setErro] = useState("");
   const [processando, setProcessando] = useState(false);
   const [cadastrado, setCadastrado] = useState<UsuarioCadastrado | null>(null);
@@ -55,7 +55,8 @@ export default function CadastroAdministrativoPage() {
     if (tipo === "student") {
       return { ...base, type: "student", registrationStudent: matricula };
     }
-    return { ...base, type: "teacher", registrationTeacher: matricula };
+    if (tipo === "teacher") return { ...base, type: "teacher", registrationTeacher: matricula };
+    return { ...base, type: "admin" };
   }
 
   function validar(): string | null {
@@ -63,7 +64,7 @@ export default function CadastroAdministrativoPage() {
     if (!EMAIL_REGEX.test(email.trim())) {
       return "O e-mail deve estar no formato exemplo@exemplo.com";
     }
-    if (!IDENTIFICACAO_REGEX.test(matricula)) {
+    if (tipo !== "admin" && !IDENTIFICACAO_REGEX.test(matricula)) {
       return `${rotuloIdentificacao} deve conter exatamente 6 dígitos numéricos.`;
     }
     if (senha.length < SENHA_MIN) {
@@ -128,6 +129,7 @@ export default function CadastroAdministrativoPage() {
               <UserTypeButton
                 type="button"
                 $active={tipo === "student"}
+                aria-pressed={tipo === "student"}
                 onClick={() => setTipo("student")}
               >
                 Aluno(a)
@@ -135,9 +137,18 @@ export default function CadastroAdministrativoPage() {
               <UserTypeButton
                 type="button"
                 $active={tipo === "teacher"}
+                aria-pressed={tipo === "teacher"}
                 onClick={() => setTipo("teacher")}
               >
                 Professor(a)
+              </UserTypeButton>
+              <UserTypeButton
+                type="button"
+                $active={tipo === "admin"}
+                aria-pressed={tipo === "admin"}
+                onClick={() => setTipo("admin")}
+              >
+                Administrador(a)
               </UserTypeButton>
             </UserTypeRow>
 
@@ -154,7 +165,7 @@ export default function CadastroAdministrativoPage() {
               </InputWrapper>
 
               {/* Aluno usa matrícula; professor usa SIAPE. */}
-              {(
+              {tipo !== "admin" && (
                 <InputWrapper>
                   <span>{rotuloIdentificacao}:</span>
                   <input

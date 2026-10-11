@@ -80,9 +80,9 @@ export class AdminController {
   @Post('users')
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({
-    summary: 'Cadastrar aluno ou professor',
+    summary: 'Cadastrar aluno, professor ou administrador',
     description:
-      'Exclusivo de administradores. Cria uma conta de aluno ou de professor. Não é possível criar administradores por esta rota.',
+      'Exclusivo de administradores. Administradores não precisam de matrícula ou SIAPE.',
   })
   @ApiBody({
     type: CreateManagedUserDto,

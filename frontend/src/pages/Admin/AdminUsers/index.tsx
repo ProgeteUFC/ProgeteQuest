@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiMoreVertical } from "react-icons/fi";
+import { FiMoreVertical, FiUserPlus, FiX } from "react-icons/fi";
 import AdminUserForm from "../AdminUserForm";
 import UserStatusModal from "../../../components/UserStatusModal";
 import { Backdrop, Dialog } from "../../../components/UserStatusModal/styles";
@@ -10,7 +10,8 @@ import {
   type ManagedUser,
   type UserDeletionImpact,
 } from "../../../services/adminService";
-import { AdminUsersPanel } from "../AdminUserForm/styles";
+import { UsersPanel } from "./styles";
+import FilterSelect from "./FilterSelect";
 
 const PAGE_SIZE = 10;
 type ProfileFilter = "all" | ManagedUser["type"];
@@ -121,13 +122,16 @@ export default function AdminUsers() {
   }
 
   return (
-    <AdminUsersPanel>
-      <h1>Usuários</h1>
-      <Link to="/admin/users/new">Cadastrar novo usuário</Link>
+    <UsersPanel>
+      <header className="users-heading">
+        <div><h1>Usuários</h1><p>Gerencie os perfis e acessos da comunidade Progete.</p></div>
+        <Link to="/admin/users/new"><FiUserPlus aria-hidden="true" /> Cadastrar usuário</Link>
+      </header>
       {success && <p role="status" data-feedback="success">{success}</p>}
       <div className="admin-users-controls">
         <label>
           Buscar
+          <span className="users-search-field">
           <input
             value={search}
             onChange={(event) => {
@@ -137,36 +141,15 @@ export default function AdminUsers() {
             type="search"
             placeholder="Nome, e-mail ou matrícula/SIAPE"
           />
+          {search && <button type="button" aria-label="Limpar busca" onClick={() => { setSearch(""); setPage(1); }}><FiX aria-hidden="true" /></button>}
+          </span>
         </label>
-        <label>
-          Perfil
-          <select
-            value={profileFilter}
-            onChange={(event) => {
-              setProfileFilter(event.target.value as ProfileFilter);
-              setPage(1);
-            }}
-          >
-            <option value="all">Todos</option>
-            <option value="student">Aluno</option>
-            <option value="teacher">Professor</option>
-            <option value="admin">Administrador</option>
-          </select>
-        </label>
-        <label>
-          Status
-          <select
-            value={statusFilter}
-            onChange={(event) => {
-              setStatusFilter(event.target.value as StatusFilter);
-              setPage(1);
-            }}
-          >
-            <option value="all">Todos</option>
-            <option value="active">Ativo</option>
-            <option value="inactive">Inativo</option>
-          </select>
-        </label>
+        <FilterSelect label="Perfil" value={profileFilter}
+          onChange={(value) => { setProfileFilter(value as ProfileFilter); setPage(1); }}
+          options={[{ value: "all", label: "Todos" }, { value: "student", label: "Aluno" }, { value: "teacher", label: "Professor" }, { value: "admin", label: "Administrador" }]} />
+        <FilterSelect label="Status" value={statusFilter}
+          onChange={(value) => { setStatusFilter(value as StatusFilter); setPage(1); }}
+          options={[{ value: "all", label: "Todos" }, { value: "active", label: "Ativo" }, { value: "inactive", label: "Inativo" }]} />
       </div>
       {loading && <p role="status">Carregando usuários...</p>}
       {error && (
@@ -196,13 +179,13 @@ export default function AdminUsers() {
                 <tr key={user.userId}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
-                  <td>{profileLabel(user.type)}</td>
+                  <td><span className="profile-badge">{profileLabel(user.type)}</span></td>
                   <td>
                     {user.registrationStudent ??
                       user.registrationTeacher ??
                       "—"}
                   </td>
-                  <td>{user.status === "active" ? "Ativo" : "Inativo"}</td>
+                  <td><span className="status-badge" data-status={user.status}>{user.status === "active" ? "Ativo" : "Inativo"}</span></td>
                   <td>{formatDate(user.createdAt)}</td>
                   <td>
                     <div className="admin-user-menu">
@@ -222,7 +205,7 @@ export default function AdminUsers() {
                       {menuUserId === user.userId && (
                         <div className="admin-user-menu-options" role="menu">
                           <button role="menuitem" onClick={() => void openInfo(user, "view")}>
-                            Visualizar
+                            Visualizar detalhes
                           </button>
                           <button
                             role="menuitem"
@@ -354,6 +337,6 @@ export default function AdminUsers() {
           </Dialog>
         </Backdrop>
       )}
-    </AdminUsersPanel>
+    </UsersPanel>
   );
 }

@@ -11,8 +11,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserType } from 'src/Enums/user.enum';
 
 /**
- * Cadastro administrativo: cria aluno ou professor.
- * `admin` não entra aqui — contas de administrador não são criadas por API.
+ * Cadastro de aluno, professor ou administrador por um administrador autenticado.
  */
 export class CreateManagedUserDto {
   @ApiProperty({ example: 'Carlos Souza', description: 'Nome do usuário' })
@@ -43,14 +42,14 @@ export class CreateManagedUserDto {
   @ApiProperty({
     example: UserType.TEACHER,
     description:
-      'Tipo do usuário. Use student para aluno ou teacher para professor.',
-    enum: [UserType.STUDENT, UserType.TEACHER],
+      'Tipo do usuário: student, teacher ou admin.',
+    enum: [UserType.STUDENT, UserType.TEACHER, UserType.ADMIN],
   })
   @IsNotEmpty({ message: 'Tipo é obrigatório' })
-  @IsIn([UserType.STUDENT, UserType.TEACHER], {
-    message: 'Tipo deve ser student ou teacher',
+  @IsIn([UserType.STUDENT, UserType.TEACHER, UserType.ADMIN], {
+    message: 'Tipo deve ser student, teacher ou admin',
   })
-  type!: UserType.STUDENT | UserType.TEACHER;
+  type!: UserType;
 
   @ApiPropertyOptional({
     example: '123456',
