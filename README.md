@@ -31,13 +31,3 @@ npm install
 npm run dev
 ```
 
-### Pesquisa administrativa de usuários
-
-A tela `/admin/users` usa a API real com filtros e paginação no backend:
-`GET /admin/users?type=teacher&status=active&search=maria&page=1&limit=10`.
-A resposta contém `data` e `meta` (`page`, `limit`, `totalItems`, `totalPages`);
-o campo `registration` representa matrícula ou SIAPE, conforme o perfil.
-O cadastro, a edição, a visualização, a ativação/desativação e a consulta de
-impacto compartilham o `AdminController`. O dashboard permanece em
-`GET /admin/dashboard`. Todas essas rotas exigem um administrador ativo.
-
