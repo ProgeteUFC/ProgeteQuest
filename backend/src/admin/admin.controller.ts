@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Query,
+  ParseUUIDPipe,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -24,6 +25,8 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
 import { UserService } from 'src/user/user.service';
 import { AdminService } from './admin.service';
+import { AdminDashboardService } from './admin-dashboard.service';
+import { UpdateManagedUserDto } from './dtos/update-managed-user.dto';
 import { CreateManagedUserDto } from './dtos/create-managed-user.dto';
 import { DeactivateUserDto } from './dtos/deactivate-user.dto';
 import { ListUsersQueryDto } from './dtos/list-users-query.dto';
@@ -35,15 +38,46 @@ import { AdminUserListResponseDto } from './dtos/responses/admin-user-list.respo
   description:
     'Token ausente, inválido ou expirado, ou usuário sem perfil de administrador.',
 })
-@Controller('admin/users')
+@Controller('admin')
 export class AdminController {
   constructor(
     private readonly userService: UserService,
     private readonly adminService: AdminService,
+    private readonly dashboardService: AdminDashboardService,
   ) {}
 
   @Roles('admin')
-  @Post()
+  @Get('dashboard')
+  @ApiOperation({ summary: 'Consultar indicadores do dashboard administrativo' })
+  getDashboard() {
+    return this.dashboardService.getDashboard();
+  }
+
+  @Roles('admin')
+  @Get('users/:id/deletion-impact')
+  @ApiOperation({ summary: 'Consultar impacto da exclusão sem excluir dados' })
+  deletionImpact(@Param('id', ParseUUIDPipe) id: string) {
+    return this.userService.getDeletionImpact(id);
+  }
+
+  @Roles('admin')
+  @Get('users/:id')
+  @ApiOperation({ summary: 'Visualizar dados administrativos do usuário' })
+  findUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.userService.findOneForAdmin(id);
+  }
+
+  @Roles('admin')
+  @Patch('users/:id')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({ summary: 'Editar usuário sem alterar seu perfil ou senha' })
+  @ApiBody({ type: UpdateManagedUserDto })
+  updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateManagedUserDto) {
+    return this.userService.update(id, body);
+  }
+
+  @Roles('admin')
+  @Post('users')
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({
     summary: 'Cadastrar aluno ou professor',
@@ -86,7 +120,7 @@ export class AdminController {
   }
 
   @Roles('admin')
-  @Get()
+  @Get('users')
   @UsePipes(
     new ValidationPipe({
       transform: true,
@@ -114,7 +148,8 @@ export class AdminController {
   }
 
   @Roles('admin')
-  @Patch(':id/deactivate')
+  @Patch('users/:id/deactivate')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({
     summary: 'Desativar usuário',
     description:
@@ -145,15 +180,15 @@ export class AdminController {
       'Usuário não encontrado, é o último administrador ativo, ou o admin tentou desativar a própria conta.',
   })
   async deactivate(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() body: DeactivateUserDto,
     @User() admin: UserPayload,
   ) {
-    return this.userService.deactivate(id, admin.userId, body.reason);
+    return this.userService.deactivate(id, admin.userId, body.reason.trim());
   }
 
   @Roles('admin')
-  @Patch(':id/activate')
+  @Patch('users/:id/activate')
   @ApiOperation({
     summary: 'Ativar usuário',
     description:
@@ -178,7 +213,7 @@ export class AdminController {
   @ApiBadRequestResponse({
     description: 'Usuário não encontrado',
   })
-  async activate(@Param('id') id: string) {
+  async activate(@Param('id', ParseUUIDPipe) id: string) {
     return this.userService.activate(id);
   }
 }

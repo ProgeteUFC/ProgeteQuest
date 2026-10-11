@@ -39,8 +39,7 @@ const EntraEmTurma = () => {
 
     try {
       const token = localStorage.getItem("token") || "";
-      const studentId = localStorage.getItem("userId") || "";
-      await alunoService.entrarEmTurma(studentId, codigoInformado, token);
+      await alunoService.entrarEmTurma(codigoInformado, token);
       setSucesso("Você entrou na turma com sucesso!");
       setCodigo("");
     } catch (error: any) {

@@ -31,20 +31,13 @@ npm install
 npm run dev
 ```
 
-Crie um arquivo `frontend/.env`:
+### Pesquisa administrativa de usuários
 
-```env
-VITE_API_URL=http://localhost:3000
-```
+A tela `/admin/users` usa a API real com filtros e paginação no backend:
+`GET /admin/users?type=teacher&status=active&search=maria&page=1&limit=10`.
+A resposta contém `data` e `meta` (`page`, `limit`, `totalItems`, `totalPages`);
+o campo `registration` representa matrícula ou SIAPE, conforme o perfil.
+O cadastro, a edição, a visualização, a ativação/desativação e a consulta de
+impacto compartilham o `AdminController`. O dashboard permanece em
+`GET /admin/dashboard`. Todas essas rotas exigem um administrador ativo.
 
-Por padrão:
-
-- Backend: `http://localhost:3000`
-- Frontend: `http://localhost:5173`
-
-## Documentação da API
-
-Com o backend em execução, o Swagger está disponível em:
-
-- `http://localhost:3000/api`
-- `http://localhost:3000/api-json`

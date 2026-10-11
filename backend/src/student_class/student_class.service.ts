@@ -1,4 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  ForbiddenException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StudentClass } from './entities/studentClass.entity';
@@ -7,12 +14,6 @@ import { Class } from 'src/class/entities/class.entity';
 import { Student } from 'src/student/entities/student.entity';
 import { Checkin } from 'src/checkin/entities/checkin.entity';
 import { generateUuid } from 'src/utils/generateUuid';
-import {
-  NotFoundException,
-  UnauthorizedException,
-  ForbiddenException,
-  ConflictException,
-} from '@nestjs/common';
 
 @Injectable()
 export class StudentClassService {
@@ -61,17 +62,24 @@ export class StudentClassService {
   }
 
   async joinClassByCode(studentId: string, joinCode: string) {
-    // Busca a turma pelo código
-    const classEntity = await this.classRepository.findOne({
-      where: { joinCode },
-    });
-    if (!classEntity) throw new NotFoundException('Código de turma inválido');
+    const normalizedJoinCode = typeof joinCode === 'string' ? joinCode.trim() : '';
 
-    // Busca o estudante pelo userId
+    if (typeof joinCode !== 'string' || joinCode.trim() === '') {
+      throw new BadRequestException('Código de turma inválido');
+    }
+
     const student = await this.studentRepository.findOne({
       where: { userId: studentId },
     });
-    if (!student) throw new NotFoundException('Aluno não encontrado');
+    if (!student) {
+      throw new ForbiddenException('Apenas alunos podem ingressar em turmas');
+    }
+
+    // Busca a turma pelo código
+    const classEntity = await this.classRepository.findOne({
+      where: { joinCode: normalizedJoinCode },
+    });
+    if (!classEntity) throw new NotFoundException('Código de turma inválido');
 
     // Verifica se já está vinculado
     const exists = await this.studentClassRepository.findOne({
@@ -295,6 +303,14 @@ export class StudentClassService {
   }
 
   async getStudentClasses(studentId: string) {
+    const student = await this.studentRepository.findOne({
+      where: { userId: studentId },
+    });
+
+    if (!student) {
+      throw new ForbiddenException('Acesso negado');
+    }
+
     const studentClasses = await this.studentClassRepository.find({
       where: { studentId },
       relations: ['class'],
