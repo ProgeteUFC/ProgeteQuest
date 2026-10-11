@@ -1,6 +1,8 @@
+
 import {
   Body,
   Controller,
+  Get,
   Post,
   UsePipes,
   ValidationPipe,
@@ -13,14 +15,38 @@ import {
   ApiBearerAuth,
   ApiForbiddenResponse,
 } from '@nestjs/swagger';
+
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserService } from 'src/user/user.service';
 import { CreateUserByAdminDto } from './dtos/createUserByAdmin.dto';
+import { AdminDashboardService } from './admin-dashboard.service';
 
 @ApiTags('Administração')
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly dashboardService: AdminDashboardService,
+  ) {}
+
+  @Roles('admin')
+  @ApiBearerAuth('JWT')
+  @ApiForbiddenResponse({
+    description: 'Token ausente, inválido ou sem perfil de administrador.',
+  })
+  @Get('dashboard')
+  @ApiOperation({
+    summary: 'Consultar indicadores do dashboard administrativo',
+    description:
+      'Retorna os totais de alunos e professores ativos/inativos, o total de turmas e os cinco usuários desativados mais recentemente.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Indicadores retornados com sucesso.',
+  })
+  async getDashboard() {
+    return this.dashboardService.getDashboard();
+  }
 
   @Roles('admin')
   @ApiBearerAuth('JWT')
@@ -28,7 +54,12 @@ export class AdminController {
     description: 'Token ausente, inválido ou sem perfil de administrador.',
   })
   @Post('users')
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
   @ApiOperation({
     summary: 'Cadastrar aluno ou professor',
     description:
@@ -59,13 +90,21 @@ export class AdminController {
       },
     },
   })
-  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Usuário criado com sucesso.',
+  })
   @ApiResponse({
     status: 400,
     description: 'Dados inválidos ou tipo diferente de student/teacher.',
   })
-  @ApiResponse({ status: 409, description: 'E-mail ou matrícula já em uso.' })
-  async createUser(@Body() createUserByAdminDto: CreateUserByAdminDto) {
+  @ApiResponse({
+    status: 409,
+    description: 'E-mail ou matrícula já em uso.',
+  })
+  async createUser(
+    @Body() createUserByAdminDto: CreateUserByAdminDto,
+  ) {
     return this.userService.create(createUserByAdminDto);
   }
 }

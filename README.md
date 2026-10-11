@@ -31,20 +31,3 @@ npm install
 npm run dev
 ```
 
-Crie um arquivo `frontend/.env`:
-
-```env
-VITE_API_URL=http://localhost:3000
-```
-
-Por padrão:
-
-- Backend: `http://localhost:3000`
-- Frontend: `http://localhost:5173`
-
-## Documentação da API
-
-Com o backend em execução, o Swagger está disponível em:
-
-- `http://localhost:3000/api`
-- `http://localhost:3000/api-json`

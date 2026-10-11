@@ -1,22 +1,110 @@
 import axios from "axios";
-import { AdminFormUserData, CreatedUserResponse } from "../types/user";
+import type { AdminFormUserData, CreatedUserResponse } from "../types/user";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const CREATE_USER_PATH = "/admin/users";
 
-/*Gera uma senha temporária simples (letras e números, sem caracteres ambíguos como 0/O ou 1/l)*/
+export interface ManagedUser {
+  userId: string;
+  name: string;
+  email: string;
+  type: "student" | "teacher" | "admin";
+  status: "active" | "inactive";
+  registrationStudent?: string;
+  registrationTeacher?: string;
+  createdAt: string;
+  updatedAt?: string;
+  deactivatedAt?: string | null;
+  deactivatedBy?: string | null;
+  deactivationReason?: string | null;
+}
+
+export type ManagedUserUpdate = Partial<
+  Pick<
+    ManagedUser,
+    "name" | "email" | "registrationStudent" | "registrationTeacher"
+  >
+>;
+
+export interface UserDeletionImpact {
+  userId: string;
+  classesAsStudent: number;
+  classesAsTeacher: number;
+  activities: number;
+  assessments: number;
+  checkins: number;
+  forumTopics: number;
+  forumPosts: number;
+}
+
+export interface DashboardUser {
+  userId: string;
+  name: string;
+  email: string;
+  type: "student" | "teacher" | "admin";
+  deactivatedAt: string | null;
+}
+
+export interface AdminDashboard {
+  students: {
+    active: number;
+    inactive: number;
+  };
+  teachers: {
+    active: number;
+    inactive: number;
+  };
+  totalClasses: number;
+  recentlyDisabledUsers: DashboardUser[];
+}
+
+function authorization(token = localStorage.getItem("token")) {
+  if (!token) {
+    throw new Error("Usuário não autenticado. Faça login novamente.");
+  }
+
+  return { Authorization: `Bearer ${token}` };
+}
+
+export function adminErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message;
+
+    if (Array.isArray(message)) return message.join(" ");
+    if (typeof message === "string") return message;
+
+    if (!error.response) {
+      return "Não foi possível conectar ao servidor.";
+    }
+
+    if (error.response.status === 403) {
+      return "Acesso negado. Entre com uma conta de administrador ativa.";
+    }
+  }
+
+  return error instanceof Error
+    ? error.message
+    : "Não foi possível concluir a operação.";
+}
+
+/* Gera uma senha temporária. */
 export function gerarSenhaTemporaria(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
   let senha = "";
   const limit = 256 - (256 % chars.length);
+
   while (senha.length < 12) {
     const value = crypto.getRandomValues(new Uint8Array(1))[0];
-    if (value < limit) senha += chars[value % chars.length];
+
+    if (value < limit) {
+      senha += chars[value % chars.length];
+    }
   }
+
   return senha;
 }
 
-/* Converte erros do axios em mensagens para mostrar no formulário. */
+/* Converte erros do cadastro em mensagens para o formulário. */
 export function mensagemDeErro(err: unknown): string {
   if (axios.isAxiosError(err)) {
     if (!err.response) {
@@ -24,38 +112,101 @@ export function mensagemDeErro(err: unknown): string {
     }
 
     const { status, data } = err.response;
-    // O ValidationPipe do Nest devolve "message" como lista de textos
     const detalhe: string | undefined = Array.isArray(data?.message)
       ? data.message.join(" ")
-      : data?.message;
+      : typeof data?.message === "string"
+        ? data.message
+        : undefined;
 
     if (status === 401 || status === 403) {
       return "Você não tem permissão para cadastrar usuários ou sua sessão expirou. Faça login novamente como administrador.";
     }
+
     if (status === 409) {
       return detalhe || "E-mail ou matrícula já em uso.";
     }
+
     if (status === 400) {
       return detalhe || "Dados inválidos. Confira os campos e tente novamente.";
     }
+
     return detalhe || "Erro ao cadastrar. Tente novamente.";
   }
 
   if (err instanceof Error) return err.message;
+
   return "Erro ao cadastrar. Tente novamente.";
 }
 
-/* Serviço de cadastro administrativo de usuários (API real). */
 export const adminService = {
+  async listarUsuarios(): Promise<ManagedUser[]> {
+    const response = await axios.get<ManagedUser[]>(
+      `${API_URL}/admin/users`,
+      { headers: authorization() },
+    );
+
+    return response.data;
+  },
+
+  async buscarUsuario(userId: string): Promise<ManagedUser> {
+    const response = await axios.get<ManagedUser>(
+      `${API_URL}/admin/users/${userId}`,
+      { headers: authorization() },
+    );
+
+    return response.data;
+  },
+
+  async consultarImpacto(userId: string): Promise<UserDeletionImpact> {
+    const response = await axios.get<UserDeletionImpact>(
+      `${API_URL}/admin/users/${userId}/deletion-impact`,
+      { headers: authorization() },
+    );
+
+    return response.data;
+  },
+
+  async editarUsuario(userId: string, body: ManagedUserUpdate) {
+    return axios.patch(`${API_URL}/admin/users/${userId}`, body, {
+      headers: authorization(),
+    });
+  },
+
+  async desativarUsuario(userId: string, reason: string) {
+    return axios.patch(
+      `${API_URL}/admin/users/${userId}/deactivate`,
+      { reason },
+      { headers: authorization() },
+    );
+  },
+
+  async reativarUsuario(userId: string) {
+    return axios.patch(
+      `${API_URL}/admin/users/${userId}/activate`,
+      {},
+      { headers: authorization() },
+    );
+  },
+
   async cadastrarUsuario(
     data: AdminFormUserData,
-    token: string
+    token?: string,
   ): Promise<CreatedUserResponse> {
     const response = await axios.post<CreatedUserResponse>(
       `${API_URL}${CREATE_USER_PATH}`,
       data,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: authorization(token) },
     );
+
+    return response.data;
+  },
+
+  async buscarDashboard(): Promise<AdminDashboard> {
+    const response = await axios.get<AdminDashboard>(
+      `${API_URL}/admin/dashboard`,
+      { headers: authorization() },
+    );
+
     return response.data;
   },
 };

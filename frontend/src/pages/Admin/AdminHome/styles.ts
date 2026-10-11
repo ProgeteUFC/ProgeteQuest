@@ -20,11 +20,17 @@ export const CreateUserLink = styled(ButtonContainer)`
   font-weight: 700;
   line-height: 1.3;
   text-decoration: none;
-  transition: background-color 0.2s ease, transform 150ms ease;
+  transition:
+    background-color 0.2s ease,
+    transform 150ms ease;
 
-  svg { flex-shrink: 0; }
+  svg {
+    flex-shrink: 0;
+  }
 
-  &:active { transform: translateY(2px); }
+  &:active {
+    transform: translateY(2px);
+  }
   &:focus-visible {
     outline: 3px solid white;
     outline-offset: 4px;
@@ -97,5 +103,110 @@ export const MenuOption = styled(ProfessorMenuOption)`
 
   &:active {
     scale: 0.97;
+  }
+`;
+
+export const DashboardGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 28px 0;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const DashboardCard = styled.article`
+  background: white;
+  color: ${({ theme }) => theme.colors.kingfisherDaisy};
+  border-radius: 20px;
+  padding: 22px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: left;
+
+  h2 {
+    font-size: ${({ theme }) => theme.typography.text.base};
+    margin: 0 0 12px;
+  }
+
+  strong {
+    font-size: 32px;
+    font-weight: 800;
+    color: ${(props) => props.theme.colors.indigo};
+  }
+`;
+
+export const RecentUsersSection = styled.section`
+  margin-top: 32px;
+  padding: 24px;
+  background: white;
+  color: ${({ theme }) => theme.colors.kingfisherDaisy};
+  border-radius: 20px;
+  text-align: left;
+
+  h2 {
+    margin: 0 0 20px;
+    font-size: ${({ theme }) => theme.typography.heading.sm};
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
+`;
+
+export const RecentUsersList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+export const RecentUserItem = styled.li`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  div {
+    min-width: 0;
+  }
+
+  strong {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    display: block;
+    color: ${({ theme }) => theme.colors.indigo};
+    font-size: ${({ theme }) => theme.typography.text.small};
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+export const DashboardFeedback = styled.p`
+  margin: 24px 0;
+  text-align: center;
+  &[role="alert"] {
+    padding: 14px 18px;
+    border-radius: 18px;
+    border-left: 5px solid ${({ theme }) => theme.colors.error};
+    color: ${({ theme }) => theme.colors.error};
+    background: ${({ theme }) => theme.colors.errorBackground};
   }
 `;
