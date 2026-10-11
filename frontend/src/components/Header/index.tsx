@@ -15,6 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HamburgerButton, MobileMenu } from "./style";
 import HeaderProfessor from "../HeaderProfessor";
+import HeaderAdmin from "../HeaderAdmin";
 
 interface HeaderProps {
   className?: string;
@@ -23,6 +24,8 @@ interface HeaderProps {
 export default function Header({ className }: HeaderProps) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  if (localStorage.getItem("userType") === "admin") return <HeaderAdmin />;
 
   if (localStorage.getItem("userType") === "teacher") {
     return <HeaderProfessor />;

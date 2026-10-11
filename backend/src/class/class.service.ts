@@ -2,6 +2,8 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
 import { CreateClassDto } from './dtos/createClass.dto';
 import { generateUuid } from '../utils/generateUuid';
@@ -13,6 +15,12 @@ import { validate as isUuid } from 'uuid';
 import { generateJoinCode } from '../utils/generateJoinCode';
 import { UpdateClassDto } from './dtos/updateClass.dto';
 import { Assessment } from '../assessment/entities/assessment.entity';
+import { UserStatus } from '../Enums/user.enum';
+
+const classSelection = {
+  classId: true, teacherId: true, name: true, joinCode: true, createdAt: true, updatedAt: true,
+  teacher: { userId: true, user: { userId: true, name: true, email: true } },
+} as const;
 
 @Injectable()
 export class ClassService {
@@ -28,9 +36,12 @@ export class ClassService {
   ) {}
 
   async getAllClasses(user: any): Promise<Class[]> {
-    const whereCondition = user.isAdmin ? {} : { teacherId: user.userId };
+    const whereCondition = user.isAdmin ? {} : user.type === 'student'
+      ? { studentClasses: { studentId: user.userId } } : { teacherId: user.userId };
     return this.classRepository.find({
       where: whereCondition,
+      relations: ['teacher', 'teacher.user'],
+      select: classSelection,
     });
   }
 
@@ -58,13 +69,15 @@ export class ClassService {
     }
 
     const targetTeacherId = user.isAdmin ? newClass.teacherId : user.userId;
+    if (!targetTeacherId || !isUuid(targetTeacherId)) throw new BadRequestException('Informe explicitamente um professor responsável válido.');
+    if (typeof newClass.name !== 'string' || !newClass.name.trim()) throw new BadRequestException('Informe o nome da turma.');
 
     // Garante que o código é único
     const joinCode = await this.getUniqueJoinCode();
 
     // verifica se teacher existe
-    const teacherEntity = await this.teacherRepository.findOneBy({
-      userId: targetTeacherId,
+    const teacherEntity = await this.teacherRepository.findOne({
+      where: { userId: targetTeacherId, user: { status: UserStatus.ACTIVE } },
     });
     if (!teacherEntity) {
       throw new NotFoundException(
@@ -121,17 +134,15 @@ export class ClassService {
     }
 
     if (updateDto.classId !== undefined) {
-      // Atualização de classId: valida apenas o formato do UUID
-      if (!isUuid(updateDto.classId)) {
-        throw new BadRequestException('ID inválido fornecido');
-      }
-      existing.classId = updateDto.classId;
+      throw new BadRequestException('Não é permitido alterar o ID da turma.');
     }
 
     // Atualizar teacherId (se informado): valida existência do teacher
     if (updateDto.teacherId !== undefined) {
+      if (!user.isAdmin) throw new ForbiddenException('Somente administradores podem alterar o professor responsável.');
+      if (!isUuid(updateDto.teacherId)) throw new BadRequestException('Professor responsável inválido.');
       const teacherExists = await this.teacherRepository.findOne({
-        where: { userId: updateDto.teacherId },
+        where: { userId: updateDto.teacherId, user: { status: UserStatus.ACTIVE } },
       });
       if (!teacherExists) {
         throw new NotFoundException(
@@ -163,14 +174,26 @@ export class ClassService {
         `Turma com id ${id} não encontrada ou acesso negado.`,
       );
     }
-    await this.classRepository.delete(id);
+    const [dependencies] = await this.classRepository.manager.query(`SELECT
+      EXISTS(SELECT 1 FROM student_class WHERE class_id = $1)
+      OR EXISTS(SELECT 1 FROM assessment WHERE class_id = $1)
+      OR EXISTS(SELECT 1 FROM activity WHERE class_id = $1)
+      OR EXISTS(SELECT 1 FROM forum WHERE turma_id = $1) AS blocked`, [id]);
+    if (dependencies.blocked) throw new ConflictException('A turma possui dependências e histórico acadêmico e não pode ser excluída.');
+    try { await this.classRepository.delete(id); }
+    catch (error) {
+      if ((error as { driverError?: { code?: string } }).driverError?.code === '23503') throw new ConflictException('A turma possui dependências e não pode ser excluída.');
+      throw error;
+    }
   }
 
   async searchClasses(query: { name?: string; joinCode?: string }, user: any) {
     const qb = this.classRepository.createQueryBuilder('class');
 
     if (!user.isAdmin) {
-      qb.andWhere('class.teacherId = :teacherId', { teacherId: user.userId });
+      if (user.type === 'student') {
+        qb.innerJoin('class.studentClasses', 'membership', 'membership.studentId = :studentId', { studentId: user.userId });
+      } else qb.andWhere('class.teacherId = :teacherId', { teacherId: user.userId });
     }
     if (query.name) {
       qb.andWhere('LOWER(class.name) LIKE :name', {
@@ -196,6 +219,8 @@ export class ClassService {
         : { classId: id, teacherId: user.userId };
     const turma = await this.classRepository.findOne({
       where: whereCondition,
+      relations: ['teacher', 'teacher.user'],
+      select: classSelection,
     });
     if (!turma) throw new NotFoundException('Turma não encontrada');
     return turma;

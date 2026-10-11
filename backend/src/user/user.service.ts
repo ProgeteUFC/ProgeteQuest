@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ConflictException,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -11,8 +12,18 @@ import { CreateUserDto } from './dtos/createUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import { generateUuid } from '../utils/generateUuid';
 import { Student } from 'src/student/entities/student.entity';
+import { StudentClass } from 'src/student_class/entities/studentClass.entity';
 import { Teacher } from 'src/teacher/entities/teacher.entity';
 import { Admin } from 'src/admin/entities/admin.entity';
+import { Class as ClassEntity } from 'src/class/entities/class.entity';
+import { Activity } from 'src/activity/entities/activity.entity';
+import { Assessment } from 'src/assessment/entities/assessment.entity';
+import { Checkin } from 'src/checkin/entities/checkin.entity';
+import { Topic } from 'src/forum/entities/topic.entity';
+import { Post } from 'src/forum/entities/post.entity';
+import { Forum } from 'src/forum/entities/forum.entity';
+import { Code } from 'src/code/entities/code.entity';
+import { UserPayload } from '../decorators/user.decorator';
 import { UserStatus, UserType } from 'src/Enums/user.enum';
 import * as bcrypt from 'bcrypt';
 
@@ -208,23 +219,26 @@ export class UserService {
       throw new UnauthorizedException('Senha incorreta');
     }
 
-    // Remove registros de administrador, se existirem
-    if (user.admins && user.admins.length > 0) {
-      await this.adminRepository.delete({ userId });
+    try {
+      await this.dataSource.transaction(async (manager) => {
+        // Serializa exclusões administrativas e protege a última conta ativa.
+        await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['admin-user-state']);
+        const locked = await manager.findOne(User, { where: { userId }, lock: { mode: 'pessimistic_write' } });
+        if (!locked) throw new BadRequestException('Usuário não encontrado');
+        const impact = await this.getDeletionImpact(userId, manager);
+        if (!impact.canDelete) throw new ConflictException({ message: 'Usuário possui dependências e não pode ser excluído.', impact });
+        if (locked.type === UserType.ADMIN && locked.status === UserStatus.ACTIVE && await manager.count(User, { where: { type: UserType.ADMIN, status: UserStatus.ACTIVE } }) <= 1) {
+          throw new ConflictException('Não é possível excluir o último administrador ativo.');
+        }
+        await manager.delete(Admin, { userId });
+        await manager.delete(Student, { userId });
+        await manager.delete(Teacher, { userId });
+        await manager.delete(User, { userId });
+      });
+    } catch (error) {
+      if ((error as { driverError?: { code?: string } }).driverError?.code === '23503') throw new ConflictException('Existem dependências vinculadas ao usuário. Nenhum dado foi excluído.');
+      throw error;
     }
-
-    // Remove registros de estudante, se existirem
-    if (user.students && user.students.length > 0) {
-      await this.studentRepository.delete({ userId });
-    }
-
-    // Remove registros de professor, se existirem
-    if (user.teachers && user.teachers.length > 0) {
-      await this.teacherRepository.delete({ userId });
-    }
-
-    // Remove o usuário
-    await this.userRepository.delete({ userId });
 
     return { message: 'Usuário removido com sucesso' };
   }
@@ -356,7 +370,15 @@ export class UserService {
     }
   }
 
-  async findOne(userId: string) {
+  async findOne(userId: string, requester?: UserPayload) {
+    if (requester && !requester.isAdmin && requester.userId !== userId) {
+      const [access] = await this.dataSource.query(`SELECT EXISTS (
+        SELECT 1 FROM class c JOIN student_class sc ON sc.class_id = c.class_id
+        WHERE (c.teacher_id = $1 AND sc.student_id = $2)
+           OR (c.teacher_id = $2 AND sc.student_id = $1)
+      ) AS allowed`, [requester.userId, userId]);
+      if (!access.allowed) throw new ForbiddenException('Usuário não pertence às suas turmas.');
+    }
     const user = await this.userRepository.findOne({
       where: { userId },
       relations: ['students', 'teachers', 'admins'],
@@ -379,12 +401,105 @@ export class UserService {
     };
   }
 
+  async findOneForAdmin(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+      relations: ['students', 'teachers'],
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    return {
+      userId: user.userId,
+      name: user.name,
+      email: user.email,
+      type: user.type,
+      status: user.status,
+      registrationStudent: user.students?.[0]?.registrationStudent,
+      registrationTeacher: user.teachers?.[0]?.registrationTeacher,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      deactivatedAt: user.deactivatedAt,
+      deactivatedBy: user.deactivatedBy,
+      deactivationReason: user.deactivationReason,
+    };
+  }
+
+  async getDeletionImpact(userId: string, manager?: EntityManager) {
+    const source = manager ?? this.dataSource;
+    const user = await (manager?.getRepository(User) ?? this.userRepository).findOne({
+      where: { userId },
+      select: ['userId', 'type', 'status'],
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    const [
+      classesAsStudent,
+      classesAsTeacher,
+      activities,
+      assessments,
+      checkins,
+      forumTopics,
+      forumPosts,
+      enrollments,
+      forums,
+      codes,
+    ] = await Promise.all([
+      source
+        .getRepository(StudentClass)
+        .countBy({ studentId: userId }),
+      source.getRepository(ClassEntity).countBy({ teacherId: userId }),
+      source
+        .getRepository(Activity)
+        .count({ where: { class: { teacherId: userId } } }),
+      source
+        .getRepository(Assessment)
+        .count({ where: { class: { teacherId: userId } } }),
+      source.getRepository(Checkin).count({ where: [{ studentId: userId }, { activity: { class: { teacherId: userId } } }] }),
+      source.getRepository(Topic).count({ where: [{ autorId: userId }, { forum: { turma: { teacherId: userId } } }] }),
+      source.getRepository(Post).count({ where: [{ autorId: userId }, { topic: { autorId: userId } }, { topic: { forum: { turma: { teacherId: userId } } } }] }),
+      source.getRepository(StudentClass).count({ where: [{ studentId: userId }, { class: { teacherId: userId } }] }),
+      source.getRepository(Forum).count({ where: { turma: { teacherId: userId } } }),
+      source.getRepository(Code).count({ where: { activity: { class: { teacherId: userId } } } }),
+    ]);
+
+    const hasDependencies = [classesAsStudent, classesAsTeacher, activities, assessments, checkins, forumTopics, forumPosts, enrollments, forums, codes].some((count) => count > 0);
+    const lastActiveAdmin = user.type === UserType.ADMIN && user.status === UserStatus.ACTIVE && await source.getRepository(User).countBy({ type: UserType.ADMIN, status: UserStatus.ACTIVE }) <= 1;
+    const blockedReasons: string[] = [];
+    if (hasDependencies) blockedReasons.push('Existem vínculos ou histórico acadêmico. A exclusão está bloqueada.');
+    if (lastActiveAdmin) blockedReasons.push('Não é possível excluir o último administrador ativo.');
+
+    return {
+      userId,
+      classesAsStudent,
+      classesAsTeacher,
+      activities,
+      assessments,
+      checkins,
+      forumTopics,
+      forumPosts,
+      enrollments,
+      forums,
+      codes,
+      hasDependencies,
+      canDelete: blockedReasons.length === 0,
+      blockedReasons,
+    };
+  }
+
   async deactivate(userId: string, adminId: string, reason: string) {
+    if (typeof reason !== 'string' || !reason.trim()) throw new BadRequestException('Informe o motivo da desativação.');
     if (userId === adminId) {
       throw new BadRequestException('Você não pode desativar a própria conta');
     }
 
     return this.dataSource.transaction(async (manager) => {
+      await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['admin-user-state']);
       const activeAdmins = await manager
         .createQueryBuilder(User, 'user')
         .setLock('pessimistic_write')

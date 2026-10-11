@@ -14,10 +14,12 @@ import { IconHome, IconExite, Box } from "../headerRanking/styles";
 import { Link, useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HamburgerButton, MobileMenu } from "./style";
+import HeaderAdmin from "../HeaderAdmin";
 
 export default function HeaderProfessor() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  if (localStorage.getItem("userType") === "admin") return <HeaderAdmin />;
 
   function handleLogout() {
     localStorage.removeItem("token");

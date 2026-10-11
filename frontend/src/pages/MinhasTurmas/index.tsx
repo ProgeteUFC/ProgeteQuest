@@ -28,8 +28,7 @@ export function MinhasTurmas() {
     async function fetchTurmas() {
       try {
         const token = localStorage.getItem("token") || "";
-        const studentId = localStorage.getItem("userId") || "";
-        const response = await alunoService.listarTurmas(studentId, token);
+        const response = await alunoService.listarTurmas(token);
         setTurmas(response.data);
       } catch {
         setErro("Erro ao buscar turmas.");

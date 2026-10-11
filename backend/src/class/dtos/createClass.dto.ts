@@ -1,7 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
 
 export class CreateClassDto {
   @ApiProperty({ example: 'Requisitos de Software', description: 'Nome da turma.', maxLength: 50 })
+  @IsString()
+  @Matches(/\S/)
+  @MaxLength(50)
   name: string;
 
   @ApiPropertyOptional({
@@ -9,5 +13,7 @@ export class CreateClassDto {
     description: 'Somente para admin: ID do professor responsável. Para professor, o backend usa o usuário autenticado.',
     format: 'uuid',
   })
+  @IsOptional()
+  @IsUUID()
   teacherId?: string;
 }

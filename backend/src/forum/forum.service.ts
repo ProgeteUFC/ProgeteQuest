@@ -45,6 +45,10 @@ export class ForumService {
     turmaId: string,
     user: ForumContextUser,
   ): Promise<boolean> {
+    if (user.isAdmin) {
+      if (!await this.classRepository.exists({ where: { classId: turmaId } })) throw new NotFoundException('Turma não encontrada');
+      return true;
+    }
     if (user.isTeacher) {
       const ownsClass = await this.classRepository.exists({
         where: { classId: turmaId, teacherId: user.id },
@@ -84,13 +88,13 @@ export class ForumService {
       throw new NotFoundException(`Turma com ID ${turmaId} não encontrada`);
     }
 
-    if (!user.isTeacher) {
+    if (!user.isTeacher && !user.isAdmin) {
       throw new ForbiddenException(
         'Acesso negado: Apenas professores podem habilitar o fórum de uma turma.',
       );
     }
 
-    if (turma.teacherId !== user.id) {
+    if (!user.isAdmin && turma.teacherId !== user.id) {
       throw new ForbiddenException(
         'Acesso negado: Apenas o professor responsável pode habilitar este fórum.',
       );
@@ -236,6 +240,10 @@ export class ForumService {
       authorId: topic.autorId,
       status: topic.status,
     };
+
+    if (topic.status === TopicStatus.CLOSED) {
+      throw new ForbiddenException('Este tópico está fechado.');
+    }
 
     if (!user.isAdmin) {
       const isUserInClass = await this.classRepository.exists({

@@ -5,6 +5,51 @@ import {
   adminTypography,
 } from "../../../styles/admin";
 
+export const AdminUserEditBackdrop = styled.div`
+  ${adminTypography}
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: ${({ theme }) => theme.colors.kingfisherDaisy}aa;
+`;
+
+export const AdminUserEditDialog = styled.div`
+  width: min(620px, 100%);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  padding: 28px;
+  border-radius: 20px;
+  color: ${({ theme }) => theme.colors.kingfisherDaisy};
+  background: ${({ theme }) => theme.colors.white};
+  box-shadow: 0 12px 35px ${({ theme }) => theme.colors.kingfisherDaisy}40;
+
+  h1 {
+    margin: 0 0 16px;
+    font-size: ${({ theme }) => theme.typography.heading.sm};
+  }
+  > button {
+    ${adminButton}
+    float: right;
+  }
+  > p { margin: 10px 0; }
+  .admin-user-edit {
+    margin: 20px 0 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .admin-user-edit input { ${adminInput} }
+  .admin-user-edit button { ${adminButton} }
+
+  @media (max-width: 600px) {
+    padding: 22px 16px;
+    border-radius: 16px;
+  }
+`;
+
 export const AdminUsersPanel = styled.section`
   ${adminTypography}
   width: min(1200px, 100%);
@@ -127,6 +172,71 @@ export const AdminUsersPanel = styled.section`
     align-items: center;
     gap: 12px;
   }
+  .admin-users-controls {
+    display: grid;
+    grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(150px, 1fr));
+    gap: 14px;
+    align-items: end;
+    margin: 20px 0;
+  }
+  .admin-users-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 800;
+  }
+  .admin-users-controls input,
+  .admin-users-controls select {
+    ${adminInput}
+    width: 100%;
+  }
+  .admin-user-menu {
+    position: relative;
+    display: inline-block;
+  }
+  .admin-user-menu > button {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+  }
+  .admin-user-menu-options {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 220px;
+    display: grid;
+    padding: 6px;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: 8px;
+    background: ${({ theme }) => theme.colors.white};
+    box-shadow: 0 8px 24px ${({ theme }) => theme.colors.kingfisherDaisy}30;
+  }
+  .admin-user-menu-options button {
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 4px;
+    color: ${({ theme }) => theme.colors.kingfisherDaisy};
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+  .admin-user-menu-options button:hover,
+  .admin-user-menu-options button:focus-visible {
+    background: ${({ theme }) => theme.colors.primaryLight};
+  }
+  .admin-users-pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 8px;
+  }
+  .admin-users-pagination button { ${adminButton} }
+  .admin-users-pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
   .admin-users-actions a {
     color: ${({ theme }) => theme.colors.indigo};
     font-weight: 800;
@@ -156,6 +266,13 @@ export const AdminUsersPanel = styled.section`
     }
     .admin-users-table {
       padding: 4px 8px;
+    }
+    .admin-users-controls {
+      grid-template-columns: 1fr;
+    }
+    .admin-users-pagination {
+      justify-content: space-between;
+      flex-wrap: wrap;
     }
   }
 `;

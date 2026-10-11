@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { CreateActivityDto } from './dtos/createActivity.dto';
 import { UpdateActivityDto } from './dtos/updateActivity.dto';
@@ -46,7 +47,7 @@ export class ActivityService {
     }
 
     const myClasses = await this.classRepository.find({
-      where: { teacherId: user.userId },
+      where: user.type === 'student' ? { studentClasses: { studentId: user.userId } } : { teacherId: user.userId },
       select: ['classId'],
     });
     
@@ -261,7 +262,14 @@ export class ActivityService {
       }
     }
 
-    await this.activityRepository.remove(existing);
+    if (await this.codeRepository.countBy({ activityId: id }) || await this.checkinRepository.countBy({ activityId: id })) {
+      throw new ConflictException('A atividade possui códigos ou check-ins e não pode ser excluída.');
+    }
+    try { await this.activityRepository.remove(existing); }
+    catch (error) {
+      if ((error as { driverError?: { code?: string } }).driverError?.code === '23503') throw new ConflictException('A atividade possui histórico e não pode ser excluída.');
+      throw error;
+    }
     return this.getAllActivities(user); 
   }
 
@@ -276,7 +284,7 @@ export class ActivityService {
 
     if (!user.isAdmin) {
       const myClasses = await this.classRepository.find({
-        where: { teacherId: user.userId },
+        where: user.type === 'student' ? { studentClasses: { studentId: user.userId } } : { teacherId: user.userId },
         select: ['classId'],
       });
       const classIds = myClasses.map((c) => c.classId);

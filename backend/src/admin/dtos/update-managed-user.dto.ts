@@ -1,51 +1,39 @@
-import { Transform } from 'class-transformer';
-import {
-  IsEmail,
-  IsString,
-  Matches,
-  MaxLength,
-  ValidateIf,
-} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsString, Matches, MaxLength, ValidateIf } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 const trim = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim() : value;
 
-export class AdminUpdateUserDto {
-  @ApiPropertyOptional()
+export class UpdateManagedUserDto {
+  @ApiPropertyOptional({ example: 'Maria Silva' })
   @ValidateIf((_, value) => value !== undefined)
   @Transform(trim)
   @IsString()
-  @Matches(/\S/, { message: 'Nome não pode estar em branco' })
+  @Matches(/\S/, { message: 'Nome não pode ser vazio' })
   @MaxLength(50)
   name?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'maria@exemplo.com' })
   @ValidateIf((_, value) => value !== undefined)
   @Transform(trim)
   @IsEmail()
-  @MaxLength(100)
-  email?: string;
-
-  @ApiPropertyOptional({
-    description: 'Nova senha; omita para manter a atual.',
-  })
-  @ValidateIf((_, value) => value !== undefined)
   @IsString()
-  @Matches(/\S/, { message: 'Senha não pode estar em branco' })
-  password?: string;
+  @MaxLength(100)
+  @Matches(/^.+@.+\.com$/, { message: 'E-mail inválido' })
+  email?: string;
 
   @ApiPropertyOptional({ example: '123456' })
   @ValidateIf((_, value) => value !== undefined)
   @Transform(trim)
   @IsString()
-  @Matches(/^\d{6}$/, { message: 'Matrícula deve conter exatamente 6 dígitos' })
+  @Matches(/^\d{6}$/)
   registrationStudent?: string;
 
   @ApiPropertyOptional({ example: '654321' })
   @ValidateIf((_, value) => value !== undefined)
   @Transform(trim)
   @IsString()
-  @Matches(/^\d{6}$/, { message: 'SIAPE deve conter exatamente 6 dígitos' })
+  @Matches(/^\d{6}$/)
   registrationTeacher?: string;
 }

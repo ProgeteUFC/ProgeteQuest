@@ -25,7 +25,7 @@ import planetOrange from "../../assets/planet_orange.png";
 import { alunoService } from "../../services/alunoService";
 import { useNavigate } from "react-router-dom";
 
-export default function MeusDados() {
+export default function MeusDados({ embedded = false }: { embedded?: boolean }) {
   const [nome, setNome] = useState("");
   const [matricula, setMatricula] = useState("");
   const [email, setEmail] = useState("");
@@ -33,7 +33,7 @@ export default function MeusDados() {
   const [senhaConfirm, setSenhaConfirm] = useState("");
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
-  const [tipo, setTipo] = useState<"student" | "teacher">("student");
+  const [tipo, setTipo] = useState<"student" | "teacher" | "admin">("student");
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
   const [senhaExcluir, setSenhaExcluir] = useState("");
   const [erroExclusao, setErroExclusao] = useState("");
@@ -44,13 +44,9 @@ export default function MeusDados() {
     async function fetchDados() {
       try {
         const token = localStorage.getItem("token") || "";
-        const userId = localStorage.getItem("userId") || "";
-        const userType = localStorage.getItem("userType") as "student" | "teacher";
+        const { data } = await alunoService.meusDados(token);
+        const userType = data.type as "student" | "teacher" | "admin";
         setTipo(userType || "student");
-        const res = await fetch(`http://localhost:3000/user/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
         setNome(data.name || "");
         setEmail(data.email || "");
         if (userType === "student") {
@@ -75,15 +71,14 @@ export default function MeusDados() {
     }
     try {
       const token = localStorage.getItem("token") || "";
-      const userId = localStorage.getItem("userId") || "";
       const dados: any = {
         name: nome,
         email,
       };
       if (senha) dados.password = senha;
       if (tipo === "student") dados.registrationStudent = matricula;
-      else dados.registrationTeacher = matricula;
-      await alunoService.atualizarDados(userId, dados, token);
+      else if (tipo === "teacher") dados.registrationTeacher = matricula;
+      await alunoService.atualizarDados(dados, token);
       setSucesso("Dados atualizados com sucesso!");
       setSenha("");
       setSenhaConfirm("");
@@ -131,7 +126,7 @@ export default function MeusDados() {
 
   return (
     <Container>
-      <Header />
+      {!embedded && <Header />}
       <LogoBottom src={logo} alt="Progete logo rodapé" />
       <PageContent>
           <LeftColumn>
@@ -151,7 +146,7 @@ export default function MeusDados() {
                     required
                   />
                 </InputWrapper>
-                <InputWrapper>
+                {tipo !== "admin" && <InputWrapper>
                   <label>{tipo === "student" ? "Matrícula:" : "SIAPE:"}</label>
                   <input
                     type="text"
@@ -160,7 +155,7 @@ export default function MeusDados() {
                     onChange={(e) => setMatricula(e.target.value)}
                     required
                   />
-                </InputWrapper>
+                </InputWrapper>}
                 <InputWrapper>
                   <label>E-mail:</label>
                   <input

@@ -11,21 +11,26 @@ interface CadastroAluno {
 }
 
 export const alunoService = {
+  async meusDados(token: string) {
+    return axios.get(`${API_URL}/user/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
   async cadastrar(dados: CadastroAluno) {
     return axios.post(`${API_URL}/auth/register/student`, dados);
   },
 async login(email: string, password: string) {
   return axios.post(`${API_URL}/auth/login`, { email, password });
 },
-async listarTurmas(studentId: string, token: string) {
-    return axios.get(`${API_URL}/student-class/student/${studentId}`, {
+async listarTurmas(token: string) {
+    return axios.get(`${API_URL}/student-class/me`, {
         headers: { Authorization: `Bearer ${token}` },
     });
 },
-  async entrarEmTurma(studentId: string, joinCode: string, token: string) {
+  async entrarEmTurma(joinCode: string, token: string) {
     return axios.post(
       `${API_URL}/student-class/join`,
-      { studentId, joinCode },
+      { joinCode },
       { headers: { Authorization: `Bearer ${token}` } }
     );
   },
@@ -39,7 +44,7 @@ async listarTurmas(studentId: string, token: string) {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
-  async atualizarDados(userId: string, dados: any, token: string) {
+  async atualizarDados(dados: any, token: string) {
     return axios.put(`${API_URL}/user`, dados, {
       headers: { Authorization: `Bearer ${token}` },
     });

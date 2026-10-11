@@ -21,7 +21,8 @@ import { alunoService } from "../../services/alunoService";
 
 interface TurmaForum { id: string; nome: string }
 
-export default function ForumPage() {
+export default function ForumPage({ embedded = false }: { embedded?: boolean }) {
+  const isAdmin = localStorage.getItem("userType") === "admin";
   const navigate = useNavigate();
   const [turmas, setTurmas] = useState<TurmaForum[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -33,10 +34,9 @@ export default function ForumPage() {
       try {
         const token = localStorage.getItem("token") || "";
         const userType = localStorage.getItem("userType");
-        const userId = localStorage.getItem("userId") || "";
-        const response = userType === "teacher"
+        const response = userType === "teacher" || userType === "admin"
           ? await turmaService.listarTurmasProfessor(token)
-          : await alunoService.listarTurmas(userId, token);
+          : await alunoService.listarTurmas(token);
         if (ativo) {
           setTurmas(response.data.map((turma: any) => ({ id: turma.classId, nome: turma.name })));
         }
@@ -51,9 +51,9 @@ export default function ForumPage() {
   }, []);
   return (
     <Container>
-      <Header />
+      {!embedded && <Header />}
       <Content>
-        <ForumTitle>Fórum</ForumTitle>
+        <ForumTitle>{isAdmin ? "Administração dos fóruns" : "Fórum"}</ForumTitle>
         <ForumDescription>
           Escolha o fórum da turma desejada para conversar e tirar dúvidas com seus colegas.
         </ForumDescription>
@@ -66,8 +66,8 @@ export default function ForumPage() {
               <TurmaCard
                 key={turma.id}
                 tabIndex={0}
-                onClick={() => navigate(`/forum/${turma.id}`)}
-                onKeyDown={(event) => event.key === "Enter" && navigate(`/forum/${turma.id}`)}
+                onClick={() => navigate(isAdmin ? `/admin/forums/${turma.id}` : `/forum/${turma.id}`)}
+                onKeyDown={(event) => event.key === "Enter" && navigate(isAdmin ? `/admin/forums/${turma.id}` : `/forum/${turma.id}`)}
                 role="button"
               >
                 <TurmaNome>{turma.nome}</TurmaNome>

@@ -1,9 +1,8 @@
 import axios from "axios";
 import type { AdminFormUserData, CreatedUserResponse } from "../types/user";
-import { mockUsers } from "../mocks/users.mock";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const DELAY_MS = 600;
+const CREATE_USER_PATH = "/admin/users";
 
 export interface ManagedUser {
   userId: string;
@@ -14,6 +13,27 @@ export interface ManagedUser {
   registrationStudent?: string;
   registrationTeacher?: string;
   createdAt: string;
+  updatedAt?: string;
+  deactivatedAt?: string | null;
+  deactivatedBy?: string | null;
+  deactivationReason?: string | null;
+}
+
+export interface ManagedUsersQuery {
+  search?: string;
+  type?: ManagedUser["type"];
+  status?: ManagedUser["status"];
+  page?: number;
+  limit?: number;
+}
+
+export interface ManagedUsersPage {
+  data: ManagedUser[];
+  meta: { page: number; limit: number; totalItems: number; totalPages: number };
+}
+
+interface ListedUser extends Omit<ManagedUser, "registrationStudent" | "registrationTeacher"> {
+  registration: string | null;
 }
 
 export type ManagedUserUpdate = Partial<
@@ -21,30 +41,23 @@ export type ManagedUserUpdate = Partial<
     ManagedUser,
     "name" | "email" | "registrationStudent" | "registrationTeacher"
   >
-> & { password?: string };
+>;
 
-function authorization() {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Usuário não autenticado. Faça login novamente.");
-  return { Authorization: `Bearer ${token}` };
-}
-
-export function adminErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.message;
-    if (Array.isArray(message)) return message.join(" ");
-    if (typeof message === "string") return message;
-    if (!error.response) return "Não foi possível conectar ao servidor.";
-    if (error.response.status === 403)
-      return "Acesso negado. Entre com uma conta de administrador ativa.";
-  }
-  return error instanceof Error
-    ? error.message
-    : "Não foi possível concluir a operação.";
-}
-
-function delay(ms = DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export interface UserDeletionImpact {
+  userId: string;
+  classesAsStudent: number;
+  classesAsTeacher: number;
+  activities: number;
+  assessments: number;
+  checkins: number;
+  forumTopics: number;
+  forumPosts: number;
+  enrollments: number;
+  forums: number;
+  codes: number;
+  hasDependencies: boolean;
+  canDelete: boolean;
+  blockedReasons: string[];
 }
 
 export interface DashboardUser {
@@ -68,7 +81,39 @@ export interface AdminDashboard {
   recentlyDisabledUsers: DashboardUser[];
 }
 
-/* Gera uma senha temporária */
+function authorization(token = localStorage.getItem("token")) {
+  if (!token) {
+    throw new Error("Usuário não autenticado. Faça login novamente.");
+  }
+
+  return { Authorization: `Bearer ${token}` };
+}
+
+export function adminErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message;
+    if (error.response?.status === 401 || (error.response?.status === 403 && message === "Forbidden resource")) {
+      return "Acesso negado. Sua sessão expirou, sua conta está inativa ou você não tem permissão.";
+    }
+
+    if (Array.isArray(message)) return message.join(" ");
+    if (typeof message === "string") return message;
+
+    if (!error.response) {
+      return "Não foi possível conectar ao servidor.";
+    }
+
+    if (error.response.status === 403) {
+      return "Acesso negado. Sua conta pode estar inativa ou sem permissão para esta operação.";
+    }
+  }
+
+  return error instanceof Error
+    ? error.message
+    : "Não foi possível concluir a operação.";
+}
+
+/* Gera uma senha temporária. */
 export function gerarSenhaTemporaria(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
   let senha = "";
@@ -85,12 +130,55 @@ export function gerarSenhaTemporaria(): string {
   return senha;
 }
 
+/* Converte erros do cadastro em mensagens para o formulário. */
+export function mensagemDeErro(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    if (!err.response) {
+      return "Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.";
+    }
+
+    const { status, data } = err.response;
+    const detalhe: string | undefined = Array.isArray(data?.message)
+      ? data.message.join(" ")
+      : typeof data?.message === "string"
+        ? data.message
+        : undefined;
+
+    if (status === 401 || status === 403) {
+      return "Você não tem permissão para cadastrar usuários ou sua sessão expirou. Faça login novamente como administrador.";
+    }
+
+    if (status === 409) {
+      return detalhe || "E-mail ou matrícula já em uso.";
+    }
+
+    if (status === 400) {
+      return detalhe || "Dados inválidos. Confira os campos e tente novamente.";
+    }
+
+    return detalhe || "Erro ao cadastrar. Tente novamente.";
+  }
+
+  if (err instanceof Error) return err.message;
+
+  return "Erro ao cadastrar. Tente novamente.";
+}
+
 export const adminService = {
-  async listarUsuarios(): Promise<ManagedUser[]> {
-    const response = await axios.get<ManagedUser[]>(`${API_URL}/admin/users`, {
-      headers: authorization(),
-    });
-    return response.data;
+  async listarUsuarios(query: ManagedUsersQuery = {}): Promise<ManagedUsersPage> {
+    const response = await axios.get<{ data: ListedUser[]; meta: ManagedUsersPage["meta"] }>(
+      `${API_URL}/admin/users`,
+      { headers: authorization(), params: query },
+    );
+
+    return {
+      meta: response.data.meta,
+      data: response.data.data.map(({ registration, ...user }) => ({
+        ...user,
+        ...(user.type === "student" ? { registrationStudent: registration ?? undefined } : {}),
+        ...(user.type === "teacher" ? { registrationTeacher: registration ?? undefined } : {}),
+      })),
+    };
   },
 
   async buscarUsuario(userId: string): Promise<ManagedUser> {
@@ -98,6 +186,16 @@ export const adminService = {
       `${API_URL}/admin/users/${userId}`,
       { headers: authorization() },
     );
+
+    return response.data;
+  },
+
+  async consultarImpacto(userId: string): Promise<UserDeletionImpact> {
+    const response = await axios.get<UserDeletionImpact>(
+      `${API_URL}/admin/users/${userId}/deletion-impact`,
+      { headers: authorization() },
+    );
+
     return response.data;
   },
 
@@ -122,52 +220,24 @@ export const adminService = {
       { headers: authorization() },
     );
   },
-  /* Cadastro administrativo existente (mockado) */
+
   async cadastrarUsuario(
     data: AdminFormUserData,
+    token?: string,
   ): Promise<CreatedUserResponse> {
-    await delay();
-
-    const emailJaExiste = mockUsers.some(
-      (u) => u.email.toLowerCase() === data.email.toLowerCase(),
+    const response = await axios.post<CreatedUserResponse>(
+      `${API_URL}${CREATE_USER_PATH}`,
+      data,
+      { headers: authorization(token) },
     );
 
-    if (emailJaExiste) {
-      throw new Error("E-mail já cadastrado.");
-    }
-
-    const novoUsuario: CreatedUserResponse = {
-      userId: crypto.randomUUID(),
-      name: data.name,
-      email: data.email,
-      type: data.type,
-      registrationStudent:
-        data.type === "student" ? data.registrationStudent : undefined,
-      registrationTeacher:
-        data.type === "teacher" ? data.registrationTeacher : undefined,
-      temporaryPassword: data.password,
-      createdAt: new Date().toISOString(),
-    };
-
-    mockUsers.push(novoUsuario);
-    return novoUsuario;
+    return response.data;
   },
 
-  /* Consulta real ao dashboard administrativo */
   async buscarDashboard(): Promise<AdminDashboard> {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      throw new Error("Usuário não autenticado.");
-    }
-
     const response = await axios.get<AdminDashboard>(
       `${API_URL}/admin/dashboard`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
+      { headers: authorization() },
     );
 
     return response.data;
