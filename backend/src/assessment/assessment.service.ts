@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -12,6 +13,7 @@ import { validate as isUuid } from 'uuid';
 import { Class } from 'src/class/entities/class.entity';
 import { UpdateAssessmentDto } from './dtos/updateAssessment.dto';
 import { UserPayload } from 'src/decorators/user.decorator';
+import { Activity } from '../activity/entities/activity.entity';
 
 @Injectable()
 export class AssessmentService {
@@ -29,7 +31,7 @@ export class AssessmentService {
     }
 
     const myClasses = await this.classRepository.find({
-      where: { teacherId: user.userId },
+      where: user.type === 'student' ? { studentClasses: { studentId: user.userId } } : { teacherId: user.userId },
       select: ['classId'],
     });
 
@@ -107,6 +109,9 @@ export class AssessmentService {
     }
 
     if (updateDto.classId !== undefined) {
+      if (updateDto.classId !== existing.classId && await this.assessmentRepository.manager.getRepository(Activity).countBy({ assessmentId: id })) {
+        throw new ConflictException('Não é possível mover uma avaliação que possui atividades para outra turma.');
+      }
       const classExists = await this.classRepository.findOne({
         where: user.isAdmin
           ? { classId: updateDto.classId }
@@ -143,7 +148,15 @@ export class AssessmentService {
       }
     }
 
-    const result = await this.assessmentRepository.delete(id);
+    if (await this.assessmentRepository.manager.getRepository(Activity).countBy({ assessmentId: id })) {
+      throw new ConflictException('A avaliação possui atividades e não pode ser excluída.');
+    }
+    let result;
+    try { result = await this.assessmentRepository.delete(id); }
+    catch (error) {
+      if ((error as { driverError?: { code?: string } }).driverError?.code === '23503') throw new ConflictException('A avaliação possui dependências e não pode ser excluída.');
+      throw error;
+    }
     if (result.affected === 0) {
       throw new NotFoundException(`Avaliação com id ${id} não encontrada`);
     }

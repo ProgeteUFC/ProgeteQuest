@@ -56,7 +56,7 @@ export class RolesGuard implements CanActivate {
         }
       | undefined;
 
-    if (!loginPayload) {
+    if (!loginPayload?.user?.userId) {
       return false;
     }
 
@@ -82,7 +82,7 @@ export class RolesGuard implements CanActivate {
       email: foundUser.email,
       name: foundUser.name,
       type: foundUser.type,
-      isAdmin: foundUser.admins && foundUser.admins.length > 0,
+      isAdmin: foundUser.type === 'admin' || !!foundUser.admins?.length,
     };
 
     if (!requiredRoles) {

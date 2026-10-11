@@ -54,10 +54,11 @@ export class StudentClassController {
   @ApiNotFoundResponse({ description: 'Aluno ou código de turma não encontrado.' })
   @ApiConflictResponse({ description: 'O aluno já está matriculado nessa turma.' })
   @Post('enroll')
-  async enrollStudent(@Body() body: EnrollStudentDto) {
+  async enrollStudent(@Body() body: EnrollStudentDto, @User() user: UserPayload) {
     return this.studentClassService.enrollStudentByRegistration(
       body.registrationStudent,
       body.joinCode,
+      user,
     );
   }
 
@@ -91,7 +92,7 @@ export class StudentClassController {
       return this.studentClassService.removeStudentByRegistration(
         registrationStudent,
         classId,
-        user.userId,
+        user,
       );
     }
 
@@ -99,7 +100,7 @@ export class StudentClassController {
     return this.studentClassService.removeStudentByUserId(
       studentId!,
       classId,
-      user.userId,
+      user,
     );
   }
 
@@ -124,8 +125,8 @@ export class StudentClassController {
   @ApiResponse({ status: 200, description: 'Ranking retornado com sucesso.' })
   @ApiNotFoundResponse({ description: 'Turma sem participantes ou não encontrada.' })
   @Get(':id/ranking')
-  async getRanking(@Param('id') classId: string) {
-    return this.studentClassService.getClassRanking(classId);
+  async getRanking(@Param('id') classId: string, @User() user: UserPayload) {
+    return this.studentClassService.getClassRanking(classId, user);
   }
 
   @Roles('teacher', 'student')
@@ -137,7 +138,7 @@ export class StudentClassController {
   @ApiResponse({ status: 200, description: 'Participantes retornados com sucesso.' })
   @ApiNotFoundResponse({ description: 'A turma ainda não possui participantes.' })
   @Get(':id/participants')
-  async getParticipants(@Param('id') classId: string) {
-    return this.studentClassService.getClassParticipants(classId);
+  async getParticipants(@Param('id') classId: string, @User() user: UserPayload) {
+    return this.studentClassService.getClassParticipants(classId, user);
   }
 }

@@ -29,6 +29,7 @@ export class CheckinService {
 
   async createCheckin(dto: CreateCheckinDto, user: UserPayload) {
     const now = new Date();
+    if (user.isAdmin && !dto.studentId) throw new BadRequestException('Informe explicitamente o aluno do check-in administrativo.');
     const studentId = user.isAdmin && dto.studentId ? dto.studentId : user.userId;
 
     // Verifica se o código existe e é válido (ativo e data)
@@ -83,7 +84,7 @@ export class CheckinService {
     const studentClass = await this.studentClassRepository.findOne({
       where: { studentId, classId: activity.classId },
     });
-    if (!user.isAdmin && !studentClass)
+    if (!studentClass)
       throw new BadRequestException('Aluno não está matriculado na turma');
 
     // Cria o check-in

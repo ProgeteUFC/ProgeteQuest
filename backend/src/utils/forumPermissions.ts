@@ -7,6 +7,7 @@ export interface ForumContextUser {
   id: string;
   isTeacher: boolean;
   isStudent: boolean;
+  isAdmin?: boolean;
 }
 
 export interface TopicContext {
@@ -18,7 +19,7 @@ export function canCreateTopic(
   user: ForumContextUser,
   isStudentInClass: boolean,
 ): boolean {
-  if (user.isTeacher) {
+  if (user.isAdmin || user.isTeacher) {
     return true;
   }
 
@@ -38,7 +39,7 @@ export function canAnswer(
     return false;
   }
 
-  if (user.isTeacher) {
+  if (user.isAdmin || user.isTeacher) {
     return true;
   }
 
@@ -50,7 +51,7 @@ export function canAnswer(
 }
 
 export function canClose(user: ForumContextUser, topic: TopicContext): boolean {
-  if (user.isTeacher) {
+  if (user.isAdmin || user.isTeacher) {
     return true;
   }
 

@@ -63,11 +63,14 @@ export default function App() {
             <Route path="users/new" element={<CadastroAdministrativoPage />} />
             <Route path="users/:id" element={<AdminUserForm />} />
             <Route path="teachers/:id/classes" element={<AdminTeacherClasses />} />
-            <Route path="classes" element={<AdminSection title="Turmas" />} />
+            <Route path="classes" element={<ViewClasses embedded />} />
+            <Route path="classes/new" element={<CadastrarDisciplina embedded />} />
+            <Route path="classes/:turmaId" element={<VisualizandoTurmasProfessor embedded />} />
             <Route path="activities" element={<AdminSection title="Atividades" />} />
-            <Route path="forums" element={<AdminSection title="Fóruns" />} />
+            <Route path="forums" element={<ForumPage embedded />} />
+            <Route path="forums/:turmaId" element={<ForumTurmaPage embedded />} />
             <Route path="audit" element={<AdminSection title="Auditoria" />} />
-            <Route path="profile" element={<AdminSection title="Meus dados" />} />
+            <Route path="profile" element={<MeusDados embedded />} />
           </Route>
           <Route path="/cadastroAdministrativo" element={<Navigate to="/admin/users/new" replace />} />
 

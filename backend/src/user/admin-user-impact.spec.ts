@@ -8,6 +8,8 @@ import { Assessment } from '../assessment/entities/assessment.entity';
 import { Checkin } from '../checkin/entities/checkin.entity';
 import { Topic } from '../forum/entities/topic.entity';
 import { Post } from '../forum/entities/post.entity';
+import { Forum } from '../forum/entities/forum.entity';
+import { Code } from '../code/entities/code.entity';
 
 describe('UserService.getDeletionImpact', () => {
   const counts = new Map<unknown, number>([
@@ -18,6 +20,8 @@ describe('UserService.getDeletionImpact', () => {
     [Checkin, 6],
     [Topic, 7],
     [Post, 8],
+    [Forum, 9],
+    [Code, 10],
   ]);
   const getRepository = jest.fn((entity: unknown) => ({
     countBy: jest.fn(async () => counts.get(entity) ?? 0),
@@ -34,6 +38,10 @@ describe('UserService.getDeletionImpact', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    getRepository.mockImplementation((entity: unknown) => ({
+      countBy: jest.fn(async () => counts.get(entity) ?? 0),
+      count: jest.fn(async () => counts.get(entity) ?? 0),
+    }));
     userRepository.findOne.mockResolvedValue({ userId: 'user-id' });
   });
 
@@ -47,6 +55,51 @@ describe('UserService.getDeletionImpact', () => {
       checkins: 6,
       forumTopics: 7,
       forumPosts: 8,
+      enrollments: 2,
+      forums: 9,
+      codes: 10,
+      hasDependencies: true,
+      canDelete: false,
+      blockedReasons: [
+        'Existem vínculos ou histórico acadêmico. A exclusão está bloqueada.',
+      ],
+    });
+  });
+
+  it('counts teacher check-ins, enrollments and forum content through class ownership', async () => {
+    await service.getDeletionImpact('teacher-id');
+    const calls = getRepository.mock.results;
+    const checkins = calls.find(
+      (_, index) => getRepository.mock.calls[index][0] === Checkin,
+    )!.value;
+    expect(checkins.count).toHaveBeenCalledWith({
+      where: [
+        { studentId: 'teacher-id' },
+        { activity: { class: { teacherId: 'teacher-id' } } },
+      ],
+    });
+    const posts = calls.find(
+      (_, index) => getRepository.mock.calls[index][0] === Post,
+    )!.value;
+    expect(posts.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.arrayContaining([
+          { topic: { forum: { turma: { teacherId: 'teacher-id' } } } },
+        ]),
+      }),
+    );
+  });
+
+  it('reports an explicit empty state without deleting anything', async () => {
+    getRepository.mockImplementation(() => ({
+      countBy: jest.fn(async () => 0),
+      count: jest.fn(async () => 0),
+    }));
+    const impact = await service.getDeletionImpact('user-id');
+    expect(impact).toMatchObject({
+      hasDependencies: false,
+      canDelete: true,
+      blockedReasons: [],
     });
   });
 

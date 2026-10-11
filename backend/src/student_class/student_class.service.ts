@@ -14,6 +14,8 @@ import { Class } from 'src/class/entities/class.entity';
 import { Student } from 'src/student/entities/student.entity';
 import { Checkin } from 'src/checkin/entities/checkin.entity';
 import { generateUuid } from 'src/utils/generateUuid';
+import { UserPayload } from '../decorators/user.decorator';
+import { assertClassAccess, isAdmin } from '../utils/classAccess';
 
 @Injectable()
 export class StudentClassService {
@@ -34,6 +36,7 @@ export class StudentClassService {
   async enrollStudentByRegistration(
     registrationStudent: string,
     joinCode: string,
+    user: UserPayload,
   ) {
     // Busca o aluno pela matrícula
     const student = await this.studentRepository.findOne({
@@ -46,6 +49,7 @@ export class StudentClassService {
       where: { joinCode },
     });
     if (!classEntity) throw new NotFoundException('Código de turma inválido');
+    await assertClassAccess(this.classRepository, classEntity.classId, user);
 
     // Verifica se já está vinculado
     const exists = await this.studentClassRepository.findOne({
@@ -100,13 +104,11 @@ export class StudentClassService {
   async removeStudentByRegistration(
     registrationStudent: string,
     classId: string,
-    teacherId: string, // id do professor logado
+    user: UserPayload,
   ) {
     // 1 — busca o professor logado
-    const teacher = await this.teacherRepository.findOne({
-      where: { userId: teacherId },
-    });
-    if (!teacher) {
+    const teacherId = user.userId;
+    if (!isAdmin(user) && user.type !== 'teacher') {
       throw new UnauthorizedException(
         'Você não tem permissão para realizar esta ação.',
       );
@@ -121,7 +123,7 @@ export class StudentClassService {
     }
 
     // 3 — valida se o professor é o dono da turma
-    if (classEntity.teacherId !== teacherId) {
+    if (!isAdmin(user) && classEntity.teacherId !== teacherId) {
       throw new ForbiddenException(
         'Você não tem permissão para realizar esta ação.',
       );
@@ -150,13 +152,11 @@ export class StudentClassService {
   async removeStudentByUserId(
     studentId: string,
     classId: string,
-    teacherId: string, // id do professor logado
+    user: UserPayload,
   ) {
     // 1 — valida professor logado
-    const teacher = await this.teacherRepository.findOne({
-      where: { userId: teacherId },
-    });
-    if (!teacher) {
+    const teacherId = user.userId;
+    if (!isAdmin(user) && user.type !== 'teacher') {
       throw new UnauthorizedException(
         'Você não tem permissão para realizar esta ação.',
       );
@@ -171,7 +171,7 @@ export class StudentClassService {
     }
 
     // 3 — professor precisa ser o dono da turma
-    if (classEntity.teacherId !== teacherId) {
+    if (!isAdmin(user) && classEntity.teacherId !== teacherId) {
       throw new ForbiddenException(
         'Você não tem permissão para realizar esta ação.',
       );
@@ -198,7 +198,8 @@ export class StudentClassService {
     return { message: 'Aluno removido da turma com sucesso' };
   }
 
-  async getClassRanking(classId: string) {
+  async getClassRanking(classId: string, user: UserPayload) {
+    await assertClassAccess(this.classRepository, classId, user);
     // verifica se a turma existe
     const classExists = await this.classRepository.findOne({
       where: { classId },
@@ -284,7 +285,8 @@ export class StudentClassService {
     return ranking;
   }
 
-  async getClassParticipants(classId: string) {
+  async getClassParticipants(classId: string, user: UserPayload) {
+    await assertClassAccess(this.classRepository, classId, user);
     const studentClasses = await this.studentClassRepository.find({
       where: { classId },
       relations: ['student', 'student.user'],

@@ -12,10 +12,12 @@ import starIcon from "../../assets/icons/star-icon.svg";
 
 type ModalType = "createActivity" | "editActivity" | "deleteActivity" | "activities" | "enroll" | "students" | "joinCode" | "delete" | null;
 
-const VisualizandoTurmasProfessor = () => {
+const VisualizandoTurmasProfessor = ({ embedded = false }: { embedded?: boolean }) => {
+  const isAdmin = localStorage.getItem("userType") === "admin";
   const { turmaId } = useParams<{ turmaId: string }>();
   const navigate = useNavigate();
   const [turma, setTurma] = useState<TurmaProfessor | null>(null);
+  const [carregandoTurma, setCarregandoTurma] = useState(true);
   const [ranking, setRanking] = useState<ParticipanteTurma[]>([]);
   const [modal, setModal] = useState<ModalType>(null);
   const [atividades, setAtividades] = useState<AtividadeTurma[]>([]);
@@ -49,6 +51,8 @@ const VisualizandoTurmasProfessor = () => {
   useEffect(() => {
     if (!turmaId) return;
     async function carregar() {
+      setCarregandoTurma(true);
+      setErro("");
       try {
         const [turmaResponse, rankingResponse] = await Promise.all([
           turmaService.buscarTurma(turmaId!, token),
@@ -58,6 +62,8 @@ const VisualizandoTurmasProfessor = () => {
         setRanking(rankingResponse.data);
       } catch (error: any) {
         setErro(error?.response?.data?.message || "Não foi possível carregar a turma.");
+      } finally {
+        setCarregandoTurma(false);
       }
     }
     carregar();
@@ -263,7 +269,7 @@ const VisualizandoTurmasProfessor = () => {
     if (!turmaId) return;
     await executar(async () => {
       await turmaService.excluirTurma(turmaId, token);
-      navigate("/visualizarTurmasProfessor");
+      navigate(isAdmin ? "/admin/classes" : "/visualizarTurmasProfessor");
     });
   }
 
@@ -278,11 +284,13 @@ const VisualizandoTurmasProfessor = () => {
     <>
       <NoScroll />
       <Container>
-        <HeaderProfessor />
+        {!embedded && <HeaderProfessor />}
         <Content>
           <HeaderInfo>
-            <h1>{turma?.name || "Carregando turma..."}</h1>
-            <p>Aqui você gerencia sua turma e visualiza informações importantes.</p>
+            <h1>{turma?.name || (carregandoTurma ? "Carregando turma..." : "Turma indisponível")}</h1>
+            <p>{isAdmin ? "Administração da turma" : "Aqui você gerencia sua turma e visualiza informações importantes."}</p>
+            {isAdmin && turma && <p>Professor responsável: {turma.teacher?.user?.name || turma.teacherId}</p>}
+            <ActionButton onClick={() => navigate(isAdmin ? `/admin/forums/${turmaId}` : `/forum/${turmaId}`)}>Abrir fórum</ActionButton>
             {erro && !modal && <Feedback $error>{erro}</Feedback>}
           </HeaderInfo>
           <DashboardGrid>
@@ -306,7 +314,7 @@ const VisualizandoTurmasProfessor = () => {
             </RankingCard>
           </DashboardGrid>
         </Content>
-        <div style={{ width: "100%", position: "fixed", left: 0, bottom: 0, zIndex: 20 }}><Footer /></div>
+        {!embedded && <div style={{ width: "100%", position: "fixed", left: 0, bottom: 0, zIndex: 20 }}><Footer /></div>}
 
         {modal && (
           <ModalBackdrop onMouseDown={(event) => event.target === event.currentTarget && fecharModal()}>

@@ -12,6 +12,7 @@ import { generateJoinCode } from 'src/utils/generateJoinCode';
 import { Activity } from 'src/activity/entities/activity.entity';
 import { Class } from 'src/class/entities/class.entity';
 import { UserPayload } from 'src/decorators/user.decorator';
+import { assertClassAccess } from '../utils/classAccess';
 
 @Injectable()
 export class CodeService {
@@ -25,6 +26,8 @@ export class CodeService {
   ) {}
 
   async createCode(dto: CreateCodeDto, user: UserPayload) {
+    const targetActivity = await this.activityRepository.findOne({ where: { activityId: dto.activityId } });
+    if (!targetActivity) throw new NotFoundException('Atividade não encontrada');
     if (!user.isAdmin) {
       const activity = await this.activityRepository.findOne({
         where: { activityId: dto.activityId },
@@ -110,6 +113,13 @@ export class CodeService {
   }
 
   async listCodesByActivity(activityId: string, user: UserPayload) {
+    const targetActivity = await this.activityRepository.findOne({ where: { activityId } });
+    if (!targetActivity) throw new NotFoundException('Atividade não encontrada');
+    await assertClassAccess(this.classRepository, targetActivity.classId, user);
+    if (user.type === 'student' && !user.isAdmin) {
+      // Alunos visualizam a atividade, mas não os códigos usados para validar presença.
+      return [];
+    }
     if (!user.isAdmin) {
       const activity = await this.activityRepository.findOne({
         where: { activityId },

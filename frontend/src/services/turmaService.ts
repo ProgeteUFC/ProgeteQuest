@@ -7,6 +7,7 @@ export interface TurmaProfessor {
   teacherId: string;
   name: string;
   joinCode: string | null;
+  teacher?: { userId: string; user?: { userId: string; name: string; email: string } };
 }
 
 export interface ParticipanteTurma {

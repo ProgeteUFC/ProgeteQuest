@@ -8,6 +8,7 @@ import { TitleName } from "../../../components/TitleName";
 import { adminMenu } from "../../../components/HeaderAdmin/menu";
 import {
   adminService,
+  adminErrorMessage,
   type AdminDashboard,
 } from "../../../services/adminService";
 
@@ -54,11 +55,7 @@ export default function AdminHome() {
         }
       } catch (err) {
         if (ativo) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Não foi possível carregar o dashboard.",
-          );
+          setError(adminErrorMessage(err));
         }
       } finally {
         if (ativo) {

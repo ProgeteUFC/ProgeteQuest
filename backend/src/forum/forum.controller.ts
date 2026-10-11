@@ -44,7 +44,8 @@ export class ForumController {
 
     return {
       id: String(payload.userId),
-      isTeacher: type === 'teacher' || payload.isAdmin === true,
+      isTeacher: type === 'teacher',
+      isAdmin: type === 'admin' || payload.isAdmin === true,
       isStudent: type === 'student',
     };
   }

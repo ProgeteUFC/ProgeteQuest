@@ -292,6 +292,7 @@ export default function AdminUsers() {
           userId={editUserId}
           onClose={() => setEditUserId(null)}
           onSaved={() => {
+            setSuccess("Dados do usuário atualizados com sucesso.");
             setEditUserId(null);
             setRevision((value) => value + 1);
           }}
@@ -331,12 +332,17 @@ export default function AdminUsers() {
             {infoMode === "impact" && impact && (
               <>
                 <p>Resumo de vínculos existentes. Nenhum dado será excluído.</p>
+                {!impact.canDelete && <p role="alert">Exclusão bloqueada: {impact.blockedReasons.join(" ")}</p>}
+                {!impact.hasDependencies && <p>Nenhuma dependência encontrada. Esta tela é apenas uma consulta e não permite excluir usuários.</p>}
                 <dl className="deletion-impact-list">
                   <dt>Turmas como aluno</dt><dd>{impact.classesAsStudent}</dd>
                   <dt>Turmas como professor</dt><dd>{impact.classesAsTeacher}</dd>
+                  <dt>Matrículas associadas</dt><dd>{impact.enrollments}</dd>
                   <dt>Atividades das turmas</dt><dd>{impact.activities}</dd>
                   <dt>Avaliações das turmas</dt><dd>{impact.assessments}</dd>
                   <dt>Check-ins / participações</dt><dd>{impact.checkins}</dd>
+                  <dt>Códigos de atividades</dt><dd>{impact.codes}</dd>
+                  <dt>Fóruns das turmas</dt><dd>{impact.forums}</dd>
                   <dt>Tópicos no fórum</dt><dd>{impact.forumTopics}</dd>
                   <dt>Publicações no fórum</dt><dd>{impact.forumPosts}</dd>
                 </dl>

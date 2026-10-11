@@ -11,7 +11,7 @@ import { BackButton, BackButtonContainer, BackButtonNotFound, Conversation, Conv
 import { turmaService, TurmaProfessor } from "../../services/turmaService";
 import { forumService, TopicApi, PostApi } from "../../services/forumService";
 
-const ForumTurmaPage: React.FC = () => {
+const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
   const { turmaId } = useParams<{ turmaId: string }>();
   const navigate = useNavigate();
   const [course, setCourse] = useState<TurmaProfessor | null>(null);
@@ -28,6 +28,8 @@ const ForumTurmaPage: React.FC = () => {
   const token = localStorage.getItem("token") || "";
   const userId = localStorage.getItem("userId") || "";
   const isTeacher = localStorage.getItem("userType") === "teacher";
+  const isAdmin = localStorage.getItem("userType") === "admin";
+  const isManager = isTeacher || isAdmin;
 
   const mapTopic = (topic: TopicApi): Forum => ({
     id: topic.topicId,
@@ -51,7 +53,7 @@ const ForumTurmaPage: React.FC = () => {
           try {
             forumResponse = await forumService.buscarPorTurma(turmaId, token);
           } catch (error: any) {
-            if (isTeacher && error?.response?.status === 404) {
+            if (isManager && error?.response?.status === 404) {
               forumResponse = await forumService.habilitar(turmaId, token);
             } else {
               throw error;
@@ -71,7 +73,7 @@ const ForumTurmaPage: React.FC = () => {
     }
     carregarTurma();
     return () => { ativo = false; };
-  }, [turmaId, token, isTeacher]);
+  }, [turmaId, token, isManager]);
 
   const handleCreateForum = async (title: string, message: string) => {
     if (!forumId) return;
@@ -135,7 +137,7 @@ const ForumTurmaPage: React.FC = () => {
   if (carregandoTurma) {
     return (
       <Container>
-        <Header />
+        {!embedded && <Header />}
         <Content><ForumTitle>Carregando turma...</ForumTitle></Content>
         <LogoProgete src={progeteLogo} alt="Progete" />
       </Container>
@@ -145,11 +147,11 @@ const ForumTurmaPage: React.FC = () => {
   if (!course) {
     return (
       <Container>
-        <Header />
+        {!embedded && <Header />}
         <Content>
           <ForumTitle>{erro || "Turma não encontrada"}</ForumTitle>
           <BackButtonContainer>
-            <BackButtonNotFound onClick={() => navigate('/forum')}>Voltar</BackButtonNotFound>
+            <BackButtonNotFound onClick={() => navigate(isAdmin ? '/admin/forums' : '/forum')}>Voltar</BackButtonNotFound>
           </BackButtonContainer>
         </Content>
         <LogoProgete src={progeteLogo} alt="Progete" />
@@ -160,16 +162,16 @@ const ForumTurmaPage: React.FC = () => {
 
   return (
     <Container>
-      <Header />
+      {!embedded && <Header />}
       <Content>
-        <ForumTitle>Fórum - {course.name}</ForumTitle>
+        <ForumTitle>{isAdmin ? "Administrar fórum" : "Fórum"} - {course.name}</ForumTitle>
         <ForumDescription>Escolha um tópico para participar da conversa ou crie um novo.</ForumDescription>
         {erro && <ForumDescription>{erro}</ForumDescription>}
         {forumId && <ForumCreateForm onCreate={handleCreateForum} disabled={salvando} />}
         <ForumList
           forums={forums}
           onClose={handleCloseForum}
-          canClose={(forum) => forum.authorId === userId || isTeacher}
+          canClose={(forum) => forum.authorId === userId || isManager}
           onOpen={handleOpenTopic}
         />
         {topicoSelecionado && (
@@ -196,7 +198,7 @@ const ForumTurmaPage: React.FC = () => {
           </Conversation>
         )}
         <BackButtonContainer>
-          <BackButton onClick={() => navigate('/forum')}>Voltar</BackButton>
+          <BackButton onClick={() => navigate(isAdmin ? '/admin/forums' : '/forum')}>Voltar</BackButton>
         </BackButtonContainer>
       </Content>
       <LogoProgete src={progeteLogo} alt="Progete" />

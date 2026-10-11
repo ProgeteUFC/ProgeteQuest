@@ -52,6 +52,12 @@ export interface UserDeletionImpact {
   checkins: number;
   forumTopics: number;
   forumPosts: number;
+  enrollments: number;
+  forums: number;
+  codes: number;
+  hasDependencies: boolean;
+  canDelete: boolean;
+  blockedReasons: string[];
 }
 
 export interface DashboardUser {
@@ -86,6 +92,9 @@ function authorization(token = localStorage.getItem("token")) {
 export function adminErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const message = error.response?.data?.message;
+    if (error.response?.status === 401 || (error.response?.status === 403 && message === "Forbidden resource")) {
+      return "Acesso negado. Sua sessão expirou, sua conta está inativa ou você não tem permissão.";
+    }
 
     if (Array.isArray(message)) return message.join(" ");
     if (typeof message === "string") return message;
@@ -95,7 +104,7 @@ export function adminErrorMessage(error: unknown): string {
     }
 
     if (error.response.status === 403) {
-      return "Acesso negado. Entre com uma conta de administrador ativa.";
+      return "Acesso negado. Sua conta pode estar inativa ou sem permissão para esta operação.";
     }
   }
 

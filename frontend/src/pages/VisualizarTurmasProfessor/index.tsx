@@ -1,5 +1,5 @@
 import HeaderProfessor from '../../components/HeaderProfessor';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -21,7 +21,8 @@ import progeteLogo from '../../assets/progete.png';
 import { turmaService, TurmaProfessor } from '../../services/turmaService';
 
 
-const ViewClasses = () => {
+const ViewClasses = ({ embedded = false, teacherId }: { embedded?: boolean; teacherId?: string }) => {
+  const isAdmin = localStorage.getItem('userType') === 'admin';
   const navigate = useNavigate();
   const [turmas, setTurmas] = useState<TurmaProfessor[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -34,7 +35,7 @@ const ViewClasses = () => {
       try {
         const token = localStorage.getItem('token') || '';
         const response = await turmaService.listarTurmasProfessor(token);
-        if (ativo) setTurmas(response.data);
+        if (ativo) setTurmas(teacherId ? response.data.filter((turma) => turma.teacherId === teacherId) : response.data);
       } catch (error: any) {
         if (ativo) {
           setErro(error?.response?.data?.message || 'Não foi possível carregar suas turmas.');
@@ -46,25 +47,26 @@ const ViewClasses = () => {
 
     carregarTurmas();
     return () => { ativo = false; };
-  }, []);
+  }, [teacherId]);
 
   const handleCardClick = (id: string) => {
   // Navega para a rota definida no App.tsx passando o ID da turma
-  navigate(`/visualizandoTurmasProfessor/${id}`);
+  navigate(isAdmin ? `/admin/classes/${id}` : `/visualizandoTurmasProfessor/${id}`);
   };
 
   return (
     <ViewClassesBg>
-      <HeaderProfessor />
+      {!embedded && <HeaderProfessor />}
       <ViewClassesContainer>
         <Title>Visualizar turmas</Title>
-        <Subtitle>Aqui você visualiza as turmas criadas por você.</Subtitle>
+        <Subtitle>{isAdmin ? "Gerencie as turmas e seus professores responsáveis." : "Aqui você visualiza as turmas criadas por você."}</Subtitle>
+        <Link to={isAdmin ? '/admin/classes/new' : '/cadastrarDisciplina'}>Criar turma</Link>
         <ListaTurmas>
           <ListaTurmasScroll>
             {carregando && <StateMessage>Carregando turmas...</StateMessage>}
             {!carregando && erro && <StateMessage $error>{erro}</StateMessage>}
             {!carregando && !erro && turmas.length === 0 && (
-              <StateMessage>Você ainda não criou nenhuma turma.</StateMessage>
+              <StateMessage>Nenhuma turma encontrada.</StateMessage>
             )}
             {!carregando && !erro && turmas.map((turma) => (
               <TurmaCard
@@ -75,6 +77,7 @@ const ViewClasses = () => {
                 onKeyDown={(event) => event.key === 'Enter' && handleCardClick(turma.classId)}
               >
                 <TurmaNome>{turma.name}</TurmaNome>
+                {isAdmin && <p>Professor: {turma.teacher?.user?.name || turma.teacherId}</p>}
               </TurmaCard>
             ))}
           </ListaTurmasScroll>
