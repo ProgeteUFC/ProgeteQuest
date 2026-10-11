@@ -1,4 +1,4 @@
-import { Controller, Delete, Body, Post, Param, Get } from '@nestjs/common';
+import { Controller, Delete, Body, Post, Param, Get, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StudentClassService } from './student_class.service';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
@@ -39,6 +39,7 @@ export class StudentClassController {
   @ApiNotFoundResponse({ description: 'Código de turma inválido.' })
   @ApiConflictResponse({ description: 'O aluno já está matriculado nessa turma.' })
   @Post('join')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async joinClass(@Body() body: JoinClassDto, @User() user: UserPayload) {
     return this.studentClassService.joinClassByCode(user.userId, body.joinCode);
   }

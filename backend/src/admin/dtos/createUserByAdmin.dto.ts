@@ -2,8 +2,10 @@ import {
   Matches,
   IsNotEmpty,
   IsString,
-  IsOptional,
   IsIn,
+  MinLength,
+  MaxLength,
+  ValidateIf,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserType } from 'src/Enums/user.enum';
@@ -16,6 +18,8 @@ export class CreateUserByAdminDto {
   @ApiProperty({ example: 'Carlos Souza', description: 'Nome do usuário' })
   @IsNotEmpty({ message: 'Nome é obrigatório' })
   @IsString({ message: 'Nome deve ser uma string' })
+  @Matches(/\S/, { message: 'Nome não pode ser vazio' })
+  @MaxLength(50)
   name!: string;
 
   @ApiProperty({
@@ -24,6 +28,7 @@ export class CreateUserByAdminDto {
   })
   @IsNotEmpty({ message: 'Email é obrigatório' })
   @IsString({ message: 'Email deve ser uma string' })
+  @MaxLength(100)
   @Matches(/^.+@.+\.com$/, {
     message: 'O email deve estar no formato exemplo@exemplo.com',
   })
@@ -32,6 +37,7 @@ export class CreateUserByAdminDto {
   @ApiProperty({ example: 'senha123', description: 'Senha do usuário' })
   @IsNotEmpty({ message: 'Senha é obrigatória' })
   @IsString({ message: 'Senha deve ser uma string' })
+  @MinLength(8)
   password!: string;
 
   @ApiProperty({
@@ -51,7 +57,9 @@ export class CreateUserByAdminDto {
     description:
       'Matrícula obrigatória apenas quando o tipo do usuário for student.',
   })
-  @IsOptional()
+  @ValidateIf((body: CreateUserByAdminDto) => body.type === UserType.STUDENT || body.registrationStudent !== undefined)
+  @IsString()
+  @Matches(/^\d{6}$/)
   registrationStudent?: string;
 
   @ApiPropertyOptional({
@@ -59,6 +67,8 @@ export class CreateUserByAdminDto {
     description:
       'Matrícula obrigatória apenas quando o tipo do usuário for teacher.',
   })
-  @IsOptional()
+  @ValidateIf((body: CreateUserByAdminDto) => body.type === UserType.TEACHER || body.registrationTeacher !== undefined)
+  @IsString()
+  @Matches(/^\d{6}$/)
   registrationTeacher?: string;
 }

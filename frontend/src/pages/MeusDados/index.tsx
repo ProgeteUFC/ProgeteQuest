@@ -44,13 +44,9 @@ export default function MeusDados() {
     async function fetchDados() {
       try {
         const token = localStorage.getItem("token") || "";
-        const userId = localStorage.getItem("userId") || "";
-        const userType = localStorage.getItem("userType") as "student" | "teacher";
+        const { data } = await alunoService.meusDados(token);
+        const userType = data.type as "student" | "teacher";
         setTipo(userType || "student");
-        const res = await fetch(`http://localhost:3000/user/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
         setNome(data.name || "");
         setEmail(data.email || "");
         if (userType === "student") {
@@ -75,7 +71,6 @@ export default function MeusDados() {
     }
     try {
       const token = localStorage.getItem("token") || "";
-      const userId = localStorage.getItem("userId") || "";
       const dados: any = {
         name: nome,
         email,
@@ -83,7 +78,7 @@ export default function MeusDados() {
       if (senha) dados.password = senha;
       if (tipo === "student") dados.registrationStudent = matricula;
       else dados.registrationTeacher = matricula;
-      await alunoService.atualizarDados(userId, dados, token);
+      await alunoService.atualizarDados(dados, token);
       setSucesso("Dados atualizados com sucesso!");
       setSenha("");
       setSenhaConfirm("");

@@ -4,6 +4,9 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Param,
+  ParseUUIDPipe,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -20,6 +23,9 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { UserService } from 'src/user/user.service';
 import { CreateUserByAdminDto } from './dtos/createUserByAdmin.dto';
 import { AdminDashboardService } from './admin-dashboard.service';
+import { User, UserPayload } from 'src/decorators/user.decorator';
+import { UpdateManagedUserDto } from './dtos/update-managed-user.dto';
+import { DeactivateUserDto } from './dtos/deactivate-user.dto';
 
 @ApiTags('Administração')
 @Controller('admin')
@@ -28,6 +34,58 @@ export class AdminController {
     private readonly userService: UserService,
     private readonly dashboardService: AdminDashboardService,
   ) {}
+
+  @Roles('admin')
+  @ApiBearerAuth('JWT')
+  @Get('users')
+  @ApiOperation({ summary: 'Listar usuários para administração' })
+  listUsers() {
+    return this.userService.findAll();
+  }
+
+  @Roles('admin')
+  @ApiBearerAuth('JWT')
+  @Get('users/:id/deletion-impact')
+  @ApiOperation({ summary: 'Consultar impacto da exclusão sem excluir dados' })
+  deletionImpact(@Param('id', ParseUUIDPipe) id: string) {
+    return this.userService.getDeletionImpact(id);
+  }
+
+  @Roles('admin')
+  @ApiBearerAuth('JWT')
+  @Get('users/:id')
+  @ApiOperation({ summary: 'Visualizar dados administrativos do usuário' })
+  findUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.userService.findOneForAdmin(id);
+  }
+
+  @Roles('admin')
+  @ApiBearerAuth('JWT')
+  @Patch('users/:id')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({ summary: 'Editar usuário sem alterar seu perfil ou senha' })
+  @ApiBody({ type: UpdateManagedUserDto })
+  updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateManagedUserDto) {
+    return this.userService.update(id, body);
+  }
+
+  @Roles('admin')
+  @ApiBearerAuth('JWT')
+  @Patch('users/:id/deactivate')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({ summary: 'Desativar usuário preservando seus vínculos' })
+  @ApiBody({ type: DeactivateUserDto })
+  deactivateUser(@Param('id', ParseUUIDPipe) id: string, @Body() body: DeactivateUserDto, @User() admin: UserPayload) {
+    return this.userService.deactivate(id, admin.userId, body.reason.trim());
+  }
+
+  @Roles('admin')
+  @ApiBearerAuth('JWT')
+  @Patch('users/:id/activate')
+  @ApiOperation({ summary: 'Reativar usuário' })
+  activateUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.userService.activate(id);
+  }
 
   @Roles('admin')
   @ApiBearerAuth('JWT')

@@ -33,10 +33,9 @@ export default function ForumPage() {
       try {
         const token = localStorage.getItem("token") || "";
         const userType = localStorage.getItem("userType");
-        const userId = localStorage.getItem("userId") || "";
         const response = userType === "teacher"
           ? await turmaService.listarTurmasProfessor(token)
-          : await alunoService.listarTurmas(userId, token);
+          : await alunoService.listarTurmas(token);
         if (ativo) {
           setTurmas(response.data.map((turma: any) => ({ id: turma.classId, nome: turma.name })));
         }

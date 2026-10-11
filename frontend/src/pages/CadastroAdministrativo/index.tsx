@@ -19,7 +19,7 @@ import {
   gerarSenhaTemporaria,
   mensagemDeErro,
 } from "../../services/adminService";
-import { AdminFormUserData, UserRole } from "../../types/user";
+import type { AdminFormUserData } from "../../types/user";
 import logo from "../../assets/progete.png";
 import planet from "../../assets/planet_orange.png";
 import artwork from "../../assets/logo.png";
@@ -39,7 +39,7 @@ export default function CadastroAdministrativoPage() {
   const [matricula, setMatricula] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [tipo, setTipo] = useState<UserRole>("student");
+  const [tipo, setTipo] = useState<"student" | "teacher">("student");
   const [erro, setErro] = useState("");
   const [processando, setProcessando] = useState(false);
   const [cadastrado, setCadastrado] = useState<UsuarioCadastrado | null>(null);
@@ -55,18 +55,15 @@ export default function CadastroAdministrativoPage() {
     if (tipo === "student") {
       return { ...base, type: "student", registrationStudent: matricula };
     }
-    if (tipo === "teacher") {
-      return { ...base, type: "teacher", registrationTeacher: matricula };
-    }
-    // administrador não tem matrícula nem SIAPE
-    return { ...base, type: "admin" };
+    return { ...base, type: "teacher", registrationTeacher: matricula };
   }
 
   function validar(): string | null {
+    if (!nome.trim()) return "Nome é obrigatório.";
     if (!EMAIL_REGEX.test(email.trim())) {
       return "O e-mail deve estar no formato exemplo@exemplo.com";
     }
-    if (tipo !== "admin" && !IDENTIFICACAO_REGEX.test(matricula)) {
+    if (!IDENTIFICACAO_REGEX.test(matricula)) {
       return `${rotuloIdentificacao} deve conter exatamente 6 dígitos numéricos.`;
     }
     if (senha.length < SENHA_MIN) {
@@ -77,6 +74,7 @@ export default function CadastroAdministrativoPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (processando) return;
     setErro("");
     setCadastrado(null);
 
@@ -141,13 +139,6 @@ export default function CadastroAdministrativoPage() {
               >
                 Professor(a)
               </UserTypeButton>
-              <UserTypeButton
-                type="button"
-                $active={tipo === "admin"}
-                onClick={() => setTipo("admin")}
-              >
-                Administrador(a)
-              </UserTypeButton>
             </UserTypeRow>
 
             <form onSubmit={handleSubmit}>
@@ -162,8 +153,8 @@ export default function CadastroAdministrativoPage() {
                 />
               </InputWrapper>
 
-              {/* Aluno usa matrícula, professor usa SIAPE, administrador não tem esse campo */}
-              {tipo !== "admin" && (
+              {/* Aluno usa matrícula; professor usa SIAPE. */}
+              {(
                 <InputWrapper>
                   <span>{rotuloIdentificacao}:</span>
                   <input

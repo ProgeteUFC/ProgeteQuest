@@ -130,6 +130,14 @@ export class UserController {
   @Roles('teacher', 'student')
   @ApiBearerAuth('JWT')
   @ApiUnauthorizedResponse({ description: 'Token ausente, inválido ou expirado.' })
+  @Get('me')
+  @ApiOperation({ summary: 'Consultar meus dados pelo usuário autenticado' })
+  async findMe(@User() user: UserPayload) {
+    return this.userService.findOne(user.userId);
+  }
+
+  @Roles('teacher', 'student')
+  @ApiBearerAuth('JWT')
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar usuário por ID',

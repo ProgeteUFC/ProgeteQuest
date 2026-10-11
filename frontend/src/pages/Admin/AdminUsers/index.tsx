@@ -90,7 +90,8 @@ export default function AdminUsers() {
         new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
     );
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const visibleUsers = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const currentPage = Math.min(page, pageCount);
+  const visibleUsers = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   async function openInfo(user: ManagedUser, mode: Exclude<InfoMode, null>) {
     setMenuUserId(null);
@@ -261,12 +262,12 @@ export default function AdminUsers() {
           {filtered.length > 0 && (
             <nav className="admin-users-pagination" aria-label="Paginação de usuários">
               <span>
-                {filtered.length} usuários · Página {page} de {pageCount}
+                {filtered.length} usuários · Página {currentPage} de {pageCount}
               </span>
-              <button type="button" disabled={page <= 1} onClick={() => setPage((value) => value - 1)}>
+              <button type="button" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
                 Anterior
               </button>
-              <button type="button" disabled={page >= pageCount} onClick={() => setPage((value) => value + 1)}>
+              <button type="button" disabled={currentPage >= pageCount} onClick={() => setPage(currentPage + 1)}>
                 Próxima
               </button>
             </nav>
