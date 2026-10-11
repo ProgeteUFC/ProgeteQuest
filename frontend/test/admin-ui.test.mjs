@@ -6,7 +6,14 @@ import ts from "../../backend/node_modules/typescript/lib/typescript.js";
 const calls = [];
 const axios = Object.fromEntries(["get", "post", "patch", "put"].map((method) => [method, async (...args) => {
   calls.push({ method, args });
-  return { data: method === "get" && args[0].endsWith("/admin/users") ? [{ userId: "user-1", name: "Maria" }] : { userId: "user-1" } };
+  return { data: method === "get" && args[0].endsWith("/admin/users") ? {
+    data: [
+      { userId: "user-1", name: "Maria", type: "teacher", registration: "654321" },
+      { userId: "user-2", name: "Ana", type: "student", registration: "123456" },
+      { userId: "user-3", name: "Admin", type: "admin", registration: null },
+    ],
+    meta: { page: 2, limit: 10, totalItems: 13, totalPages: 2 },
+  } : { userId: "user-1" } };
 }]));
 axios.isAxiosError = () => false;
 globalThis.__testAxios = axios;
@@ -38,7 +45,17 @@ test("integração dos serviços com a API", async (t) => {
   });
 
   await t.test("listagem usa a resposta real e todas as ações chamam suas rotas", async () => {
-    assert.deepEqual(await adminService.listarUsuarios(), [{ userId: "user-1", name: "Maria" }]);
+    const query = { search: "maria", type: "teacher", status: "active", page: 2, limit: 10 };
+    const result = await adminService.listarUsuarios(query);
+    assert.deepEqual(calls.at(-1).args[1].params, query);
+    assert.deepEqual(result, {
+      data: [
+        { userId: "user-1", name: "Maria", type: "teacher", registrationTeacher: "654321" },
+        { userId: "user-2", name: "Ana", type: "student", registrationStudent: "123456" },
+        { userId: "user-3", name: "Admin", type: "admin" },
+      ],
+      meta: { page: 2, limit: 10, totalItems: 13, totalPages: 2 },
+    });
     await adminService.buscarUsuario("user-1");
     assert.equal(calls.at(-1).args[0], "http://localhost:3000/admin/users/user-1");
     await adminService.editarUsuario("user-1", { name: "Maria Atualizada" });

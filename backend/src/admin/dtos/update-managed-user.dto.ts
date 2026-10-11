@@ -1,29 +1,38 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { IsEmail, IsString, Matches, MaxLength, ValidateIf } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+const trim = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim() : value;
 
 export class UpdateManagedUserDto {
   @ApiPropertyOptional({ example: 'Maria Silva' })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
+  @Transform(trim)
   @IsString()
   @Matches(/\S/, { message: 'Nome não pode ser vazio' })
   @MaxLength(50)
   name?: string;
 
   @ApiPropertyOptional({ example: 'maria@exemplo.com' })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
+  @Transform(trim)
+  @IsEmail()
   @IsString()
   @MaxLength(100)
   @Matches(/^.+@.+\.com$/, { message: 'E-mail inválido' })
   email?: string;
 
   @ApiPropertyOptional({ example: '123456' })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
+  @Transform(trim)
   @IsString()
   @Matches(/^\d{6}$/)
   registrationStudent?: string;
 
   @ApiPropertyOptional({ example: '654321' })
-  @IsOptional()
+  @ValidateIf((_, value) => value !== undefined)
+  @Transform(trim)
   @IsString()
   @Matches(/^\d{6}$/)
   registrationTeacher?: string;

@@ -13,7 +13,9 @@ import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { Student } from '../student/entities/student.entity';
 import { Teacher } from '../teacher/entities/teacher.entity';
-import { AdminUserController } from './admin-user.controller';
+import { AdminController } from '../admin/admin.controller';
+import { AdminService } from '../admin/admin.service';
+import { AdminDashboardService } from '../admin/admin-dashboard.service';
 import { RolesGuard } from '../guards/roles.guard';
 import { UserStatus, UserType } from '../Enums/user.enum';
 
@@ -157,18 +159,26 @@ describe('Edição administrativa transacional', () => {
 describe('Rotas administrativas: autorização e validação HTTP', () => {
   let app: INestApplication;
   const id = '550e8400-e29b-41d4-a716-446655440000';
+  const adminService = { findUsers: jest.fn() };
+  const dashboardService = { getDashboard: jest.fn() };
   const service = {
     update: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
+    findOneForAdmin: jest.fn(),
+    getDeletionImpact: jest.fn(),
     deactivate: jest.fn(),
     activate: jest.fn(),
   };
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      controllers: [AdminUserController],
-      providers: [{ provide: UserService, useValue: service }],
+      controllers: [AdminController],
+      providers: [
+        { provide: UserService, useValue: service },
+        { provide: AdminService, useValue: adminService },
+        { provide: AdminDashboardService, useValue: dashboardService },
+      ],
     }).compile();
     const jwt = {
       verifyAsync: jest.fn(async (token) => ({ user: { userId: token } })),
@@ -198,6 +208,41 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
   });
   afterAll(async () => {
     await app.close();
+  });
+
+  it('preserva a listagem paginada e transforma os filtros de consulta', async () => {
+    const result = { data: [], meta: { page: 2, limit: 10, totalItems: 0, totalPages: 0 } };
+    adminService.findUsers.mockResolvedValue(result);
+    await request(app.getHttpServer())
+      .get('/admin/users?type=teacher&status=active&search=maria&page=2&limit=10')
+      .set('Authorization', 'Bearer admin')
+      .expect(200, result);
+    expect(adminService.findUsers).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'teacher', status: 'active', search: 'maria', page: 2, limit: 10,
+    }));
+  });
+
+  it.each(['page=0', 'limit=101', 'type=invalid', 'status=invalid', 'unknown=value'])(
+    'rejeita consulta inválida %s', async (query) => {
+      await request(app.getHttpServer()).get(`/admin/users?${query}`)
+        .set('Authorization', 'Bearer admin').expect(400);
+      expect(adminService.findUsers).not.toHaveBeenCalled();
+    },
+  );
+
+  it('preserva a rota de dashboard fora de /admin/users', async () => {
+    dashboardService.getDashboard.mockResolvedValue({ totalClasses: 3 });
+    await request(app.getHttpServer()).get('/admin/dashboard')
+      .set('Authorization', 'Bearer admin').expect(200, { totalClasses: 3 });
+  });
+
+  it('preserva consulta de detalhes e impacto no controller administrativo', async () => {
+    service.findOneForAdmin.mockResolvedValue({ userId: id, name: 'Maria' });
+    service.getDeletionImpact.mockResolvedValue({ userId: id, checkins: 2 });
+    await request(app.getHttpServer()).get(`/admin/users/${id}`)
+      .set('Authorization', 'Bearer admin').expect(200, { userId: id, name: 'Maria' });
+    await request(app.getHttpServer()).get(`/admin/users/${id}/deletion-impact`)
+      .set('Authorization', 'Bearer admin').expect(200, { userId: id, checkins: 2 });
   });
 
   it.each(['student', 'teacher', 'inactive'])(

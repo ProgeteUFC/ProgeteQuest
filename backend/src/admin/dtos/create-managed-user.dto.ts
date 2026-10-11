@@ -14,7 +14,7 @@ import { UserType } from 'src/Enums/user.enum';
  * Cadastro administrativo: cria aluno ou professor.
  * `admin` não entra aqui — contas de administrador não são criadas por API.
  */
-export class CreateUserByAdminDto {
+export class CreateManagedUserDto {
   @ApiProperty({ example: 'Carlos Souza', description: 'Nome do usuário' })
   @IsNotEmpty({ message: 'Nome é obrigatório' })
   @IsString({ message: 'Nome deve ser uma string' })
@@ -57,7 +57,7 @@ export class CreateUserByAdminDto {
     description:
       'Matrícula obrigatória apenas quando o tipo do usuário for student.',
   })
-  @ValidateIf((body: CreateUserByAdminDto) => body.type === UserType.STUDENT || body.registrationStudent !== undefined)
+  @ValidateIf((body: CreateManagedUserDto) => body.type === UserType.STUDENT || body.registrationStudent !== undefined)
   @IsString()
   @Matches(/^\d{6}$/)
   registrationStudent?: string;
@@ -67,7 +67,7 @@ export class CreateUserByAdminDto {
     description:
       'Matrícula obrigatória apenas quando o tipo do usuário for teacher.',
   })
-  @ValidateIf((body: CreateUserByAdminDto) => body.type === UserType.TEACHER || body.registrationTeacher !== undefined)
+  @ValidateIf((body: CreateManagedUserDto) => body.type === UserType.TEACHER || body.registrationTeacher !== undefined)
   @IsString()
   @Matches(/^\d{6}$/)
   registrationTeacher?: string;

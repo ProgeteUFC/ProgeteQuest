@@ -19,6 +19,23 @@ export interface ManagedUser {
   deactivationReason?: string | null;
 }
 
+export interface ManagedUsersQuery {
+  search?: string;
+  type?: ManagedUser["type"];
+  status?: ManagedUser["status"];
+  page?: number;
+  limit?: number;
+}
+
+export interface ManagedUsersPage {
+  data: ManagedUser[];
+  meta: { page: number; limit: number; totalItems: number; totalPages: number };
+}
+
+interface ListedUser extends Omit<ManagedUser, "registrationStudent" | "registrationTeacher"> {
+  registration: string | null;
+}
+
 export type ManagedUserUpdate = Partial<
   Pick<
     ManagedUser,
@@ -139,13 +156,20 @@ export function mensagemDeErro(err: unknown): string {
 }
 
 export const adminService = {
-  async listarUsuarios(): Promise<ManagedUser[]> {
-    const response = await axios.get<ManagedUser[]>(
+  async listarUsuarios(query: ManagedUsersQuery = {}): Promise<ManagedUsersPage> {
+    const response = await axios.get<{ data: ListedUser[]; meta: ManagedUsersPage["meta"] }>(
       `${API_URL}/admin/users`,
-      { headers: authorization() },
+      { headers: authorization(), params: query },
     );
 
-    return response.data;
+    return {
+      meta: response.data.meta,
+      data: response.data.data.map(({ registration, ...user }) => ({
+        ...user,
+        ...(user.type === "student" ? { registrationStudent: registration ?? undefined } : {}),
+        ...(user.type === "teacher" ? { registrationTeacher: registration ?? undefined } : {}),
+      })),
+    };
   },
 
   async buscarUsuario(userId: string): Promise<ManagedUser> {

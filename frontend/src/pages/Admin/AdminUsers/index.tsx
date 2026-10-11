@@ -41,6 +41,8 @@ export default function AdminUsers() {
   const [profileFilter, setProfileFilter] = useState<ProfileFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [menuUserId, setMenuUserId] = useState<string | null>(null);
   const [infoMode, setInfoMode] = useState<InfoMode>(null);
   const [infoUser, setInfoUser] = useState<ManagedUser | null>(null);
@@ -57,9 +59,22 @@ export default function AdminUsers() {
     setLoading(true);
     setError("");
     adminService
-      .listarUsuarios()
-      .then((data) => {
-        if (active) setUsers(data);
+      .listarUsuarios({
+        search: search.trim() || undefined,
+        type: profileFilter === "all" ? undefined : profileFilter,
+        status: statusFilter === "all" ? undefined : statusFilter,
+        page,
+        limit: PAGE_SIZE,
+      })
+      .then(({ data, meta }) => {
+        if (!active) return;
+        if (page > Math.max(1, meta.totalPages)) {
+          setPage(Math.max(1, meta.totalPages));
+          return;
+        }
+        setUsers(data);
+        setTotalItems(meta.totalItems);
+        setTotalPages(meta.totalPages);
       })
       .catch((err) => {
         if (active) setError(adminErrorMessage(err));
@@ -70,28 +85,11 @@ export default function AdminUsers() {
     return () => {
       active = false;
     };
-  }, [revision]);
+  }, [revision, search, profileFilter, statusFilter, page]);
 
-  const filtered = users
-    .filter((user) =>
-      [
-        user.name,
-        user.email,
-        user.registrationStudent,
-        user.registrationTeacher,
-      ].some((value) =>
-        value?.toLowerCase().includes(search.trim().toLowerCase()),
-      ),
-    )
-    .filter((user) => profileFilter === "all" || user.type === profileFilter)
-    .filter((user) => statusFilter === "all" || user.status === statusFilter)
-    .sort(
-      (left, right) =>
-        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
-    );
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageCount = Math.max(1, totalPages);
   const currentPage = Math.min(page, pageCount);
-  const visibleUsers = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const visibleUsers = users;
 
   async function openInfo(user: ManagedUser, mode: Exclude<InfoMode, null>) {
     setMenuUserId(null);
@@ -258,11 +256,11 @@ export default function AdminUsers() {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <p>Nenhum usuário encontrado.</p>}
-          {filtered.length > 0 && (
+          {totalItems === 0 && <p>Nenhum usuário encontrado.</p>}
+          {totalItems > 0 && (
             <nav className="admin-users-pagination" aria-label="Paginação de usuários">
               <span>
-                {filtered.length} usuários · Página {currentPage} de {pageCount}
+                {totalItems} usuários · Página {currentPage} de {pageCount}
               </span>
               <button type="button" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
                 Anterior
