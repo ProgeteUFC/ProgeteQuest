@@ -8,6 +8,7 @@ import {
   ListaTurmasScroll,
   TurmaCard,
   TurmaNome,
+  TurmaProfessor,
   PlanetImage,
   ForumTitle,
   ForumDescription,
@@ -19,7 +20,7 @@ import progeteLogo from "../../assets/progete.png";
 import { turmaService } from "../../services/turmaService";
 import { alunoService } from "../../services/alunoService";
 
-interface TurmaForum { id: string; nome: string }
+interface TurmaForum { id: string; nome: string; professor?: string }
 
 export default function ForumPage({ embedded = false }: { embedded?: boolean }) {
   const isAdmin = localStorage.getItem("userType") === "admin";
@@ -38,7 +39,7 @@ export default function ForumPage({ embedded = false }: { embedded?: boolean }) 
           ? await turmaService.listarTurmasProfessor(token)
           : await alunoService.listarTurmas(token);
         if (ativo) {
-          setTurmas(response.data.map((turma: any) => ({ id: turma.classId, nome: turma.name })));
+          setTurmas(response.data.map((turma: any) => ({ id: turma.classId, nome: turma.name, professor: turma.teacher?.user?.name })));
         }
       } catch (error: any) {
         if (ativo) setErro(error?.response?.data?.message || "Não foi possível carregar as turmas.");
@@ -55,13 +56,15 @@ export default function ForumPage({ embedded = false }: { embedded?: boolean }) 
       <Content>
         <ForumTitle>{isAdmin ? "Administração dos fóruns" : "Fórum"}</ForumTitle>
         <ForumDescription>
-          Escolha o fórum da turma desejada para conversar e tirar dúvidas com seus colegas.
+          {isAdmin
+            ? "Selecione uma turma para acompanhar as conversas, participar e moderar os tópicos do fórum."
+            : "Escolha o fórum da turma desejada para conversar e tirar dúvidas com seus colegas."}
         </ForumDescription>
         <ListaTurmas>
           <ListaTurmasScroll>
             {carregando && <ForumState>Carregando turmas...</ForumState>}
             {!carregando && erro && <ForumState $error>{erro}</ForumState>}
-            {!carregando && !erro && turmas.length === 0 && <ForumState>Nenhuma turma associada ao seu perfil.</ForumState>}
+            {!carregando && !erro && turmas.length === 0 && <ForumState>{isAdmin ? "Nenhuma turma cadastrada no sistema." : "Nenhuma turma associada ao seu perfil."}</ForumState>}
             {!carregando && !erro && turmas.map((turma) => (
               <TurmaCard
                 key={turma.id}
@@ -71,6 +74,7 @@ export default function ForumPage({ embedded = false }: { embedded?: boolean }) 
                 role="button"
               >
                 <TurmaNome>{turma.nome}</TurmaNome>
+                {isAdmin && turma.professor && <TurmaProfessor title={`Professor(a): ${turma.professor}`}>{turma.professor}</TurmaProfessor>}
               </TurmaCard>
             ))}
           </ListaTurmasScroll>

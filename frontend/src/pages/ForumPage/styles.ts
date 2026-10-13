@@ -102,6 +102,18 @@ export const TurmaNome = styled.div`
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 `;
 
+export const TurmaProfessor = styled.span`
+  max-width: 45%;
+  flex-shrink: 0;
+  margin-left: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
+`;
+
 export const ForumState = styled.p<{ $error?: boolean }>`
   padding: 18px 12px;
   color: ${(props) => props.$error ? "#b42318" : props.theme.colors.primaryDark};

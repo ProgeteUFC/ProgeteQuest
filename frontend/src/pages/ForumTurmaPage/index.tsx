@@ -165,7 +165,12 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
       {!embedded && <Header />}
       <Content>
         <ForumTitle>{isAdmin ? "Administrar fórum" : "Fórum"} - {course.name}</ForumTitle>
-        <ForumDescription>Escolha um tópico para participar da conversa ou crie um novo.</ForumDescription>
+        <ForumDescription>
+          {isAdmin
+            ? "Como administrador(a), você pode acompanhar a conversa, participar e fechar qualquer tópico desta turma."
+            : "Escolha um tópico para participar da conversa ou crie um novo."}
+        </ForumDescription>
+        {isAdmin && course.teacher?.user?.name && <ForumDescription>Professor(a) responsável: {course.teacher.user.name}</ForumDescription>}
         {erro && <ForumDescription>{erro}</ForumDescription>}
         {forumId && <ForumCreateForm onCreate={handleCreateForum} disabled={salvando} />}
         <ForumList
