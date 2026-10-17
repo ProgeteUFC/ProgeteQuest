@@ -472,10 +472,36 @@ export class UserService {
     const lastActiveAdmin = user.type === UserType.ADMIN && user.status === UserStatus.ACTIVE && await source.getRepository(User).countBy({ type: UserType.ADMIN, status: UserStatus.ACTIVE }) <= 1;
     const blockedReasons: string[] = [];
     if (hasDependencies) blockedReasons.push('Existem vínculos ou histórico acadêmico. A exclusão está bloqueada.');
-    if (lastActiveAdmin) blockedReasons.push('Não é possível excluir o último administrador ativo.');
+    if (lastActiveAdmin)
+      blockedReasons.push(
+        'Não é possível excluir o último administrador ativo.',
+      );
+
+    const impact =
+      user.type === UserType.TEACHER
+        ? {
+            classes: classesAsTeacher,
+            assessments,
+            activities,
+            enrollments,
+            checkins,
+            forums,
+            topics: forumTopics,
+            posts: forumPosts,
+          }
+        : user.type === UserType.STUDENT
+          ? {
+              enrollments,
+              checkins,
+              topics: forumTopics,
+              posts: forumPosts,
+            }
+          : {};
 
     return {
       userId,
+      type: user.type,
+      impact,
       classesAsStudent,
       classesAsTeacher,
       activities,
@@ -493,13 +519,16 @@ export class UserService {
   }
 
   async deactivate(userId: string, adminId: string, reason: string) {
-    if (typeof reason !== 'string' || !reason.trim()) throw new BadRequestException('Informe o motivo da desativação.');
+    if (typeof reason !== 'string' || !reason.trim())
+      throw new BadRequestException('Informe o motivo da desativação.');
     if (userId === adminId) {
       throw new BadRequestException('Você não pode desativar a própria conta');
     }
 
     return this.dataSource.transaction(async (manager) => {
-      await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['admin-user-state']);
+      await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
+        'admin-user-state',
+      ]);
       const activeAdmins = await manager
         .createQueryBuilder(User, 'user')
         .setLock('pessimistic_write')

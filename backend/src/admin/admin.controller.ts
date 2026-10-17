@@ -55,7 +55,42 @@ export class AdminController {
 
   @Roles('admin')
   @Get('users/:id/deletion-impact')
-  @ApiOperation({ summary: 'Consultar impacto da exclusão sem excluir dados' })
+  @ApiOperation({
+    summary: 'Resumo de dependências antes da exclusão',
+    description:
+      'Informa quais dados seriam afetados caso o usuário fosse excluído. Não exclui nada. Apenas administradores. O objeto "impact" traz: para professor, classes, assessments, activities, enrollments, checkins, forums, topics e posts; para aluno, enrollments, checkins, topics e posts.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID do usuário (aluno ou professor)',
+    format: 'uuid',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiOkResponse({
+    description: 'Contagem dos dados que seriam afetados pela exclusão.',
+    schema: {
+      example: {
+        userId: '550e8400-e29b-41d4-a716-446655440000',
+        type: 'teacher',
+        impact: {
+          classes: 2,
+          assessments: 4,
+          activities: 10,
+          enrollments: 18,
+          checkins: 52,
+          forums: 2,
+          topics: 5,
+          posts: 31,
+        },
+        hasDependencies: true,
+        canDelete: false,
+        blockedReasons: [
+          'Existem vínculos ou histórico acadêmico. A exclusão está bloqueada.',
+        ],
+      },
+    },
+  })
+  @ApiBadRequestResponse({ description: 'Usuário não encontrado.' })
   deletionImpact(@Param('id', ParseUUIDPipe) id: string) {
     return this.userService.getDeletionImpact(id);
   }
