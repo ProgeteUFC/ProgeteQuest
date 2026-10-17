@@ -1,4 +1,4 @@
-import { Controller, Delete, Body, Post, Param, Get, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Controller, Delete, Body, Post, Param, Get, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StudentClassService } from './student_class.service';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
@@ -78,12 +78,12 @@ export class StudentClassController {
     const { classId, registrationStudent, studentId } = body;
 
     if (!classId) {
-      return { message: 'classId é obrigatório' };
+      throw new BadRequestException('classId é obrigatório');
     }
 
     // ValidationPipe will ensure classId is present and string; enforce at least one identifier
     if (!registrationStudent && !studentId) {
-      throw new (await import('@nestjs/common')).BadRequestException(
+      throw new BadRequestException(
         'registrationStudent ou studentId deve ser informado',
       );
     }

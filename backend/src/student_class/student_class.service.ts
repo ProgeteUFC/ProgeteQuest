@@ -318,10 +318,11 @@ export class StudentClassService {
       relations: ['class'],
     });
 
+    // Sem joinCode: é a credencial de matrícula do professor, e o aluno que já
+    // está na turma não precisa dela para nada (ver selectionFor em ClassService).
     return studentClasses.map((sc) => ({
       classId: sc.class.classId,
       name: sc.class.name,
-      joinCode: sc.class.joinCode,
       teacherId: sc.class.teacherId,
     }));
   }
