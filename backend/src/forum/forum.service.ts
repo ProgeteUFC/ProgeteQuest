@@ -121,6 +121,11 @@ export class ForumService {
     const forum = await this.forumRepository.findOne({ where: { turmaId } });
     if (forum) return forum;
 
+    // O fórum é um contêiner vazio por turma ({forumId, turmaId}), criado sob
+    // demanda e idempotente. Quem chega aqui já passou por validateUserInClass,
+    // ou seja, é membro desta turma — e o aluno matriculado tem direito a abrir
+    // tópicos (canCreateTopic). Por isso qualquer membro materializa o fórum da
+    // própria turma; o POST continua sendo a habilitação explícita do professor.
     return this.forumRepository.save(
       this.forumRepository.create({ forumId: generateUuid(), turmaId }),
     );

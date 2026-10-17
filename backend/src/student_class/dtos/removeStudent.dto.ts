@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUUID, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RemoveStudentDto {
@@ -7,8 +7,7 @@ export class RemoveStudentDto {
     description: 'ID da turma da qual o aluno será removido.',
     format: 'uuid',
   })
-  @IsString()
-  @IsNotEmpty()
+  @IsUUID(undefined, { message: 'classId deve ser um UUID válido.' })
   classId: string;
 
   @ApiPropertyOptional({
@@ -17,6 +16,9 @@ export class RemoveStudentDto {
   })
   @IsOptional()
   @IsString()
+  @Matches(/^\d{6}$/, {
+    message: 'A matrícula deve conter exatamente 6 dígitos numéricos.',
+  })
   registrationStudent?: string;
 
   @ApiPropertyOptional({
@@ -25,6 +27,6 @@ export class RemoveStudentDto {
     format: 'uuid',
   })
   @IsOptional()
-  @IsString()
+  @IsUUID(undefined, { message: 'studentId deve ser um UUID válido.' })
   studentId?: string;
 }

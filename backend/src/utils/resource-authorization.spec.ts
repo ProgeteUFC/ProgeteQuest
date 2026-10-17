@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { assertClassAccess } from './classAccess';
 import { ClassService } from '../class/class.service';
 import { StudentClassService } from '../student_class/student_class.service';
+import { StudentClassController } from '../student_class/student_class.controller';
 import { ForumService } from '../forum/forum.service';
 import { ActivityService } from '../activity/activity.service';
 import { AssessmentService } from '../assessment/assessment.service';
@@ -185,5 +186,121 @@ describe('Autorização por recurso', () => {
     expect(codes.findOne).toHaveBeenCalledWith({
       where: { activityId: 'activity', code: 'ABC' },
     });
+  });
+  it('esconde o joinCode do aluno e mantém para professor e admin', async () => {
+    const find = jest.fn(async (_options: Record<string, any>) => [] as any[]);
+    const service = new ClassService({ find } as never, {} as never, {} as never);
+    await service.getAllClasses(user('student'));
+    await service.getAllClasses(user('teacher'));
+    await service.getAllClasses(user('admin'));
+    expect(find.mock.calls[0][0].select).not.toHaveProperty('joinCode');
+    expect(find.mock.calls[1][0].select).toMatchObject({ joinCode: true });
+    expect(find.mock.calls[2][0].select).toMatchObject({ joinCode: true });
+  });
+  it('searchClasses não devolve joinCode para aluno, mas devolve para professor e admin', async () => {
+    const qb: Record<string, any> = {
+      getMany: jest.fn(async () => [
+        {
+          classId: 'class',
+          name: 'Turma',
+          teacherId: 'owner',
+          joinCode: 'SEGREDO123',
+        },
+      ]),
+    };
+    qb.innerJoin = jest.fn(() => qb);
+    qb.andWhere = jest.fn(() => qb);
+    const service = new ClassService(
+      { createQueryBuilder: jest.fn(() => qb) } as never,
+      {} as never,
+      {} as never,
+    );
+    const comoAluno = await service.searchClasses({}, user('student'));
+    expect(comoAluno[0]).not.toHaveProperty('joinCode');
+    expect(JSON.stringify(comoAluno)).not.toContain('SEGREDO123');
+    expect(JSON.stringify(await service.searchClasses({}, user('teacher', 'owner')))).toContain('SEGREDO123');
+    expect(JSON.stringify(await service.searchClasses({}, user('admin')))).toContain('SEGREDO123');
+  });
+  it('getClassById mantém joinCode para admin', async () => {
+    const service = new ClassService(classes as never, {} as never, {} as never);
+    classes.findOne.mockResolvedValue({ classId: 'class' });
+    await service.getClassById('class', user('admin'));
+    expect(classes.findOne.mock.calls[0][0].select).toMatchObject({
+      joinCode: true,
+    });
+  });
+  it('getClassById não devolve joinCode para aluno', async () => {
+    const service = new ClassService(classes as never, {} as never, {} as never);
+    classes.findOne.mockResolvedValue({ classId: 'class', name: 'Turma' });
+    await service.getClassById('class', user('student'));
+    expect(classes.findOne.mock.calls[0][0].select).not.toHaveProperty(
+      'joinCode',
+    );
+  });
+  it('getStudentClasses não devolve joinCode', async () => {
+    const students = { findOne: jest.fn(async () => ({ userId: 'student' })) };
+    const memberships = {
+      find: jest.fn(async () => [
+        {
+          class: {
+            classId: 'class',
+            name: 'Turma',
+            joinCode: 'SEGREDO123',
+            teacherId: 'owner',
+          },
+        },
+      ]),
+    };
+    const service = new StudentClassService(
+      memberships as never,
+      {} as never,
+      classes as never,
+      students as never,
+    );
+    const turmas = await service.getStudentClasses('student');
+    expect(turmas[0]).not.toHaveProperty('joinCode');
+    expect(JSON.stringify(turmas)).not.toContain('SEGREDO123');
+  });
+  it('GET do fórum só materializa a turma para quem é membro dela', async () => {
+    const forums = {
+      findOne: jest.fn(async () => null),
+      create: jest.fn((forum) => forum),
+      save: jest.fn(async (forum) => forum),
+    };
+    const service = new ForumService(
+      forums as never,
+      {} as never,
+      {} as never,
+      classes as never,
+    );
+
+    // Quem não pertence à turma não passa nem do validateUserInClass.
+    classes.exists.mockResolvedValue(false);
+    for (const estranho of [
+      { id: 'outro', isTeacher: false, isStudent: true },
+      { id: 'outro', isTeacher: true, isStudent: false },
+    ])
+      await expect(
+        service.getForumByClass('class', estranho),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(forums.save).not.toHaveBeenCalled();
+
+    // Membros (aluno matriculado, professor dono, admin) recebem o fórum.
+    classes.exists.mockResolvedValue(true);
+    for (const membro of [
+      { id: 'aluno', isTeacher: false, isStudent: true },
+      { id: 'owner', isTeacher: true, isStudent: false },
+      { id: 'admin', isAdmin: true, isTeacher: false, isStudent: false },
+    ])
+      await expect(
+        service.getForumByClass('class', membro),
+      ).resolves.toMatchObject({ turmaId: 'class' });
+    expect(forums.save).toHaveBeenCalledTimes(3);
+  });
+  it('DELETE /student-class exige classId com 400', async () => {
+    const controller = new StudentClassController({} as never);
+    await expect(
+      controller.remove({ classId: '', studentId: 'x' } as never, user('teacher')),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

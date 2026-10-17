@@ -16,11 +16,28 @@ import { generateJoinCode } from '../utils/generateJoinCode';
 import { UpdateClassDto } from './dtos/updateClass.dto';
 import { Assessment } from '../assessment/entities/assessment.entity';
 import { UserStatus } from '../Enums/user.enum';
+import { UserPayload } from '../decorators/user.decorator';
+import { isAdmin } from '../utils/classAccess';
 
-const classSelection = {
-  classId: true, teacherId: true, name: true, joinCode: true, createdAt: true, updatedAt: true,
+// O joinCode é a credencial que o professor distribui para matricular alunos:
+// quem o conhece entra na turma. Por isso ele só aparece para o dono da turma
+// e para o administrador — o aluno já matriculado não precisa dele e, se o
+// recebesse, poderia matricular terceiros na turma de outra pessoa.
+// Vale para as três portas que devolvem turma: getAllClasses, getClassById e
+// searchClasses.
+const canSeeJoinCode = (user: UserPayload) =>
+  isAdmin(user) || String(user.type ?? '').toLowerCase() === 'teacher';
+
+const selectionFor = (user: UserPayload) => ({
+  classId: true, teacherId: true, name: true, createdAt: true, updatedAt: true,
+  ...(canSeeJoinCode(user) ? { joinCode: true as const } : {}),
   teacher: { userId: true, user: { userId: true, name: true, email: true } },
-} as const;
+});
+
+const withoutJoinCode = (turma: Class) => {
+  const { joinCode: _hidden, ...semCodigo } = turma;
+  return semCodigo;
+};
 
 @Injectable()
 export class ClassService {
@@ -41,7 +58,7 @@ export class ClassService {
     return this.classRepository.find({
       where: whereCondition,
       relations: ['teacher', 'teacher.user'],
-      select: classSelection,
+      select: selectionFor(user),
     });
   }
 
@@ -204,7 +221,10 @@ export class ClassService {
       qb.andWhere('class.joinCode = :joinCode', { joinCode: query.joinCode });
     }
 
-    return qb.getMany();
+    const turmas = await qb.getMany();
+    // O filtro acima limita quais turmas aparecem, não quais colunas: sem isto
+    // o aluno leria o joinCode aqui, pela porta dos fundos da busca.
+    return canSeeJoinCode(user) ? turmas : turmas.map(withoutJoinCode);
   }
 
   async getClassById(id: string, user: any): Promise<Class> {
@@ -220,7 +240,7 @@ export class ClassService {
     const turma = await this.classRepository.findOne({
       where: whereCondition,
       relations: ['teacher', 'teacher.user'],
-      select: classSelection,
+      select: selectionFor(user),
     });
     if (!turma) throw new NotFoundException('Turma não encontrada');
     return turma;
