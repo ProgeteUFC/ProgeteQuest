@@ -48,6 +48,8 @@ describe('UserService.getDeletionImpact', () => {
   it('returns counts for persisted user relationships only', async () => {
     await expect(service.getDeletionImpact('user-id')).resolves.toEqual({
       userId: 'user-id',
+      type: undefined,
+      impact: {},
       classesAsStudent: 2,
       classesAsTeacher: 3,
       activities: 4,
