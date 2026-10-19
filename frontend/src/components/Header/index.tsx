@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import logoProgeteQuest from "../../assets/logo.png";
 import { TiHome } from "react-icons/ti";
@@ -16,6 +17,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { HamburgerButton, MobileMenu } from "./style";
 import HeaderProfessor from "../HeaderProfessor";
 import HeaderAdmin from "../HeaderAdmin";
+import { useAuth } from "../../Contexts/AuthContext";
 
 interface HeaderProps {
   className?: string;
@@ -24,18 +26,26 @@ interface HeaderProps {
 export default function Header({ className }: HeaderProps) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  if (localStorage.getItem("userType") === "admin") return <HeaderAdmin />;
-
-  if (localStorage.getItem("userType") === "teacher") {
-    return <HeaderProfessor />;
-  }
+  const auth = useAuth();
 
   function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userType");
-    navigate("/");
+    ["token", "userId", "userType"].forEach((key) =>
+      localStorage.removeItem(key)
+    );
+
+    navigate("/", { replace: true });
+  }
+
+  if (!auth) {
+    return null;
+  }
+
+  if (auth.userType === "admin") {
+    return <HeaderAdmin />;
+  }
+
+  if (auth.userType === "teacher") {
+    return <HeaderProfessor />;
   }
 
   return (
@@ -43,6 +53,7 @@ export default function Header({ className }: HeaderProps) {
       <HamburgerButton onClick={() => setMobileMenuOpen((open) => !open)}>
         <GiHamburgerMenu size={30} />
       </HamburgerButton>
+
       <Logo>
         <img src={logoProgeteQuest} alt="Logo do Progete Quest" width={200} />
       </Logo>
@@ -77,22 +88,43 @@ export default function Header({ className }: HeaderProps) {
 
       <MobileMenu open={mobileMenuOpen}>
         <MenuOptions style={{ flexDirection: "column", gap: 24 }}>
-          <MenuOption as={Link} to="/minhasTurmas" onClick={() => setMobileMenuOpen(false)}>
+          <MenuOption
+            as={Link}
+            to="/minhasTurmas"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             Tela Inicial
           </MenuOption>
-          <MenuOption as={Link} to="/entrarEmTurma" onClick={() => setMobileMenuOpen(false)}>
+
+          <MenuOption
+            as={Link}
+            to="/entrarEmTurma"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             Entrar em uma turma
           </MenuOption>
 
-          <MenuOption as={Link} to="/minhasTurmas" onClick={() => setMobileMenuOpen(false)}>
+          <MenuOption
+            as={Link}
+            to="/minhasTurmas"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             Minhas Turmas
           </MenuOption>
 
-          <MenuOption as={Link} to="/meusDados" onClick={() => setMobileMenuOpen(false)}>
+          <MenuOption
+            as={Link}
+            to="/meusDados"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             Meus dados
           </MenuOption>
 
-          <MenuOption as={Link} to="/forum" onClick={() => setMobileMenuOpen(false)}>
+          <MenuOption
+            as={Link}
+            to="/forum"
+            onClick={() => setMobileMenuOpen(false)}
+          >
             Fórum
           </MenuOption>
         </MenuOptions>
