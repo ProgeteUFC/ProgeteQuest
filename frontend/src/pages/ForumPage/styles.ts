@@ -81,11 +81,15 @@ export const ListaTurmasScroll = styled.div`
 `;
 
 export const TurmaCard = styled.div`
+  flex-shrink: 0;
   min-height: 42px;
   padding: 8px 18px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1.3;
   border-radius: 20px;
   color: white;
   background: ${(props) => props.theme.colors.indigo};
@@ -99,19 +103,16 @@ export const TurmaCard = styled.div`
 `;
 
 export const TurmaNome = styled.div`
-  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 `;
 
 export const TurmaProfessor = styled.span`
-  max-width: 45%;
-  flex-shrink: 0;
-  margin-left: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin: 0;
   font-size: 14px;
   font-weight: 500;
-  opacity: 0.9;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 `;
 
 export const ForumState = styled.p<{ $error?: boolean }>`

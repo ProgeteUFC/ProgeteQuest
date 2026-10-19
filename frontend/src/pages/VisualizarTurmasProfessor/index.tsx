@@ -1,5 +1,5 @@
 import HeaderProfessor from '../../components/HeaderProfessor';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -11,9 +11,11 @@ import {
   ListaTurmasScroll,
   TurmaCard,
   TurmaNome,
+  ProfessorNome,
   PlanetOrange,
   LogoProgete,
   StateMessage,
+  CreateClassLink,
 } from './styles';
 
 import planetOrange from '../../assets/planet_orange.png';
@@ -60,7 +62,7 @@ const ViewClasses = ({ embedded = false, teacherId }: { embedded?: boolean; teac
       <ViewClassesContainer>
         <Title>Visualizar turmas</Title>
         <Subtitle>{isAdmin ? "Gerencie as turmas e seus professores responsáveis." : "Aqui você visualiza as turmas criadas por você."}</Subtitle>
-        <Link to={isAdmin ? '/admin/classes/new' : '/cadastrarDisciplina'}>Criar turma</Link>
+        <CreateClassLink to={isAdmin ? '/admin/classes/new' : '/cadastrarDisciplina'}>Criar turma</CreateClassLink>
         <ListaTurmas>
           <ListaTurmasScroll>
             {carregando && <StateMessage>Carregando turmas...</StateMessage>}
@@ -77,13 +79,13 @@ const ViewClasses = ({ embedded = false, teacherId }: { embedded?: boolean; teac
                 onKeyDown={(event) => event.key === 'Enter' && handleCardClick(turma.classId)}
               >
                 <TurmaNome>{turma.name}</TurmaNome>
-                {isAdmin && <p>Professor: {turma.teacher?.user?.name || turma.teacherId}</p>}
+                {isAdmin && <ProfessorNome>Professor: {turma.teacher?.user?.name || turma.teacherId}</ProfessorNome>}
               </TurmaCard>
             ))}
           </ListaTurmasScroll>
         </ListaTurmas>
       </ViewClassesContainer>
-      <LogoProgete src={progeteLogo} alt="Progete" />
+      {!embedded && <LogoProgete src={progeteLogo} alt="Progete" />}
       <PlanetOrange src={planetOrange} alt="" />
     </ViewClassesBg>
   );

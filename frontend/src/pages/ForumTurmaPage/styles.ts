@@ -1,5 +1,27 @@
 import styled from "styled-components";
 
+export const Pagination = styled.nav`
+  width: min(600px, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  font-family: "Baloo Paaji 2", sans-serif;
+  button {
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 20px;
+    background: ${(props) => props.theme.colors.indigo};
+    color: white;
+    font: inherit;
+    cursor: pointer;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  button:focus-visible { outline: 3px solid ${(props) => props.theme.colors.lightOrange}; outline-offset: 2px; }
+`;
+
 export const BackButtonContainer = styled.div`
   width: min(600px, 100%);
   margin-top: 18px;

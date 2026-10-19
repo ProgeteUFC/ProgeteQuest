@@ -7,9 +7,10 @@ import progeteLogo from "../../assets/progete.png";
 import ForumList, { Forum } from "../../components/ForumList";
 
 import ForumCreateForm from "../../components/ForumCreateForm";
-import { BackButton, BackButtonContainer, BackButtonNotFound, Conversation, ConversationHeader, Posts, PostItem, ReplyForm } from "./styles";
+import { BackButton, BackButtonContainer, BackButtonNotFound, Conversation, ConversationHeader, Posts, PostItem, ReplyForm, Pagination } from "./styles";
 import { turmaService, TurmaProfessor } from "../../services/turmaService";
 import { forumService, TopicApi, PostApi } from "../../services/forumService";
+import { canCloseForumTopic, isForumManager } from "../../utils/forumPermissions";
 
 const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
   const { turmaId } = useParams<{ turmaId: string }>();
@@ -25,11 +26,17 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
   const [resposta, setResposta] = useState("");
   const [carregandoPostagens, setCarregandoPostagens] = useState(false);
   const [enviandoResposta, setEnviandoResposta] = useState(false);
+  const [paginaTopicos, setPaginaTopicos] = useState(1);
+  const [totalPaginasTopicos, setTotalPaginasTopicos] = useState(1);
+  const [carregandoTopicos, setCarregandoTopicos] = useState(false);
+  const [paginaPostagens, setPaginaPostagens] = useState(1);
+  const [totalPaginasPostagens, setTotalPaginasPostagens] = useState(1);
+  const conversaAtual = React.useRef<string | null>(null);
   const token = localStorage.getItem("token") || "";
   const userId = localStorage.getItem("userId") || "";
-  const isTeacher = localStorage.getItem("userType") === "teacher";
+  const role = localStorage.getItem("userType");
   const isAdmin = localStorage.getItem("userType") === "admin";
-  const isManager = isTeacher || isAdmin;
+  const isManager = isForumManager(role);
 
   const mapTopic = (topic: TopicApi): Forum => ({
     id: topic.topicId,
@@ -63,6 +70,8 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
           if (ativo) {
             setForumId(forumResponse.data.forumId);
             setForums(topicsResponse.data.data.map(mapTopic));
+            setPaginaTopicos(1);
+            setTotalPaginasTopicos(topicsResponse.data.meta.totalPages);
           }
         }
       } catch (error: any) {
@@ -72,7 +81,7 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
       }
     }
     carregarTurma();
-    return () => { ativo = false; };
+    return () => { ativo = false; conversaAtual.current = null; };
   }, [turmaId, token, isManager]);
 
   const handleCreateForum = async (title: string, message: string) => {
@@ -80,13 +89,27 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
     try {
       setSalvando(true);
       setErro("");
-      const response = await forumService.criarTopico(forumId, title, message, token);
-      setForums((prev) => [mapTopic(response.data), ...prev]);
+      await forumService.criarTopico(forumId, title, message, token);
+      await carregarTopicos(1);
     } catch (error: any) {
       setErro(error?.response?.data?.message || "Não foi possível salvar o fórum.");
       throw error;
     } finally {
       setSalvando(false);
+    }
+  };
+
+  const carregarTopicos = async (page: number) => {
+    setCarregandoTopicos(true);
+    try {
+      const response = await forumService.listarTopicos(forumId, token, page);
+      setForums(response.data.data.map(mapTopic));
+      setPaginaTopicos(response.data.meta.page);
+      setTotalPaginasTopicos(response.data.meta.totalPages);
+    } catch (error: any) {
+      setErro(error?.response?.data?.message || "Não foi possível carregar os tópicos.");
+    } finally {
+      setCarregandoTopicos(false);
     }
   };
 
@@ -102,31 +125,42 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
     }
   };
 
-  const handleOpenTopic = async (topico: Forum) => {
+  const handleOpenTopic = async (topico: Forum, page = 1) => {
+    conversaAtual.current = topico.id;
     try {
       setTopicoSelecionado(topico);
+      setPostagens([]);
       setCarregandoPostagens(true);
       setErro("");
-      const response = await forumService.listarPostagens(topico.id, token);
+      const response = await forumService.listarPostagens(topico.id, token, page);
+      if (conversaAtual.current !== topico.id) return;
       setPostagens(response.data.data);
+      setPaginaPostagens(response.data.meta.page);
+      setTotalPaginasPostagens(response.data.meta.totalPages);
     } catch (error: any) {
+      if (conversaAtual.current !== topico.id) return;
       setErro(error?.response?.data?.message || "Não foi possível abrir a conversa.");
     } finally {
-      setCarregandoPostagens(false);
+      if (conversaAtual.current === topico.id) setCarregandoPostagens(false);
     }
   };
 
   const handleReply = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!topicoSelecionado || !resposta.trim()) return;
+    if (!topicoSelecionado || !resposta.trim() || carregandoPostagens || enviandoResposta) return;
     try {
       setEnviandoResposta(true);
       setErro("");
-      const response = await forumService.responderTopico(topicoSelecionado.id, resposta.trim(), token);
-      setPostagens((prev) => [...prev, response.data]);
+      await forumService.responderTopico(topicoSelecionado.id, resposta.trim(), token);
+      if (conversaAtual.current === topicoSelecionado.id) {
+        const firstPage = await forumService.listarPostagens(topicoSelecionado.id, token);
+        if (conversaAtual.current === topicoSelecionado.id) {
+          await handleOpenTopic(topicoSelecionado, Math.max(1, firstPage.data.meta.totalPages));
+        }
+      }
       setForums((prev) => prev.map((item) => item.id === topicoSelecionado.id ? { ...item, postsCount: item.postsCount + 1 } : item));
-      setTopicoSelecionado((atual) => atual ? { ...atual, postsCount: atual.postsCount + 1 } : atual);
-      setResposta("");
+      setTopicoSelecionado((atual) => atual?.id === topicoSelecionado.id ? { ...atual, postsCount: atual.postsCount + 1 } : atual);
+      if (conversaAtual.current === topicoSelecionado.id) setResposta("");
     } catch (error: any) {
       setErro(error?.response?.data?.message || "Não foi possível enviar a resposta.");
     } finally {
@@ -139,7 +173,7 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
       <Container>
         {!embedded && <Header />}
         <Content><ForumTitle>Carregando turma...</ForumTitle></Content>
-        <LogoProgete src={progeteLogo} alt="Progete" />
+        {!embedded && <LogoProgete src={progeteLogo} alt="Progete" />}
       </Container>
     );
   }
@@ -154,7 +188,7 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
             <BackButtonNotFound onClick={() => navigate(isAdmin ? '/admin/forums' : '/forum')}>Voltar</BackButtonNotFound>
           </BackButtonContainer>
         </Content>
-        <LogoProgete src={progeteLogo} alt="Progete" />
+        {!embedded && <LogoProgete src={progeteLogo} alt="Progete" />}
         <PlanetImage src={planetOrange} alt="" />
       </Container>
     );
@@ -176,14 +210,19 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
         <ForumList
           forums={forums}
           onClose={handleCloseForum}
-          canClose={(forum) => forum.authorId === userId || isManager}
-          onOpen={handleOpenTopic}
+          canClose={(forum) => canCloseForumTopic(role, userId, forum.authorId)}
+          onOpen={(topico) => { setResposta(""); handleOpenTopic(topico); }}
         />
+        {totalPaginasTopicos > 1 && <Pagination aria-label="Páginas dos tópicos">
+          <button type="button" disabled={carregandoTopicos || salvando || paginaTopicos <= 1} onClick={() => carregarTopicos(paginaTopicos - 1)}>Tópicos anteriores</button>
+          <span aria-live="polite"> Página {paginaTopicos} de {totalPaginasTopicos} </span>
+          <button type="button" disabled={carregandoTopicos || salvando || paginaTopicos >= totalPaginasTopicos} onClick={() => carregarTopicos(paginaTopicos + 1)}>Próximos tópicos</button>
+        </Pagination>}
         {topicoSelecionado && (
           <Conversation>
             <ConversationHeader>
               <div><h2>{topicoSelecionado.title}</h2><p>{topicoSelecionado.message}</p></div>
-              <button type="button" onClick={() => setTopicoSelecionado(null)}>Fechar conversa</button>
+              <button type="button" onClick={() => { conversaAtual.current = null; setTopicoSelecionado(null); }}>Fechar conversa</button>
             </ConversationHeader>
             <Posts>
               {carregandoPostagens ? <p>Carregando respostas...</p> : postagens.length ? postagens.map((post) => (
@@ -194,10 +233,15 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
                 </PostItem>
               )) : <p>Ainda não existem respostas. Inicie a conversa!</p>}
             </Posts>
+            {!carregandoPostagens && totalPaginasPostagens > 1 && <Pagination aria-label="Páginas das respostas">
+              <button type="button" disabled={enviandoResposta || paginaPostagens <= 1} onClick={() => handleOpenTopic(topicoSelecionado, paginaPostagens - 1)}>Respostas anteriores</button>
+              <span aria-live="polite"> Página {paginaPostagens} de {totalPaginasPostagens} </span>
+              <button type="button" disabled={enviandoResposta || paginaPostagens >= totalPaginasPostagens} onClick={() => handleOpenTopic(topicoSelecionado, paginaPostagens + 1)}>Próximas respostas</button>
+            </Pagination>}
             {topicoSelecionado.status === "OPEN" ? (
               <ReplyForm onSubmit={handleReply}>
                 <textarea value={resposta} onChange={(event) => setResposta(event.target.value)} placeholder="Escreva sua resposta..." required />
-                <button type="submit" disabled={enviandoResposta}>{enviandoResposta ? "Enviando..." : "Responder"}</button>
+                <button type="submit" disabled={enviandoResposta || carregandoPostagens}>{enviandoResposta ? "Enviando..." : "Responder"}</button>
               </ReplyForm>
             ) : <p>Este tópico está fechado e não aceita novas respostas.</p>}
           </Conversation>
@@ -206,7 +250,7 @@ const ForumTurmaPage = ({ embedded = false }: { embedded?: boolean }) => {
           <BackButton onClick={() => navigate(isAdmin ? '/admin/forums' : '/forum')}>Voltar</BackButton>
         </BackButtonContainer>
       </Content>
-      <LogoProgete src={progeteLogo} alt="Progete" />
+      {!embedded && <LogoProgete src={progeteLogo} alt="Progete" />}
       <PlanetImage src={planetOrange} alt="" />
     </Container>
   );

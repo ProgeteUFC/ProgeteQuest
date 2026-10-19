@@ -127,7 +127,7 @@ export default function MeusDados({ embedded = false }: { embedded?: boolean }) 
   return (
     <Container>
       {!embedded && <Header />}
-      <LogoBottom src={logo} alt="Progete logo rodapé" />
+      {!embedded && <LogoBottom src={logo} alt="Progete logo rodapé" />}
       <PageContent>
           <LeftColumn>
             <DadosTitle>Meus Dados</DadosTitle>

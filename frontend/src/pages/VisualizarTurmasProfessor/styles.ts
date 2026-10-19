@@ -1,4 +1,22 @@
 import styled from "styled-components";
+import { Link } from "react-router-dom";
+
+export const CreateClassLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 20px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  background: white;
+  color: ${(props) => props.theme.colors.primaryDark};
+  font: inherit;
+  font-weight: 800;
+  text-decoration: none;
+  &:hover { background: ${(props) => props.theme.colors.lightOrange}; }
+  &:focus-visible { outline: 3px solid ${(props) => props.theme.colors.lightOrange}; outline-offset: 3px; }
+`;
 
 export const ViewClassesBg = styled.div`
   min-height: 100vh;
@@ -90,11 +108,15 @@ export const ListaTurmasScroll = styled.div`
 `;
 
 export const TurmaCard = styled.div`
+  flex-shrink: 0;
   min-height: 42px;
   padding: 8px 18px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1.3;
   border-radius: 20px;
   color: white;
   background: ${(props) => props.theme.colors.indigo};
@@ -113,9 +135,15 @@ export const TurmaCard = styled.div`
 
 export const TurmaNome = styled.div`
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+`;
+
+export const ProfessorNome = styled.p`
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 `;
 
 export const StateMessage = styled.p<{ $error?: boolean }>`

@@ -74,13 +74,13 @@ export default function ForumPage({ embedded = false }: { embedded?: boolean }) 
                 role="button"
               >
                 <TurmaNome>{turma.nome}</TurmaNome>
-                {isAdmin && turma.professor && <TurmaProfessor title={`Professor(a): ${turma.professor}`}>{turma.professor}</TurmaProfessor>}
+                {isAdmin && turma.professor && <TurmaProfessor>Professor: {turma.professor}</TurmaProfessor>}
               </TurmaCard>
             ))}
           </ListaTurmasScroll>
         </ListaTurmas>
       </Content>
-      <LogoProgete src={progeteLogo} alt="Progete" />
+      {!embedded && <LogoProgete src={progeteLogo} alt="Progete" />}
       <PlanetImage src={planetOrange} alt="" />
     </Container>
   );

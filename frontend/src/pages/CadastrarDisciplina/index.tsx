@@ -73,22 +73,22 @@ export default function CadastrarDisciplina({ embedded = false }: { embedded?: b
         <Title>Criar turma</Title>
         <Subtitle>{isAdmin ? "Crie uma turma e escolha seu professor responsável." : "Crie uma turma para realizar atividades com seus alunos."}</Subtitle>
         <Form onSubmit={handleCriarTurma}>
-          {isAdmin && <label>Professor responsável
+          {isAdmin && <NameField>Professor responsável
             <select required value={teacherId} onChange={(event) => setTeacherId(event.target.value)} disabled={loadingTeachers || enviando}>
               <option value="">{loadingTeachers ? "Carregando professores..." : "Selecione um professor"}</option>
               {professores.map((teacher) => <option key={teacher.userId} value={teacher.userId}>{teacher.name} — {teacher.email}</option>)}
             </select>
             {!loadingTeachers && professores.length === 0 && <p>Nenhum professor ativo disponível. Cadastre ou reative um professor.</p>}
-          </label>}
+          </NameField>}
           <NameField>
-            <strong>Nome da turma:</strong>&nbsp;
-            <input value={nome} onChange={(event) => setNome(event.target.value)} placeholder=" Ex.: Requisitos de Software" maxLength={50} aria-label="Nome da turma" />
+            Nome da turma
+            <input required disabled={enviando} value={nome} onChange={(event) => setNome(event.target.value)} placeholder="Ex.: Requisitos de Software" maxLength={50} aria-label="Nome da turma" />
           </NameField>
           {erro && <Feedback role="alert">{erro}</Feedback>}
           <CreateButton type="submit" disabled={enviando || loadingTeachers || (isAdmin && professores.length === 0)}>{enviando ? "CRIANDO..." : "CRIAR"}</CreateButton>
         </Form>
       </Content>
-      <LogoProgete src={progeteLogo} alt="Progete" />
+      {!embedded && <LogoProgete src={progeteLogo} alt="Progete" />}
       <Planet src={planetOrange} alt="" />
     </Container>
   );

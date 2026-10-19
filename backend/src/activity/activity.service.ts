@@ -182,6 +182,12 @@ export class ActivityService {
     }
 
     if (updateDto.classId !== undefined) {
+      if (updateDto.classId !== existing.classId && (
+        await this.checkinRepository.countBy({ activityId: id }) ||
+        await this.codeRepository.countBy({ activityId: id })
+      )) {
+        throw new ConflictException('Não é possível mover uma atividade que possui códigos ou check-ins para outra turma.');
+      }
       const classExists = await this.classRepository.findOne({
         where: user.isAdmin 
           ? { classId: updateDto.classId } 
