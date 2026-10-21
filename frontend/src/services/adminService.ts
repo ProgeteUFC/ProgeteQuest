@@ -60,6 +60,15 @@ export interface UserDeletionImpact {
   blockedReasons: string[];
 }
 
+export interface PermanentDeletePayload {
+  reason: string;
+  confirm: true;
+  password: string;
+}
+
+/* Só deve virar true quando o endpoint estiver liberado com segurança no backend. */
+export const PERMANENT_DELETE_ENABLED = false;
+
 export interface DashboardUser {
   userId: string;
   name: string;
@@ -197,6 +206,17 @@ export const adminService = {
     );
 
     return response.data;
+  },
+
+  async excluirDefinitivamente(userId: string, payload: PermanentDeletePayload) {
+    if (!PERMANENT_DELETE_ENABLED) {
+      throw new Error("A exclusão definitiva ainda não está disponível.");
+    }
+
+    return axios.delete(`${API_URL}/admin/users/${userId}/permanent`, {
+      headers: authorization(),
+      data: payload,
+    });
   },
 
   async editarUsuario(userId: string, body: ManagedUserUpdate) {
