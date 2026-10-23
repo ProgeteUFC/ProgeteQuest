@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -20,6 +22,7 @@ import {
   ApiParam,
   ApiOkResponse,
   ApiBadRequestResponse,
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
@@ -30,7 +33,10 @@ import { UpdateManagedUserDto } from './dtos/update-managed-user.dto';
 import { CreateManagedUserDto } from './dtos/create-managed-user.dto';
 import { DeactivateUserDto } from './dtos/deactivate-user.dto';
 import { ListUsersQueryDto } from './dtos/list-users-query.dto';
+import { TransferClassesDto } from './dtos/transfer-classes.dto';
 import { AdminUserListResponseDto } from './dtos/responses/admin-user-list.response.dto';
+import { TransferClassesResponseDto } from './dtos/responses/transfer-classes.response.dto';
+import { TeacherTransferService } from './teacher-transfer.service';
 
 @ApiTags('Administração')
 @ApiBearerAuth('JWT')
@@ -44,6 +50,7 @@ export class AdminController {
     private readonly userService: UserService,
     private readonly adminService: AdminService,
     private readonly dashboardService: AdminDashboardService,
+    private readonly teacherTransferService: TeacherTransferService,
   ) {}
 
   @Roles('admin')
@@ -215,5 +222,45 @@ export class AdminController {
   })
   async activate(@Param('id', ParseUUIDPipe) id: string) {
     return this.userService.activate(id);
+  }
+
+  @Roles('admin')
+  @Post('teachers/:teacherId/transfer')
+  // Transferir não cria recurso novo: a resposta é 200, não 201.
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({
+    summary: 'Transferir turmas entre professores',
+    description:
+      'Troca o professor responsável pelas turmas informadas, sem apagar nada. Matrículas, avaliações, atividades e fóruns continuam vinculados às mesmas turmas, apenas sob o novo responsável. Tudo acontece em uma única transação: se qualquer validação falhar, nenhuma turma muda de dono.',
+  })
+  @ApiParam({
+    name: 'teacherId',
+    description: 'ID do professor de origem, atual responsável pelas turmas',
+    format: 'uuid',
+    example: '6ba7b810-9dad-41d1-80b4-00c04fd430c8',
+  })
+  @ApiBody({ type: TransferClassesDto })
+  @ApiOkResponse({
+    type: TransferClassesResponseDto,
+    description: 'Turmas transferidas e vínculos acadêmicos preservados.',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Professor de destino inativo, igual ao de origem, sem perfil de professor, ou turmas que não pertencem ao professor de origem.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Professor de origem, de destino ou alguma turma não existe.',
+  })
+  async transferClasses(
+    @Param('teacherId', ParseUUIDPipe) teacherId: string,
+    @Body() body: TransferClassesDto,
+    @User() admin: UserPayload,
+  ): Promise<TransferClassesResponseDto> {
+    return this.teacherTransferService.transferClasses(
+      teacherId,
+      body,
+      admin.userId,
+    );
   }
 }
