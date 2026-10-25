@@ -92,7 +92,11 @@ function authorization(token = localStorage.getItem("token")) {
 export function adminErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const message = error.response?.data?.message;
-    if (error.response?.status === 401 || (error.response?.status === 403 && message === "Forbidden resource")) {
+    const status = error.response?.status;
+    const sessionDenied =
+      (status === 401 && (!message || message === "Unauthorized")) ||
+      (status === 403 && message === "Forbidden resource");
+    if (sessionDenied) {
       return "Acesso negado. Sua sessão expirou, sua conta está inativa ou você não tem permissão.";
     }
 
