@@ -114,8 +114,12 @@ export class AdminController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Editar usuário sem alterar seu perfil ou senha' })
   @ApiBody({ type: UpdateManagedUserDto })
-  updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateManagedUserDto) {
-    return this.userService.update(id, body);
+  updateUser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdateManagedUserDto,
+    @User() admin: UserPayload,
+  ) {
+    return this.userService.update(id, body, { adminId: admin.userId });
   }
 
   @Roles('admin')
@@ -157,8 +161,11 @@ export class AdminController {
     description: 'Dados inválidos ou tipo diferente de student/teacher.',
   })
   @ApiResponse({ status: 409, description: 'E-mail ou matrícula já em uso.' })
-  async createUser(@Body() createManagedUserDto: CreateManagedUserDto) {
-    return this.userService.create(createManagedUserDto);
+  async createUser(
+    @Body() createManagedUserDto: CreateManagedUserDto,
+    @User() admin: UserPayload,
+  ) {
+    return this.userService.create(createManagedUserDto, { adminId: admin.userId });
   }
 
   @Roles('admin')
@@ -255,8 +262,8 @@ export class AdminController {
   @ApiBadRequestResponse({
     description: 'Usuário não encontrado',
   })
-  async activate(@Param('id', ParseUUIDPipe) id: string) {
-    return this.userService.activate(id);
+  async activate(@Param('id', ParseUUIDPipe) id: string, @User() admin: UserPayload) {
+    return this.userService.activate(id, admin.userId);
   }
 
   @Roles('admin')
