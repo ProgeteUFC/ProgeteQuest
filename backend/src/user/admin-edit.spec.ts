@@ -16,6 +16,7 @@ import { Teacher } from '../teacher/entities/teacher.entity';
 import { AdminController } from '../admin/admin.controller';
 import { AdminService } from '../admin/admin.service';
 import { AdminDashboardService } from '../admin/admin-dashboard.service';
+import { TeacherTransferService } from '../admin/teacher-transfer.service';
 import { RolesGuard } from '../guards/roles.guard';
 import { UserStatus, UserType } from '../Enums/user.enum';
 
@@ -161,6 +162,7 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
   const id = '550e8400-e29b-41d4-a716-446655440000';
   const adminService = { findUsers: jest.fn() };
   const dashboardService = { getDashboard: jest.fn() };
+  const teacherTransferService = { transferClasses: jest.fn() };
   const service = {
     update: jest.fn(),
     findAll: jest.fn(),
@@ -178,6 +180,7 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
         { provide: UserService, useValue: service },
         { provide: AdminService, useValue: adminService },
         { provide: AdminDashboardService, useValue: dashboardService },
+        { provide: TeacherTransferService, useValue: teacherTransferService },
       ],
     }).compile();
     const jwt = {
@@ -306,4 +309,55 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
         .expect(403);
     },
   );
+
+  const destino = '6ba7b810-9dad-41d1-80b4-00c04fd430c8';
+  const turma = '3f0d9f1e-8b7a-4d1c-9a2b-5c6d7e8f9a0b';
+
+  it.each(['student', 'teacher', 'inactive'])(
+    'bloqueia transferência de turmas para %s',
+    async (role) => {
+      await request(app.getHttpServer())
+        .post(`/admin/teachers/${id}/transfer`)
+        .set('Authorization', `Bearer ${role}`)
+        .send({ destinationTeacherId: destino, classIds: [turma] })
+        .expect(403);
+      expect(teacherTransferService.transferClasses).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    {},
+    { destinationTeacherId: destino },
+    { destinationTeacherId: destino, classIds: [] },
+    { destinationTeacherId: destino, classIds: ['nao-e-uuid'] },
+    { destinationTeacherId: 'nao-e-uuid', classIds: [turma] },
+    { destinationTeacherId: destino, classIds: [turma], extra: 'campo' },
+  ])('rejeita transferência com corpo inválido %j', async (body) => {
+    await request(app.getHttpServer())
+      .post(`/admin/teachers/${id}/transfer`)
+      .set('Authorization', 'Bearer admin')
+      .send(body)
+      .expect(400);
+    expect(teacherTransferService.transferClasses).not.toHaveBeenCalled();
+  });
+
+  it('entrega a transferência ao serviço com o admin autenticado', async () => {
+    teacherTransferService.transferClasses.mockResolvedValue({
+      sourceTeacherId: id,
+      destinationTeacherId: destino,
+    });
+    await request(app.getHttpServer())
+      .post(`/admin/teachers/${id}/transfer`)
+      .set('Authorization', 'Bearer admin')
+      .send({ destinationTeacherId: destino, classIds: [turma] })
+      .expect(200, { sourceTeacherId: id, destinationTeacherId: destino });
+    expect(teacherTransferService.transferClasses).toHaveBeenCalledWith(
+      id,
+      expect.objectContaining({
+        destinationTeacherId: destino,
+        classIds: [turma],
+      }),
+      'admin',
+    );
+  });
 });
