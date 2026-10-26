@@ -342,7 +342,7 @@ export default function AdminUsers() {
               <>
                 <p>Resumo de vínculos existentes. Nenhum dado será excluído.</p>
                 {!impact.canDelete && <p role="alert">Exclusão bloqueada: {impact.blockedReasons.join(" ")}</p>}
-                {!impact.hasDependencies && <p>Nenhuma dependência encontrada. Esta tela é apenas uma consulta e não permite excluir usuários.</p>}
+                {!impact.hasDependencies && impact.canDelete && <p>Nenhuma dependência encontrada.</p>}
                 <dl className="deletion-impact-list">
                   <dt>Turmas como aluno</dt><dd>{impact.classesAsStudent}</dd>
                   <dt>Turmas como professor</dt><dd>{impact.classesAsTeacher}</dd>
