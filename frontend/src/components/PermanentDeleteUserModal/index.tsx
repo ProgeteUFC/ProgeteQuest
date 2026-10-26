@@ -65,6 +65,8 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
     let active = true;
     setImpactLoading(true);
     setImpactError("");
+    setImpact(null);
+    setDetails(null);
     Promise.all([
       adminService.consultarImpacto(user.userId),
       adminService.buscarUsuario(user.userId),
@@ -122,13 +124,16 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
   }, []);
 
   const current = details ?? user;
+  const checksReady = !impactLoading && !impactError &&
+    details?.userId === user.userId && impact?.userId === user.userId;
   const isInactive = current.status === "inactive";
   const noBlockers = impact?.canDelete === true;
   const phraseOk = phrase.trim() === CONFIRMATION_PHRASE;
-  const reasonOk = reason.trim().length > 0;
+  const reasonOk = reason.trim().length > 0 && reason.length <= MAX_REASON_LENGTH;
   const passwordOk = password.length > 0;
   const canSubmit =
     PERMANENT_DELETE_ENABLED &&
+    checksReady &&
     isInactive &&
     noBlockers &&
     phraseOk &&
@@ -141,7 +146,8 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
     !PERMANENT_DELETE_ENABLED && "A exclusão definitiva ainda não foi liberada no sistema.",
     !isInactive && "Desative o usuário antes de excluí-lo definitivamente.",
     impactLoading && "Aguarde a verificação das dependências.",
-    !impactLoading && !noBlockers && "Resolva as dependências que impedem a exclusão.",
+    !!impactError && "Não foi possível concluir as verificações. Tente novamente.",
+    !impactLoading && !impactError && !noBlockers && "Resolva as dependências que impedem a exclusão.",
     !phraseOk && `Digite a frase ${CONFIRMATION_PHRASE}.`,
     !reasonOk && "Informe o motivo da exclusão.",
     !passwordOk && "Informe a sua senha de administrador.",
