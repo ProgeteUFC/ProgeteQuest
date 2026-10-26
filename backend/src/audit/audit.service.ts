@@ -14,12 +14,18 @@ export interface RecordAuditInput {
 }
 
 const SENSITIVE_KEY = /pass(word)?|senha|hash|token|jwt|secret|authorization/i;
-const JWT_VALUE = /^eyJ[\w-]+\.[\w-]+\.[\w-]*$/;
-const BCRYPT_VALUE = /^\$2[aby]\$\d{2}\$/;
+// Sem âncoras: credenciais também devem ser recusadas dentro de uma frase.
+const JWT_VALUE = /\beyJ[\w-]+\.[\w-]+\.[\w-]*/;
+const PASSWORD_HASH_VALUE = /\$(?:2[aby]\$\d{2}\$|argon2(?:id|i|d)\$|scrypt\$)/;
+const LABELED_CREDENTIAL = /\b(?:password|senha|hash|token|jwt|secret|authorization)\s*[=:]\s*\S/i;
 
 function assertNoSensitiveData(value: unknown, path = 'payload'): void {
   if (typeof value === 'string') {
-    if (JWT_VALUE.test(value) || BCRYPT_VALUE.test(value)) {
+    if (
+      JWT_VALUE.test(value) ||
+      PASSWORD_HASH_VALUE.test(value) ||
+      LABELED_CREDENTIAL.test(value)
+    ) {
       throw new BadRequestException(
         `A auditoria não pode armazenar senha, hash ou token (${path}).`,
       );
@@ -48,6 +54,7 @@ export class AuditService {
     manager: EntityManager,
     input: RecordAuditInput,
   ): Promise<AdminAuditLog> {
+    assertNoSensitiveData(input.reason ?? null, 'reason');
     assertNoSensitiveData(input.changes ?? null, 'changes');
     assertNoSensitiveData(input.resourceIds ?? null, 'resourceIds');
 
