@@ -1,4 +1,5 @@
 import HeaderProfessor from '../../components/HeaderProfessor';
+import HeaderAdmin from '../../components/HeaderAdmin';
 import { useNavigate } from 'react-router-dom';
 
 import React, { useEffect, useState } from 'react';
@@ -58,10 +59,10 @@ const ViewClasses = ({ embedded = false, teacherId }: { embedded?: boolean; teac
 
   return (
     <ViewClassesBg>
-      {!embedded && <HeaderProfessor />}
+      {!embedded && (isAdmin ? <HeaderAdmin /> : <HeaderProfessor />)}
       <ViewClassesContainer>
-        <Title>Visualizar turmas</Title>
-        <Subtitle>{isAdmin ? "Gerencie as turmas e seus professores responsáveis." : "Aqui você visualiza as turmas criadas por você."}</Subtitle>
+        <Title>{isAdmin ? (teacherId ? "Turmas do professor" : "Gerenciar turmas") : "Visualizar turmas"}</Title>
+        <Subtitle>{isAdmin ? (teacherId ? "Turmas vinculadas ao professor selecionado." : "Gerencie as turmas e seus professores responsáveis.") : "Aqui você visualiza as turmas criadas por você."}</Subtitle>
         <CreateClassLink to={isAdmin ? '/admin/classes/new' : '/cadastrarDisciplina'}>Criar turma</CreateClassLink>
         <ListaTurmas>
           <ListaTurmasScroll>

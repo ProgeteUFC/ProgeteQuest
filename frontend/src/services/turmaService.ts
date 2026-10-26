@@ -10,6 +10,11 @@ export interface TurmaProfessor {
   teacher?: { userId: string; user?: { userId: string; name: string; email: string } };
 }
 
+export interface CriarTurmaPayload {
+  name: string;
+  teacherId?: string;
+}
+
 export interface ParticipanteTurma {
   studentId: string;
   registrationStudent: string;
@@ -53,6 +58,9 @@ export interface CodigoAtividade {
 const auth = (token: string) => ({ headers: { Authorization: `Bearer ${token}` } });
 
 export const turmaService = {
+  async criarTurma(dados: CriarTurmaPayload, token: string) {
+    return axios.post<TurmaProfessor>(`${API_URL}/class`, dados, auth(token));
+  },
   async listarTurmasProfessor(token: string) {
     return axios.get<TurmaProfessor[]>(`${API_URL}/class`, auth(token));
   },

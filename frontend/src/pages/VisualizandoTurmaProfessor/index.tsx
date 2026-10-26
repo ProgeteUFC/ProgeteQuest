@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderProfessor from "../../components/HeaderProfessor";
+import HeaderAdmin from "../../components/HeaderAdmin";
 import Footer from "../../components/Footer";
 import { turmaService, TurmaProfessor, ParticipanteTurma, AtividadeTurma, EntregaAtividade, CodigoAtividade } from "../../services/turmaService";
 import {
@@ -260,7 +261,9 @@ const VisualizandoTurmasProfessor = ({ embedded = false }: { embedded?: boolean 
     if (!turmaId) return;
     await executar(async () => {
       const response = await turmaService.regenerarJoinCode(turmaId, token);
-      setTurma(response.data);
+      setTurma((atual) => atual
+        ? { ...atual, ...response.data, teacher: response.data.teacher ?? atual.teacher }
+        : response.data);
       setFeedback("Novo código gerado com sucesso!");
     });
   }
@@ -284,7 +287,7 @@ const VisualizandoTurmasProfessor = ({ embedded = false }: { embedded?: boolean 
     <>
       <NoScroll />
       <Container>
-        {!embedded && <HeaderProfessor />}
+        {!embedded && (isAdmin ? <HeaderAdmin /> : <HeaderProfessor />)}
         <Content>
           <HeaderInfo>
             <h1>{turma?.name || (carregandoTurma ? "Carregando turma..." : "Turma indisponível")}</h1>
