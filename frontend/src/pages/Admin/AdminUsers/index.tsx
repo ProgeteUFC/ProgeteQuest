@@ -233,6 +233,7 @@ export default function AdminUsers() {
                           <button role="menuitem" onClick={() => void openInfo(user, "impact")}>
                             Consultar impacto da exclusão
                           </button>
+                          {user.type === "teacher" && <Link role="menuitem" to={`/admin/teachers/${user.userId}/classes`}>Transferir turmas</Link>}
                           <button
                             role="menuitem"
                             disabled={user.userId === currentUserId}

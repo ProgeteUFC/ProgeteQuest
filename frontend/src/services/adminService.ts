@@ -66,6 +66,14 @@ export interface PermanentDeletePayload {
   password: string;
 }
 
+export interface ClassTransferResult {
+  sourceTeacherId: string;
+  destinationTeacherId: string;
+  transferredClasses: { classId: string; name: string }[];
+  preservedRelations: { enrollments: number; assessments: number; activities: number; forums: number };
+  transferredAt: string;
+}
+
 /* Só deve virar true quando o endpoint estiver liberado com segurança no backend. */
 export const PERMANENT_DELETE_ENABLED = false;
 
@@ -174,6 +182,14 @@ export function mensagemDeErro(err: unknown): string {
 }
 
 export const adminService = {
+  async transferirTurmas(teacherId: string, destinationTeacherId: string, classIds: string[]): Promise<ClassTransferResult> {
+    const response = await axios.post<ClassTransferResult>(
+      `${API_URL}/admin/teachers/${teacherId}/transfer`,
+      { destinationTeacherId, classIds },
+      { headers: authorization() },
+    );
+    return response.data;
+  },
   async listarUsuarios(query: ManagedUsersQuery = {}): Promise<ManagedUsersPage> {
     const response = await axios.get<{ data: ListedUser[]; meta: ManagedUsersPage["meta"] }>(
       `${API_URL}/admin/users`,

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { FiAlertTriangle, FiCheckCircle, FiXCircle } from "react-icons/fi";
 import {
   adminErrorMessage,
@@ -97,7 +98,7 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
       if (event.key === "Escape" && !busyRef.current) dismissRef.current();
       if (event.key !== "Tab") return;
       const elements = dialogRef.current?.querySelectorAll<HTMLElement>(
-        "textarea:not(:disabled), input:not(:disabled), button:not(:disabled)",
+        "textarea:not(:disabled), input:not(:disabled), button:not(:disabled), a[href]",
       );
       if (!elements?.length) {
         event.preventDefault();
@@ -285,6 +286,13 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
                 <li key={blockedReason}>{blockedReason}</li>
               ))}
             </ul>
+          </div>
+        )}
+        {checksReady && current.type === "teacher" && impact && impact.classesAsTeacher > 0 && (
+          <div className="delete-note">
+            <p>Este professor ainda possui {impact.classesAsTeacher} turma(s). Transfira as turmas para um professor ativo antes de tentar a exclusão.</p>
+            <p>A transferência preserva os dados acadêmicos. Outras dependências ainda podem impedir a exclusão.</p>
+            <Link to={`/admin/teachers/${user.userId}/classes`}>Transferir turmas do professor</Link>
           </div>
         )}
         {impact && impactItems.length > 0 && (
