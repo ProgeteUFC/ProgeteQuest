@@ -26,6 +26,21 @@ import { Code } from 'src/code/entities/code.entity';
 import { UserPayload } from '../decorators/user.decorator';
 import { UserStatus, UserType } from 'src/Enums/user.enum';
 import * as bcrypt from 'bcrypt';
+import { AuditService } from 'src/audit/audit.service';
+import { buildChanges } from 'src/audit/audit-diff.util';
+import { AuditAction } from 'src/Enums/audit-action.enum';
+
+export const USER_AUDIT_ALLOWED_FIELDS = [
+  'name',
+  'email',
+  'registrationStudent',
+  'registrationTeacher',
+  'type',
+  'status',
+  'deactivatedAt',
+  'deactivatedBy',
+  'deactivationReason',
+] as const;
 
 @Injectable()
 export class UserService {
@@ -42,9 +57,13 @@ export class UserService {
     @InjectRepository(Admin)
     private readonly adminRepository: Repository<Admin>,
     private readonly dataSource: DataSource,
+    private readonly auditService: AuditService,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(
+    createUserDto: CreateUserDto,
+    context?: { adminId: string },
+  ) {
     // Verifica o tipo de usuário
     if (
       createUserDto.type !== 'student' &&
@@ -164,7 +183,51 @@ export class UserService {
         });
       }
 
-      return novoUsuario;
+      const createdUser = await manager.findOne(User, {
+        where: { userId: novoUsuario.userId },
+      });
+
+      const after: Record<string, unknown> = {
+        name: createdUser?.name ?? novoUsuario.name,
+        email: createdUser?.email ?? novoUsuario.email,
+        type: createdUser?.type ?? novoUsuario.type,
+        status: createdUser?.status ?? UserStatus.ACTIVE,
+        deactivatedAt: createdUser?.deactivatedAt ?? null,
+        deactivatedBy: createdUser?.deactivatedBy ?? null,
+        deactivationReason: createdUser?.deactivationReason ?? null,
+      };
+
+      if (createUserDto.type === 'student') {
+        const profile = await manager.findOne(Student, {
+          where: { userId: novoUsuario.userId },
+        });
+        after.registrationStudent = profile?.registrationStudent ?? null;
+      }
+      if (createUserDto.type === 'teacher') {
+        const profile = await manager.findOne(Teacher, {
+          where: { userId: novoUsuario.userId },
+        });
+        after.registrationTeacher = profile?.registrationTeacher ?? null;
+      }
+
+      if (context) {
+        const changes = buildChanges(null, after, USER_AUDIT_ALLOWED_FIELDS);
+        await this.auditService.record(manager, {
+          action: AuditAction.USER_CREATED,
+          adminId: context.adminId,
+          targetUserId: novoUsuario.userId,
+          reason: null,
+          changes,
+          resourceIds: { userId: novoUsuario.userId },
+        });
+      }
+
+      return {
+        userId: novoUsuario.userId,
+        name: novoUsuario.name,
+        email: novoUsuario.email,
+        type: novoUsuario.type,
+      };
     });
 
     // Retorno dos dados públicos
@@ -243,7 +306,11 @@ export class UserService {
     return { message: 'Usuário removido com sucesso' };
   }
 
-  async update(userId: string, body: UpdateUserDto) {
+  async update(
+    userId: string,
+    body: UpdateUserDto,
+    context?: { adminId: string },
+  ) {
     const fields = [
       'name',
       'email',
@@ -266,6 +333,12 @@ export class UserService {
       throw new BadRequestException('Informe campos válidos e não vazios');
     }
 
+    if (context && body.password !== undefined) {
+      throw new BadRequestException(
+        'A edição administrativa não altera a senha do usuário',
+      );
+    }
+    
     try {
       return await this.dataSource.transaction(async (manager) => {
         // A mesma matrícula é reservada em criação e edição, inclusive entre perfis.
@@ -302,6 +375,30 @@ export class UserService {
         ) {
           throw new BadRequestException('SIAPE não se aplica a este perfil');
         }
+        
+        const before = await (async () => {
+          const snapshot: Record<string, unknown> = {
+            name: user.name,
+            email: user.email,
+            type: user.type,
+            status: user.status,
+            deactivatedAt: user.deactivatedAt,
+            deactivatedBy: user.deactivatedBy,
+            deactivationReason: user.deactivationReason,
+          };
+
+          if (user.type === UserType.STUDENT) {
+            const profile = await manager.findOne(Student, { where: { userId } });
+            snapshot.registrationStudent = profile?.registrationStudent ?? null;
+          }
+          if (user.type === UserType.TEACHER) {
+            const profile = await manager.findOne(Teacher, { where: { userId } });
+            snapshot.registrationTeacher = profile?.registrationTeacher ?? null;
+          }
+
+          return snapshot;
+        })();
+
         if (body.email !== undefined) {
           const email = body.email.trim().toLowerCase();
           const existing = await manager.findOne(User, { where: { email } });
@@ -329,6 +426,43 @@ export class UserService {
           await manager.save(Teacher, profile);
         }
         await manager.save(User, user);
+        
+        const after = await (async () => {
+          const snapshot: Record<string, unknown> = {
+            name: user.name,
+            email: user.email,
+            type: user.type,
+            status: user.status,
+            deactivatedAt: user.deactivatedAt,
+            deactivatedBy: user.deactivatedBy,
+            deactivationReason: user.deactivationReason,
+          };
+
+          if (user.type === UserType.STUDENT) {
+            const profile = await manager.findOne(Student, { where: { userId } });
+            snapshot.registrationStudent = profile?.registrationStudent ?? null;
+          }
+          if (user.type === UserType.TEACHER) {
+            const profile = await manager.findOne(Teacher, { where: { userId } });
+            snapshot.registrationTeacher = profile?.registrationTeacher ?? null;
+          }
+
+          return snapshot;
+        })();
+
+        const changes = buildChanges(before, after, USER_AUDIT_ALLOWED_FIELDS);
+
+        if (context && Object.keys(changes).length > 0) {
+          await this.auditService.record(manager, {
+            action: AuditAction.USER_UPDATED,
+            adminId: context.adminId,
+            targetUserId: user.userId,
+            reason: null,
+            changes,
+            resourceIds: { userId: user.userId },
+          });
+        }
+
         return {
           userId: user.userId,
           name: user.name,
@@ -560,6 +694,14 @@ export class UserService {
         );
       }
 
+      const before = USER_AUDIT_ALLOWED_FIELDS.reduce(
+        (acc, field) => {
+          acc[field] = user[field];
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+      
       user.status = UserStatus.INACTIVE;
       user.deactivatedAt = new Date();
       user.deactivatedBy = adminId;
@@ -567,6 +709,27 @@ export class UserService {
 
       await manager.save(user);
 
+      const after = USER_AUDIT_ALLOWED_FIELDS.reduce(
+        (acc, field) => {
+          acc[field] = user[field];
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+
+      const changes = buildChanges(before, after, USER_AUDIT_ALLOWED_FIELDS);
+
+      if (Object.keys(changes).length > 0) {
+        await this.auditService.record(manager, {
+          action: AuditAction.USER_DEACTIVATED,
+          adminId,
+          targetUserId: user.userId,
+          reason,
+          changes,
+          resourceIds: { userId: user.userId },
+        });
+      }
+      
       return {
         userId: user.userId,
         status: user.status,
@@ -577,29 +740,60 @@ export class UserService {
     });
   }
 
-  async activate(userId: string) {
-    const user = await this.userRepository.findOne({ where: { userId } });
+    async activate(userId: string, adminId: string) {
+    return this.dataSource.transaction(async (manager) => {
+      const user = await manager.findOne(User, {
+        where: { userId },
+        lock: { mode: 'pessimistic_write' },
+      });
 
     if (!user) {
-      throw new BadRequestException('Usuário não encontrado');
-    }
+        throw new BadRequestException('Usuário não encontrado');
+      }
 
-    // Idempotente: se já está ativo, não faz nada e retorna sucesso
     if (user.status === UserStatus.ACTIVE) {
-      return {
-        userId: user.userId,
-        status: user.status,
-        message: 'Usuário já estava ativo',
-      };
-    }
+        return {
+          userId: user.userId,
+          status: user.status,
+          message: 'Usuário já estava ativo',
+        };
+      }
+
+    const before = USER_AUDIT_ALLOWED_FIELDS.reduce(
+        (acc, field) => {
+          acc[field] = user[field];
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
 
     user.status = UserStatus.ACTIVE;
     user.deactivatedAt = null;
     user.deactivatedBy = null;
     user.deactivationReason = null;
 
-    await this.userRepository.save(user);
+    await manager.save(user);
+
+      const after = USER_AUDIT_ALLOWED_FIELDS.reduce(
+        (acc, field) => {
+          acc[field] = user[field];
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+
+      const changes = buildChanges(before, after, USER_AUDIT_ALLOWED_FIELDS);
+
+      await this.auditService.record(manager, {
+        action: AuditAction.USER_REACTIVATED,
+        adminId,
+        targetUserId: user.userId,
+        reason: null,
+        changes,
+        resourceIds: { userId: user.userId },
+      });
 
     return { userId: user.userId, status: user.status };
+    });
   }
 }
