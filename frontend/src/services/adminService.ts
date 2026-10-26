@@ -45,6 +45,8 @@ export type ManagedUserUpdate = Partial<
 
 export interface UserDeletionImpact {
   userId: string;
+  type: ManagedUser["type"];
+  impact: { classes?: number; assessments?: number; activities?: number; enrollments?: number; checkins?: number; forums?: number; topics?: number; posts?: number };
   classesAsStudent: number;
   classesAsTeacher: number;
   activities: number;
@@ -219,10 +221,10 @@ export const adminService = {
     return response.data;
   },
 
-  async consultarImpacto(userId: string): Promise<UserDeletionImpact> {
+  async consultarImpacto(userId: string, signal?: AbortSignal): Promise<UserDeletionImpact> {
     const response = await axios.get<UserDeletionImpact>(
       `${API_URL}/admin/users/${userId}/deletion-impact`,
-      { headers: authorization() },
+      { headers: authorization(), signal },
     );
 
     return response.data;

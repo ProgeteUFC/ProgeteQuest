@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiMoreVertical, FiUserPlus, FiX } from "react-icons/fi";
 import AdminUserForm from "../AdminUserForm";
+import UserDeletionImpact from "../../../components/UserDeletionImpact";
 import UserStatusModal from "../../../components/UserStatusModal";
 import PermanentDeleteUserModal from "../../../components/PermanentDeleteUserModal";
 import { Backdrop, Dialog } from "../../../components/UserStatusModal/styles";
@@ -9,7 +10,6 @@ import {
   adminErrorMessage,
   adminService,
   type ManagedUser,
-  type UserDeletionImpact,
 } from "../../../services/adminService";
 import { UsersPanel } from "./styles";
 import FilterSelect from "./FilterSelect";
@@ -50,11 +50,12 @@ export default function AdminUsers() {
   const [infoMode, setInfoMode] = useState<InfoMode>(null);
   const [infoUser, setInfoUser] = useState<ManagedUser | null>(null);
   const [userDetails, setUserDetails] = useState<ManagedUser | null>(null);
-  const [impact, setImpact] = useState<UserDeletionImpact | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
   const [editUserId, setEditUserId] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
+  const infoRequest = useRef(0);
+  const infoDialog = useRef<HTMLDivElement>(null);
   const currentUserId = localStorage.getItem("userId");
 
   useEffect(() => {
@@ -90,36 +91,62 @@ export default function AdminUsers() {
     };
   }, [revision, search, profileFilter, statusFilter, page]);
 
+  useEffect(() => {
+    if (!infoMode) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    infoDialog.current?.focus();
+    function keydown(event: KeyboardEvent) {
+      if (event.key === "Escape") closeInfo();
+      if (event.key !== "Tab") return;
+      const buttons = infoDialog.current?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)");
+      if (!buttons?.length) { event.preventDefault(); return; }
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === infoDialog.current)) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    }
+    document.addEventListener("keydown", keydown);
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", keydown);
+      previous?.focus();
+    };
+  }, [infoMode]);
+
   const pageCount = Math.max(1, totalPages);
   const currentPage = Math.min(page, pageCount);
   const visibleUsers = users;
 
   async function openInfo(user: ManagedUser, mode: Exclude<InfoMode, null>) {
+    const requestId = ++infoRequest.current;
     setMenuUserId(null);
     setInfoUser(user);
     setInfoMode(mode);
-    setModalLoading(true);
+    setModalLoading(mode === "view");
     setModalError("");
     setUserDetails(null);
-    setImpact(null);
     try {
       if (mode === "view") {
-        setUserDetails(await adminService.buscarUsuario(user.userId));
-      } else {
-        setImpact(await adminService.consultarImpacto(user.userId));
+        const details = await adminService.buscarUsuario(user.userId);
+        if (requestId === infoRequest.current) setUserDetails(details);
       }
     } catch (err) {
-      setModalError(adminErrorMessage(err));
+      if (requestId === infoRequest.current) setModalError(adminErrorMessage(err));
     } finally {
-      setModalLoading(false);
+      if (requestId === infoRequest.current) setModalLoading(false);
     }
   }
 
   function closeInfo() {
+    ++infoRequest.current;
     setInfoMode(null);
     setInfoUser(null);
     setUserDetails(null);
-    setImpact(null);
     setModalError("");
   }
 
@@ -315,6 +342,8 @@ export default function AdminUsers() {
         >
           <Dialog
             as="div"
+            ref={infoDialog}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-labelledby="admin-user-info-title"
@@ -338,25 +367,9 @@ export default function AdminUsers() {
                 <dt>Motivo</dt><dd>{userDetails.deactivationReason || "—"}</dd>
               </dl>
             )}
-            {infoMode === "impact" && impact && (
-              <>
-                <p>Resumo de vínculos existentes. Nenhum dado será excluído.</p>
-                {!impact.canDelete && <p role="alert">Exclusão bloqueada: {impact.blockedReasons.join(" ")}</p>}
-                {!impact.hasDependencies && impact.canDelete && <p>Nenhuma dependência encontrada.</p>}
-                <dl className="deletion-impact-list">
-                  <dt>Turmas como aluno</dt><dd>{impact.classesAsStudent}</dd>
-                  <dt>Turmas como professor</dt><dd>{impact.classesAsTeacher}</dd>
-                  <dt>Matrículas associadas</dt><dd>{impact.enrollments}</dd>
-                  <dt>Atividades das turmas</dt><dd>{impact.activities}</dd>
-                  <dt>Avaliações das turmas</dt><dd>{impact.assessments}</dd>
-                  <dt>Check-ins / participações</dt><dd>{impact.checkins}</dd>
-                  <dt>Códigos de atividades</dt><dd>{impact.codes}</dd>
-                  <dt>Fóruns das turmas</dt><dd>{impact.forums}</dd>
-                  <dt>Tópicos no fórum</dt><dd>{impact.forumTopics}</dd>
-                  <dt>Publicações no fórum</dt><dd>{impact.forumPosts}</dd>
-                </dl>
-              </>
-            )}
+{infoMode === "impact" && (
+  <UserDeletionImpact key={infoUser.userId} user={infoUser} />
+)}
             <div className="user-status-actions">
               <button type="button" onClick={closeInfo}>Fechar</button>
             </div>
