@@ -34,6 +34,7 @@ describe('UserService.getDeletionImpact', () => {
     {} as never,
     {} as never,
     { getRepository } as never,
+    { record: jest.fn() },
   );
 
   beforeEach(() => {
