@@ -15,6 +15,7 @@ import { AssessmentModule } from './assessment/assessment.module';
 import { ClassModule } from './class/class.module';
 import { ForumModule } from './forum/forum.module';
 import { AdminModule } from './admin/admin.module';
+import { AuditModule } from './audit/audit.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -45,6 +46,7 @@ import { AdminModule } from './admin/admin.module';
     ClassModule,
     ForumModule,
     AdminModule,
+    AuditModule,
   ],
   providers: [RolesGuard],
 })
