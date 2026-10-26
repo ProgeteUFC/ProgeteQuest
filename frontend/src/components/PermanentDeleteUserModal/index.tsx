@@ -6,8 +6,9 @@ import {
   adminService,
   PERMANENT_DELETE_ENABLED,
   type ManagedUser,
-  type UserDeletionImpact,
 } from "../../services/adminService";
+import UserDeletionImpact from "../UserDeletionImpact";
+import { useDeletionImpact } from "../UserDeletionImpact/useDeletionImpact";
 import { Backdrop } from "../UserStatusModal/styles";
 import { DeleteDialog } from "./styles";
 
@@ -20,19 +21,6 @@ const PROFILE_LABEL: Record<ManagedUser["type"], string> = {
   admin: "Administrador",
 };
 
-const IMPACT_LABELS: [keyof UserDeletionImpact, string][] = [
-  ["classesAsStudent", "Turmas como aluno"],
-  ["classesAsTeacher", "Turmas como professor"],
-  ["enrollments", "Matrículas associadas"],
-  ["activities", "Atividades das turmas"],
-  ["assessments", "Avaliações das turmas"],
-  ["checkins", "Check-ins / participações"],
-  ["codes", "Códigos de atividades"],
-  ["forums", "Fóruns das turmas"],
-  ["forumTopics", "Tópicos no fórum"],
-  ["forumPosts", "Publicações no fórum"],
-];
-
 function formatDate(value?: string | null) {
   if (!value) return "—";
   const date = new Date(value);
@@ -43,14 +31,20 @@ interface Props {
   user: ManagedUser;
   onClose: () => void;
   onSuccess: () => void;
+  refreshKey?: number;
 }
 
-export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: Props) {
-  const [details, setDetails] = useState<ManagedUser | null>(null);
-  const [impact, setImpact] = useState<UserDeletionImpact | null>(null);
-  const [impactLoading, setImpactLoading] = useState(true);
-  const [impactError, setImpactError] = useState("");
-  const [impactRevision, setImpactRevision] = useState(0);
+export default function PermanentDeleteUserModal(props: Props) {
+  // Uma troca de usuário também limpa frase, motivo, senha e estado do envio.
+  return <PermanentDeleteUserForm key={`${props.user.userId}:${props.user.type}`} {...props} />;
+}
+
+function PermanentDeleteUserForm({ user, onClose, onSuccess, refreshKey = 0 }: Props) {
+  const consultation = useDeletionImpact(user, refreshKey);
+  const { query, loading: impactLoading, error: impactError, allowed: noBlockers } = consultation;
+  const [detailsResult, setDetailsResult] = useState<{ query: object; user?: ManagedUser; error?: string } | null>(null);
+  const details = detailsResult?.query === query ? detailsResult.user : undefined;
+  const detailsError = detailsResult?.query === query ? detailsResult.error : undefined;
   const [phrase, setPhrase] = useState("");
   const [reason, setReason] = useState("");
   const [password, setPassword] = useState("");
@@ -64,29 +58,22 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
 
   useEffect(() => {
     let active = true;
-    setImpactLoading(true);
-    setImpactError("");
-    setImpact(null);
-    setDetails(null);
-    Promise.all([
-      adminService.consultarImpacto(user.userId),
-      adminService.buscarUsuario(user.userId),
-    ])
-      .then(([impactData, userData]) => {
+    adminService.buscarUsuario(user.userId)
+      .then(userData => {
         if (!active) return;
-        setImpact(impactData);
-        setDetails(userData);
+        if (userData.userId !== user.userId || userData.type !== user.type ||
+            !["active", "inactive"].includes(userData.status)) {
+          throw new Error("Resposta de dados inválida para o usuário selecionado.");
+        }
+        setDetailsResult({ query, user: userData });
       })
-      .catch((err) => {
-        if (active) setImpactError(adminErrorMessage(err));
-      })
-      .finally(() => {
-        if (active) setImpactLoading(false);
+      .catch(err => {
+        if (active) setDetailsResult({ query, error: adminErrorMessage(err) });
       });
     return () => {
       active = false;
     };
-  }, [user.userId, impactRevision]);
+  }, [user.userId, user.type, query]);
 
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
@@ -125,10 +112,9 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
   }, []);
 
   const current = details ?? user;
-  const checksReady = !impactLoading && !impactError &&
-    details?.userId === user.userId && impact?.userId === user.userId;
+  const checksReady = !impactLoading && !impactError && !detailsError &&
+    details?.userId === user.userId;
   const isInactive = current.status === "inactive";
-  const noBlockers = impact?.canDelete === true;
   const phraseOk = phrase.trim() === CONFIRMATION_PHRASE;
   const reasonOk = reason.trim().length > 0 && reason.length <= MAX_REASON_LENGTH;
   const passwordOk = password.length > 0;
@@ -147,7 +133,8 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
     !PERMANENT_DELETE_ENABLED && "A exclusão definitiva ainda não foi liberada no sistema.",
     !isInactive && "Desative o usuário antes de excluí-lo definitivamente.",
     impactLoading && "Aguarde a verificação das dependências.",
-    !!impactError && "Não foi possível concluir as verificações. Tente novamente.",
+    (!!impactError || !!detailsError) && "Não foi possível concluir as verificações. Tente novamente.",
+    !details && !detailsError && "Aguarde a verificação dos dados do usuário.",
     !impactLoading && !impactError && !noBlockers && "Resolva as dependências que impedem a exclusão.",
     !phraseOk && `Digite a frase ${CONFIRMATION_PHRASE}.`,
     !reasonOk && "Informe o motivo da exclusão.",
@@ -156,7 +143,7 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!canSubmit || busyRef.current) return;
+    if (!canSubmit || !consultation.isAllowed() || busyRef.current) return;
     busyRef.current = true;
     setLoading(true);
     setError("");
@@ -178,10 +165,6 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
   }
 
   const registration = current.registrationStudent ?? current.registrationTeacher;
-  const impactItems = impact
-    ? IMPACT_LABELS.filter(([key]) => Number(impact[key]) > 0)
-    : [];
-
   return (
     <Backdrop
       onMouseDown={(event) => {
@@ -254,57 +237,14 @@ export default function PermanentDeleteUserModal({ user, onClose, onSuccess }: P
                 : "O usuário está ativo. Desative-o antes de excluir definitivamente."}
             </span>
           </li>
-          <li data-ok={impactLoading ? undefined : noBlockers}>
-            {impactLoading ? null : noBlockers ? (
-              <FiCheckCircle aria-hidden="true" />
-            ) : (
-              <FiXCircle aria-hidden="true" />
-            )}
-            <span>
-              {impactLoading && "Verificando dependências..."}
-              {!impactLoading && impactError && "Não foi possível verificar as dependências."}
-              {!impactLoading && !impactError && noBlockers && "Nenhuma dependência impede a exclusão."}
-              {!impactLoading && !impactError && impact && !noBlockers && "Existem dependências que impedem a exclusão."}
-            </span>
-          </li>
         </ul>
 
-        {impactLoading && <p role="status">Carregando informações de impacto...</p>}
-        {impactError && (
-          <div role="alert">
-            <p>{impactError}</p>
-            <button type="button" onClick={() => setImpactRevision((value) => value + 1)}>
-              Tentar novamente
-            </button>
-          </div>
-        )}
-        {impact && !noBlockers && impact.blockedReasons.length > 0 && (
-          <div role="alert">
-            <strong>Exclusão bloqueada:</strong>
-            <ul className="delete-pending">
-              {impact.blockedReasons.map((blockedReason) => (
-                <li key={blockedReason}>{blockedReason}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {checksReady && current.type === "teacher" && impact && impact.classesAsTeacher > 0 && (
-          <div className="delete-note">
-            <p>Este professor ainda possui {impact.classesAsTeacher} turma(s). Transfira as turmas para um professor ativo antes de tentar a exclusão.</p>
-            <p>A transferência preserva os dados acadêmicos. Outras dependências ainda podem impedir a exclusão.</p>
-            <Link to={`/admin/teachers/${user.userId}/classes`}>Transferir turmas do professor</Link>
-          </div>
-        )}
-        {impact && impactItems.length > 0 && (
-          <dl className="deletion-impact-list">
-            {impactItems.map(([key, label]) => (
-              <div key={key} style={{ display: "contents" }}>
-                <dt>{label}</dt>
-                <dd>{String(impact[key])}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
+        {detailsError && <p role="alert">{detailsError} Use Consultar novamente para repetir as verificações.</p>}
+        <UserDeletionImpact
+          user={user}
+          consultation={consultation}
+          transferAction={<Link to={`/admin/teachers/${user.userId}/classes`}>Transferir turmas do professor</Link>}
+        />
 
         {!PERMANENT_DELETE_ENABLED && (
           <p className="delete-note" role="note">
