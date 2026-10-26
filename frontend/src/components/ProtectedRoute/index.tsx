@@ -1,12 +1,13 @@
 
 import React, { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { generatePath, Link, Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { AuthContext, type UserRole } from "../../Contexts/AuthContext";
 
 interface ProtectedRouteProps {
   allowedRoles: UserRole[];
   children: React.ReactElement;
+  adminRedirect?: string;
 }
 
 function getHomeForRole(role: UserRole) {
@@ -27,7 +28,9 @@ function isUserRole(value: unknown): value is UserRole {
 export default function ProtectedRoute({
   allowedRoles,
   children,
+  adminRedirect,
 }: ProtectedRouteProps) {
+  const params = useParams();
   const token = localStorage.getItem("token");
 
   const [userType, setUserType] = useState<UserRole | null>(null);
@@ -70,14 +73,11 @@ export default function ProtectedRoute({
 
         const status = err.response?.status;
 
-        if (status === 401) {
+        // /user/me é permitido a todos os perfis ativos. Neste endpoint,
+        // 403 também indica sessão inválida ou conta inativa no guard atual.
+        if (status === 401 || status === 403) {
           ["token", "userId", "userType"].forEach((key) =>
             localStorage.removeItem(key)
-          );
-          setError("Sua sessão expirou. Entre novamente.");
-        } else if (status === 403) {
-          setError(
-            "Acesso negado. Não foi possível validar sua permissão."
           );
         } else {
           setError(
@@ -132,6 +132,10 @@ export default function ProtectedRoute({
         </Link>
       </div>
     );
+  }
+
+  if (userType === "admin" && adminRedirect) {
+    return <Navigate to={generatePath(adminRedirect, params)} replace />;
   }
 
   return (

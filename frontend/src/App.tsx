@@ -39,23 +39,23 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/detalhesDaTurma/:id" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><DetalhesDaTurma /></ProtectedRoute>} />
+          <Route path="/detalhesDaTurma/:id" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]} adminRedirect="/admin/classes/:id"><DetalhesDaTurma /></ProtectedRoute>} />
           <Route path="/seuRanking" element={<ProtectedRoute allowedRoles={["student"]}><SeuRanking /></ProtectedRoute>} />
-          <Route path="/meusDados" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><MeusDados /></ProtectedRoute>} />
-          <Route path="/entrarEmTurma" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><EntraEmTurma /></ProtectedRoute>} />
+          <Route path="/meusDados" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]} adminRedirect="/admin/profile"><MeusDados /></ProtectedRoute>} />
+          <Route path="/entrarEmTurma" element={<ProtectedRoute allowedRoles={["student"]}><EntraEmTurma /></ProtectedRoute>} />
           <Route path="/minhasTurmas" element={<ProtectedRoute allowedRoles={["student"]}><MinhasTurmas /></ProtectedRoute>} />
           <Route path="/minhasAtividades" element={<ProtectedRoute allowedRoles={["student"]}><MinhasAtividades /></ProtectedRoute>} />
-          <Route path="/forum" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><ForumPage /></ProtectedRoute>} />
-          <Route path="/forum/:turmaId" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]}><ForumTurmaPage /></ProtectedRoute>} />
+          <Route path="/forum" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]} adminRedirect="/admin/forums"><ForumPage /></ProtectedRoute>} />
+          <Route path="/forum/:turmaId" element={<ProtectedRoute allowedRoles={["student", "teacher", "admin"]} adminRedirect="/admin/forums/:turmaId"><ForumTurmaPage /></ProtectedRoute>} />
           <Route path="/loginProfessor" element={<LoginProfessor />} />
 
 
           {/* Rotas de professor */}
-          <Route path="/paginaInicialProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><PaginaInicialProfessor /></ProtectedRoute>} />
-          <Route path="/cadastrarDisciplina" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><CadastrarDisciplina /></ProtectedRoute>} />
-          <Route path="/visualizarTurmasProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><ViewClasses /></ProtectedRoute>} />
-          <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><VisualizandoTurmasProfessor /></ProtectedRoute>} />
-          <Route path="/visualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]}><VisualizandoTurmasProfessor /></ProtectedRoute>} />
+          <Route path="/paginaInicialProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]} adminRedirect="/admin"><PaginaInicialProfessor /></ProtectedRoute>} />
+          <Route path="/cadastrarDisciplina" element={<ProtectedRoute allowedRoles={["teacher", "admin"]} adminRedirect="/admin/classes/new"><CadastrarDisciplina /></ProtectedRoute>} />
+          <Route path="/visualizarTurmasProfessor" element={<ProtectedRoute allowedRoles={["teacher", "admin"]} adminRedirect="/admin/classes"><ViewClasses /></ProtectedRoute>} />
+          <Route path="/VisualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]} adminRedirect="/admin/classes/:turmaId"><VisualizandoTurmasProfessor /></ProtectedRoute>} />
+          <Route path="/visualizandoTurmasProfessor/:turmaId" element={<ProtectedRoute allowedRoles={["teacher", "admin"]} adminRedirect="/admin/classes/:turmaId"><VisualizandoTurmasProfessor /></ProtectedRoute>} />
 
           <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
             <Route index element={<AdminHome />} />
