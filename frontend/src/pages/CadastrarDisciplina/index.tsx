@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { turmaService } from "../../services/turmaService";
+import HeaderAdmin from "../../components/HeaderAdmin";
 import HeaderProfessor from "../../components/HeaderProfessor";
 import { adminService, adminErrorMessage, type ManagedUser } from "../../services/adminService";
 import progeteLogo from "../../assets/progete.png";
 import planetOrange from "../../assets/planet_orange.png";
 import { Container, Content, Title, Subtitle, Form, NameField, CreateButton, Feedback, LogoProgete, Planet } from "./style";
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 export default function CadastrarDisciplina({ embedded = false }: { embedded?: boolean }) {
   const [nome, setNome] = useState("");
@@ -53,10 +52,9 @@ export default function CadastrarDisciplina({ embedded = false }: { embedded?: b
       setEnviando(true);
       setErro("");
       const token = localStorage.getItem("token") || "";
-      await axios.post(
-        `${API_URL}/class`,
+      await turmaService.criarTurma(
         { name: nomeNormalizado, ...(isAdmin ? { teacherId } : {}) },
-        { headers: { Authorization: `Bearer ${token}` } },
+        token,
       );
       navigate(isAdmin ? "/admin/classes" : "/visualizarTurmasProfessor");
     } catch (err: any) {
@@ -68,7 +66,7 @@ export default function CadastrarDisciplina({ embedded = false }: { embedded?: b
 
   return (
     <Container>
-      {!embedded && <HeaderProfessor />}
+      {!embedded && (isAdmin ? <HeaderAdmin /> : <HeaderProfessor />)}
       <Content>
         <Title>Criar turma</Title>
         <Subtitle>{isAdmin ? "Crie uma turma e escolha seu professor responsável." : "Crie uma turma para realizar atividades com seus alunos."}</Subtitle>

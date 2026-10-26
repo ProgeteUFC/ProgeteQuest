@@ -155,7 +155,8 @@ export const UsersPanel = styled(AdminUsersPanel)`
     width: max-content;
     min-width: 280px;
   }
-  .admin-user-menu-options button {
+  .admin-user-menu-options button,
+  .admin-user-menu-options a {
     font: inherit;
     white-space: nowrap;
   }

@@ -62,6 +62,23 @@ export interface UserDeletionImpact {
   blockedReasons: string[];
 }
 
+export interface PermanentDeletePayload {
+  reason: string;
+  confirm: true;
+  password: string;
+}
+
+export interface ClassTransferResult {
+  sourceTeacherId: string;
+  destinationTeacherId: string;
+  transferredClasses: { classId: string; name: string }[];
+  preservedRelations: { enrollments: number; assessments: number; activities: number; forums: number };
+  transferredAt: string;
+}
+
+/* Só deve virar true quando o endpoint estiver liberado com segurança no backend. */
+export const PERMANENT_DELETE_ENABLED = false;
+
 export interface DashboardUser {
   userId: string;
   name: string;
@@ -94,7 +111,11 @@ function authorization(token = localStorage.getItem("token")) {
 export function adminErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const message = error.response?.data?.message;
-    if (error.response?.status === 401 || (error.response?.status === 403 && message === "Forbidden resource")) {
+    const status = error.response?.status;
+    const sessionDenied =
+      (status === 401 && (!message || message === "Unauthorized")) ||
+      (status === 403 && message === "Forbidden resource");
+    if (sessionDenied) {
       return "Acesso negado. Sua sessão expirou, sua conta está inativa ou você não tem permissão.";
     }
 
@@ -167,6 +188,14 @@ export function mensagemDeErro(err: unknown): string {
 }
 
 export const adminService = {
+  async transferirTurmas(teacherId: string, destinationTeacherId: string, classIds: string[]): Promise<ClassTransferResult> {
+    const response = await axios.post<ClassTransferResult>(
+      `${API_URL}/admin/teachers/${teacherId}/transfer`,
+      { destinationTeacherId, classIds },
+      { headers: authorization() },
+    );
+    return response.data;
+  },
   async listarUsuarios(query: ManagedUsersQuery = {}): Promise<ManagedUsersPage> {
     const response = await axios.get<{ data: ListedUser[]; meta: ManagedUsersPage["meta"] }>(
       `${API_URL}/admin/users`,
@@ -199,6 +228,17 @@ export const adminService = {
     );
 
     return response.data;
+  },
+
+  async excluirDefinitivamente(userId: string, payload: PermanentDeletePayload) {
+    if (!PERMANENT_DELETE_ENABLED) {
+      throw new Error("A exclusão definitiva ainda não está disponível.");
+    }
+
+    return axios.delete(`${API_URL}/admin/users/${userId}/permanent`, {
+      headers: authorization(),
+      data: payload,
+    });
   },
 
   async editarUsuario(userId: string, body: ManagedUserUpdate) {

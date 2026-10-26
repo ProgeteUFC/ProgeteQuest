@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiMoreVertical, FiUserPlus, FiX } from "react-icons/fi";
 import AdminUserForm from "../AdminUserForm";
 import UserDeletionImpact from "../../../components/UserDeletionImpact";
 import UserStatusModal from "../../../components/UserStatusModal";
+import PermanentDeleteUserModal from "../../../components/PermanentDeleteUserModal";
 import { Backdrop, Dialog } from "../../../components/UserStatusModal/styles";
 import {
   adminErrorMessage,
@@ -38,6 +39,7 @@ export default function AdminUsers() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [selected, setSelected] = useState<ManagedUser | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
   const [search, setSearch] = useState("");
   const [profileFilter, setProfileFilter] = useState<ProfileFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -258,6 +260,19 @@ export default function AdminUsers() {
                           <button role="menuitem" onClick={() => void openInfo(user, "impact")}>
                             Consultar impacto da exclusão
                           </button>
+                          {user.type === "teacher" && <Link role="menuitem" to={`/admin/teachers/${user.userId}/classes`}>Transferir turmas</Link>}
+                          <button
+                            role="menuitem"
+                            disabled={user.userId === currentUserId}
+                            title={user.userId === currentUserId ? "Não é possível excluir a própria conta" : undefined}
+                            onClick={() => {
+                              setMenuUserId(null);
+                              setSuccess("");
+                              setDeleteTarget(user);
+                            }}
+                          >
+                            Excluir definitivamente
+                          </button>
                         </div>
                       )}
                     </div>
@@ -293,6 +308,17 @@ export default function AdminUsers() {
                 : "Usuário reativado com sucesso.",
             );
             setSelected(null);
+            setRevision((r) => r + 1);
+          }}
+        />
+      )}
+      {deleteTarget && (
+        <PermanentDeleteUserModal
+          user={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onSuccess={() => {
+            setSuccess("Usuário excluído definitivamente com sucesso.");
+            setDeleteTarget(null);
             setRevision((r) => r + 1);
           }}
         />
@@ -341,7 +367,9 @@ export default function AdminUsers() {
                 <dt>Motivo</dt><dd>{userDetails.deactivationReason || "—"}</dd>
               </dl>
             )}
-            {infoMode === "impact" && <UserDeletionImpact key={infoUser.userId} user={infoUser} />}
+{infoMode === "impact" && (
+  <UserDeletionImpact key={infoUser.userId} user={infoUser} />
+)}
             <div className="user-status-actions">
               <button type="button" onClick={closeInfo}>Fechar</button>
             </div>

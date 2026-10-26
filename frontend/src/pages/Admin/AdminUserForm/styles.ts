@@ -214,7 +214,8 @@ export const AdminUsersPanel = styled.section`
     background: ${({ theme }) => theme.colors.white};
     box-shadow: 0 8px 24px ${({ theme }) => theme.colors.kingfisherDaisy}30;
   }
-  .admin-user-menu-options button {
+  .admin-user-menu-options button,
+  .admin-user-menu-options a {
     width: 100%;
     padding: 10px 12px;
     border: 0;
@@ -223,9 +224,13 @@ export const AdminUsersPanel = styled.section`
     background: transparent;
     text-align: left;
     cursor: pointer;
+    text-decoration: none;
+    font: inherit;
   }
   .admin-user-menu-options button:hover,
-  .admin-user-menu-options button:focus-visible {
+  .admin-user-menu-options button:focus-visible,
+  .admin-user-menu-options a:hover,
+  .admin-user-menu-options a:focus-visible {
     background: ${({ theme }) => theme.colors.primaryLight};
   }
   .admin-users-pagination {
