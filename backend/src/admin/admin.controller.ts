@@ -37,6 +37,7 @@ import { TransferClassesDto } from './dtos/transfer-classes.dto';
 import { AdminUserListResponseDto } from './dtos/responses/admin-user-list.response.dto';
 import { TransferClassesResponseDto } from './dtos/responses/transfer-classes.response.dto';
 import { TeacherTransferService } from './teacher-transfer.service';
+import { ResetUserPasswordDto } from './dtos/reset-user-password.dto';
 
 @ApiTags('Administração')
 @ApiBearerAuth('JWT')
@@ -304,5 +305,20 @@ export class AdminController {
       body,
       admin.userId,
     );
+  }
+
+  @Roles('admin')
+  @Post('users/:id/reset-password')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({ summary: 'Redefinir senha de usuário com auditoria administrativa' })
+  @ApiBody({ type: ResetUserPasswordDto })
+  @ApiOkResponse({ description: 'Senha redefinida. A senha e seu hash não são retornados nem auditados.' })
+  resetPassword(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: ResetUserPasswordDto,
+    @User() admin: UserPayload,
+  ) {
+    return this.userService.resetPassword(id, body.newPassword, body.reason, admin.userId);
   }
 }

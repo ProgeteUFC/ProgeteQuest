@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,7 +13,8 @@ import { Assessment } from 'src/assessment/entities/assessment.entity';
 import { Forum } from 'src/forum/entities/forum.entity';
 import { StudentClass } from 'src/student_class/entities/studentClass.entity';
 import { UserStatus, UserType } from 'src/Enums/user.enum';
-import { AUDIT_TRAIL, AuditTrail } from 'src/common/audit/audit-trail';
+import { AuditService } from 'src/audit/audit.service';
+import { AuditAction } from 'src/Enums/audit-action.enum';
 import { TransferClassesDto } from './dtos/transfer-classes.dto';
 import {
   PreservedRelationsDto,
@@ -25,7 +25,7 @@ import {
 export class TeacherTransferService {
   constructor(
     private readonly dataSource: DataSource,
-    @Inject(AUDIT_TRAIL) private readonly auditTrail: AuditTrail,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -92,21 +92,20 @@ export class TeacherTransferService {
 
       const transferredAt = new Date();
 
-      await this.auditTrail.record(
+      await this.auditService.record(
+        manager,
         {
-          action: 'teacher.classes.transferred',
-          actorId: adminId,
-          entity: 'teacher',
-          entityId: sourceTeacherId,
-          occurredAt: transferredAt,
-          details: {
+          action: AuditAction.CLASSES_TRANSFERRED,
+          adminId,
+          targetUserId: sourceTeacherId,
+          changes: { teacherId: { before: sourceTeacherId, after: destinationTeacherId } },
+          resourceIds: {
             sourceTeacherId,
             destinationTeacherId,
             classIds: classes.map((turma) => turma.classId),
             preservedRelations: after,
           },
         },
-        manager,
       );
 
       return {

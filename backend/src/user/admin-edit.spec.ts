@@ -230,8 +230,6 @@ describe('Edição administrativa transacional', () => {
       service.update('target', { email: 'outro@exemplo.com' }),
     ).rejects.toBeInstanceOf(ConflictException);
   });
-});
-
   it('cria usuário administrativo com auditoria e sem senha no diff', async () => {
     const userId = 'user-created-1';
     manager.create.mockImplementation((entity, values) => ({
@@ -286,6 +284,35 @@ describe('Edição administrativa transacional', () => {
     expect(payload.changes).not.toHaveProperty('password');
   });
 
+  it('redefine senha com bcrypt e registra apenas metadados seguros', async () => {
+    const result = await service.resetPassword('target', ' NovaSenha123! ', 'Solicitação do usuário', 'admin-1');
+    const saved = manager.save.mock.calls.find(([entity]) => entity === User)![1];
+    expect(await bcrypt.compare(' NovaSenha123! ', saved.password)).toBe(true);
+    expect(auditService.record).toHaveBeenCalledWith(manager, {
+      action: 'PASSWORD_RESET', adminId: 'admin-1', targetUserId: 'target',
+      reason: 'Solicitação do usuário', changes: { credentialsChanged: true }, resourceIds: { userId: 'target' },
+    });
+    expect(JSON.stringify(auditService.record.mock.calls)).not.toContain('NovaSenha123');
+    expect(result).not.toHaveProperty('password');
+  });
+
+  it('propaga falha de auditoria na redefinição para abortar a transação', async () => {
+    auditService.record.mockRejectedValueOnce(new Error('audit failed'));
+    await expect(service.resetPassword('target', 'NovaSenha123!', 'Solicitação', 'admin-1')).rejects.toThrow('audit failed');
+  });
+
+  it.each(['curta', ' '.repeat(8), 'á'.repeat(37)])('recusa senha inválida antes de gravar', async (password) => {
+    await expect(service.resetPassword('target', password, 'Solicitação', 'admin-1')).rejects.toBeInstanceOf(BadRequestException);
+    expect(manager.save).not.toHaveBeenCalled();
+    expect(auditService.record).not.toHaveBeenCalled();
+  });
+
+  it('não audita redefinição quando o usuário não existe', async () => {
+    await expect(service.resetPassword('missing', 'NovaSenha123!', 'Solicitação', 'admin-1')).rejects.toBeInstanceOf(BadRequestException);
+    expect(manager.save).not.toHaveBeenCalled();
+    expect(auditService.record).not.toHaveBeenCalled();
+  });
+
   it('criação sem contexto não grava auditoria', async () => {
     await service.create({
       name: 'Publico',
@@ -329,6 +356,7 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
     getDeletionImpact: jest.fn(),
     deactivate: jest.fn(),
     activate: jest.fn(),
+    resetPassword: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -470,6 +498,32 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
   );
 
   const destino = '6ba7b810-9dad-41d1-80b4-00c04fd430c8';
+  it.each(['student', 'teacher', 'inactive'])(
+    'bloqueia redefinição administrativa para %s', async role => {
+      await request(app.getHttpServer()).post(`/admin/users/${id}/reset-password`)
+        .set('Authorization', `Bearer ${role}`)
+        .send({ newPassword: 'NovaSenha123!', reason: 'Solicitação' }).expect(403);
+      expect(service.resetPassword).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    {}, { newPassword: 'curta', reason: 'Motivo' },
+    { newPassword: 'NovaSenha123!', reason: ' ' },
+    { newPassword: 'NovaSenha123!', reason: 'Motivo', extra: 'campo' },
+  ])('rejeita redefinição com corpo inválido %j', async body => {
+    await request(app.getHttpServer()).post(`/admin/users/${id}/reset-password`)
+      .set('Authorization', 'Bearer admin').send(body).expect(400);
+    expect(service.resetPassword).not.toHaveBeenCalled();
+  });
+
+  it('entrega a redefinição com a identidade do administrador autenticado', async () => {
+    service.resetPassword.mockResolvedValue({ userId: id });
+    await request(app.getHttpServer()).post(`/admin/users/${id}/reset-password`)
+      .set('Authorization', 'Bearer admin')
+      .send({ newPassword: 'NovaSenha123!', reason: 'Solicitação' }).expect(200, { userId: id });
+    expect(service.resetPassword).toHaveBeenCalledWith(id, 'NovaSenha123!', 'Solicitação', 'admin');
+  });
   const turma = '3f0d9f1e-8b7a-4d1c-9a2b-5c6d7e8f9a0b';
 
   it.each(['student', 'teacher', 'inactive'])(

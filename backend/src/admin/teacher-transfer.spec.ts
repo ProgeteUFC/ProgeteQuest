@@ -155,17 +155,17 @@ describe('TeacherTransferService.transferClasses', () => {
 
     await transferir(service);
 
-    const [evento, managerDaTrilha] = auditTrail.record.mock.calls[0] as [
-      Record<string, unknown>,
+    const [managerDaTrilha, evento] = auditTrail.record.mock.calls[0] as [
       unknown,
+      Record<string, unknown>,
     ];
     expect(managerDaTrilha).toBe(manager);
     expect(evento).toMatchObject({
-      action: 'teacher.classes.transferred',
-      actorId: ADMIN,
-      entity: 'teacher',
-      entityId: ORIGEM,
-      details: {
+      action: 'CLASSES_TRANSFERRED',
+      adminId: ADMIN,
+      targetUserId: ORIGEM,
+      changes: { teacherId: { before: ORIGEM, after: DESTINO } },
+      resourceIds: {
         sourceTeacherId: ORIGEM,
         destinationTeacherId: DESTINO,
         classIds: [TURMA_A, TURMA_B],
@@ -281,6 +281,12 @@ describe('TeacherTransferService.transferClasses', () => {
 
     await expect(transferir(service)).rejects.toBeInstanceOf(ConflictException);
     expect(auditTrail.record).not.toHaveBeenCalled();
+  });
+
+  it('propaga falha na persistência da auditoria para abortar a transferência', async () => {
+    const { service, auditTrail } = montar();
+    auditTrail.record.mockRejectedValueOnce(new Error('audit failed'));
+    await expect(transferir(service)).rejects.toThrow('audit failed');
   });
 });
 

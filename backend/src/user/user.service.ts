@@ -740,6 +740,33 @@ export class UserService {
     });
   }
 
+  async resetPassword(userId: string, newPassword: string, reason: string, adminId: string) {
+    if (typeof newPassword !== 'string' || !newPassword.trim() || newPassword.length < 8 || Buffer.byteLength(newPassword, 'utf8') > 72) {
+      throw new BadRequestException('A senha deve ter pelo menos 8 caracteres e no máximo 72 bytes.');
+    }
+    if (typeof reason !== 'string' || !reason.trim() || reason.length > 500) {
+      throw new BadRequestException('Informe um motivo válido de até 500 caracteres.');
+    }
+    return this.dataSource.transaction(async (manager) => {
+      const user = await manager.findOne(User, {
+        where: { userId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!user) throw new BadRequestException('Usuário não encontrado');
+      user.password = await bcrypt.hash(newPassword, 10);
+      await manager.save(User, user);
+      await this.auditService.record(manager, {
+        action: AuditAction.PASSWORD_RESET,
+        adminId,
+        targetUserId: userId,
+        reason: reason.trim(),
+        changes: { credentialsChanged: true },
+        resourceIds: { userId },
+      });
+      return { userId, message: 'Senha redefinida com sucesso.' };
+    });
+  }
+
     async activate(userId: string, adminId: string) {
     return this.dataSource.transaction(async (manager) => {
       const user = await manager.findOne(User, {
