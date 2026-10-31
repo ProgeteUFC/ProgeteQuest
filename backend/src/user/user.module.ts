@@ -6,9 +6,13 @@ import { Teacher } from '../teacher/entities/teacher.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserController } from './user.controller';
 import { Admin } from '../admin/entities/admin.entity';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Student, Teacher, Admin])],
+  imports: [
+    TypeOrmModule.forFeature([User, Student, Teacher, Admin]),
+    AuditModule,
+  ],
   providers: [UserService],
   controllers: [UserController],
   exports: [UserService],

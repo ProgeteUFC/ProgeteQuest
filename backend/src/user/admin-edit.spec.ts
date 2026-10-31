@@ -22,9 +22,15 @@ import { UserStatus, UserType } from '../Enums/user.enum';
 
 describe('Edição administrativa transacional', () => {
   let service: UserService;
-  let manager: { findOne: jest.Mock; save: jest.Mock; query: jest.Mock };
+  let manager: {
+    create: jest.Mock;
+    findOne: jest.Mock;
+    save: jest.Mock;
+    query: jest.Mock;
+  };
   let transaction: jest.Mock;
   let user: User;
+  let auditService: { record: jest.Mock };
 
   beforeEach(() => {
     user = {
@@ -36,6 +42,7 @@ describe('Edição administrativa transacional', () => {
       status: UserStatus.ACTIVE,
     } as User;
     manager = {
+      create: jest.fn((entity, values) => ({ ...values })),
       findOne: jest.fn(async (entity, options) => {
         if (entity === User && options.where.userId === 'target')
           return { ...user };
@@ -43,17 +50,20 @@ describe('Edição administrativa transacional', () => {
           return { userId: 'target', registrationStudent: '123456' };
         return null;
       }),
-      save: jest.fn(async (_, value) => value),
+      save: jest.fn(async (_, value) => value ?? _),
       query: jest.fn(async () => []),
     };
     transaction = jest.fn(async (work) => work(manager));
+    auditService = { record: jest.fn() };
     service = new UserService(
-      {} as never,
-      {} as never,
-      {} as never,
-      {} as never,
+      { findOne: jest.fn(async () => null) } as never,
+      { findOne: jest.fn(async () => null) } as never,
+      { findOne: jest.fn(async () => null) } as never,
+      { findOne: jest.fn(async () => null) } as never,
       { transaction } as never,
+      auditService as never,
     );
+    jest.clearAllMocks();
   });
 
   it('normaliza dados, usa apenas o manager da transação e não retorna senha', async () => {
@@ -76,6 +86,60 @@ describe('Edição administrativa transacional', () => {
       expect.objectContaining({ name: 'Novo nome', email: 'novo@exemplo.com' }),
     );
     expect(result).not.toHaveProperty('password');
+  });
+
+  it('registra USER_UPDATED com o mesmo manager para edição administrativa', async () => {
+    const result = await service.update(
+      'target',
+      {
+        name: 'Novo nome',
+        email: 'novo@exemplo.com',
+      },
+      { adminId: 'admin-1' },
+    );
+
+    expect(auditService.record).toHaveBeenCalledTimes(1);
+    expect(auditService.record).toHaveBeenCalledWith(
+      manager,
+      expect.objectContaining({
+        action: 'USER_UPDATED',
+        adminId: 'admin-1',
+        targetUserId: 'target',
+        reason: null,
+        resourceIds: { userId: 'target' },
+      }),
+    );
+
+    const payload = auditService.record.mock.calls[0][1];
+    expect(payload.changes).toEqual({
+      name: { before: 'Aluno', after: 'Novo nome' },
+      email: { before: 'aluno@exemplo.com', after: 'novo@exemplo.com' },
+    });
+    expect(payload.changes).not.toHaveProperty('password');
+    expect(result).toMatchObject({ userId: 'target', status: UserStatus.ACTIVE });
+  });
+
+  it('não grava auditoria quando não há contexto administrativo', async () => {
+    await service.update('target', { name: 'Mudança sem contexto' });
+    expect(auditService.record).not.toHaveBeenCalled();
+  });
+
+  it('rejeita password em edição administrativa antes de gravar', async () => {
+    await expect(
+      service.update(
+        'target',
+        { password: 'NovaSenha123!' },
+        { adminId: 'admin-1' },
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(auditService.record).not.toHaveBeenCalled();
+  });
+
+  it('aceita password na edição do próprio perfil sem contexto', async () => {
+    await expect(
+      service.update('target', { password: ' NovaSenha123! ' }),
+    ).resolves.toMatchObject({ userId: 'target' });
+    expect(auditService.record).not.toHaveBeenCalled();
   });
 
   it('gera hash bcrypt e mantém a senha exata, incluindo espaços', async () => {
@@ -149,11 +213,105 @@ describe('Edição administrativa transacional', () => {
     expect(manager.save).toHaveBeenCalledTimes(1);
   });
 
+  it('rejeita quando a auditoria falha dentro da transação', async () => {
+    auditService.record.mockRejectedValueOnce(new Error('audit failed'));
+    await expect(
+      service.update(
+        'target',
+        { name: 'Novo nome' },
+        { adminId: 'admin-1' },
+      ),
+    ).rejects.toThrow('audit failed');
+  });
+
   it('traduz conflito de unicidade concorrente em 409', async () => {
     manager.save.mockRejectedValue({ driverError: { code: '23505' } });
     await expect(
       service.update('target', { email: 'outro@exemplo.com' }),
     ).rejects.toBeInstanceOf(ConflictException);
+  });
+});
+
+  it('cria usuário administrativo com auditoria e sem senha no diff', async () => {
+    const userId = 'user-created-1';
+    manager.create.mockImplementation((entity, values) => ({
+      ...values,
+      userId,
+    }));
+    manager.findOne.mockImplementation(async (entity, options) => {
+      if (entity === User && options.where.userId === userId) {
+        return {
+          userId,
+          name: 'Admin Novo',
+          email: 'admin.novo@exemplo.com',
+          type: UserType.ADMIN,
+          status: UserStatus.ACTIVE,
+          deactivatedAt: null,
+          deactivatedBy: null,
+          deactivationReason: null,
+        };
+      }
+      return null;
+    });
+
+    const created = await service.create(
+      {
+        name: 'Admin Novo',
+        email: 'admin.novo@exemplo.com',
+        password: 'senha123',
+        type: UserType.ADMIN,
+      },
+      { adminId: 'admin-1' },
+    );
+
+    expect(created.userId).toBe(userId);
+    expect(auditService.record).toHaveBeenCalledTimes(1);
+    expect(auditService.record).toHaveBeenCalledWith(
+      manager,
+      expect.objectContaining({
+        action: 'USER_CREATED',
+        adminId: 'admin-1',
+        targetUserId: userId,
+        reason: null,
+      }),
+    );
+
+    const payload = auditService.record.mock.calls[0][1];
+    expect(payload.changes).toEqual({
+      name: { before: null, after: 'Admin Novo' },
+      email: { before: null, after: 'admin.novo@exemplo.com' },
+      type: { before: null, after: UserType.ADMIN },
+      status: { before: null, after: UserStatus.ACTIVE },
+    });
+    expect(payload.changes).not.toHaveProperty('password');
+  });
+
+  it('criação sem contexto não grava auditoria', async () => {
+    await service.create({
+      name: 'Publico',
+      email: 'publico@exemplo.com',
+      password: 'senha123',
+      type: UserType.STUDENT,
+      registrationStudent: '123456',
+    });
+    expect(auditService.record).not.toHaveBeenCalled();
+  });
+
+  it('criação administrativa rejeita quando a auditoria falha dentro da transação', async () => {
+    auditService.record.mockRejectedValueOnce(new Error('audit failed'));
+
+    await expect(
+      service.create(
+        {
+          name: 'Prof Novo',
+          email: 'prof.novo@exemplo.com',
+          password: 'senha123',
+          type: UserType.TEACHER,
+          registrationTeacher: '654321',
+        },
+        { adminId: 'admin-1' },
+      ),
+    ).rejects.toThrow('audit failed');
   });
 });
 
@@ -274,6 +432,7 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
     expect(service.update).toHaveBeenCalledWith(
       id,
       expect.objectContaining({ name: 'Novo' }),
+      { adminId: 'admin' },
     );
   });
   it.each([
