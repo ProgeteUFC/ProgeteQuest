@@ -23,6 +23,7 @@ import VisualizandoTurmasProfessor from "./pages/VisualizandoTurmaProfessor";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./components/AdminLayout";
 import AdminSection from "./pages/Admin/AdminSection";
+import AdminAudit from "./pages/Admin/AdminAudit";
 import AdminHome from "./pages/Admin/AdminHome";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminUserForm from "./pages/Admin/AdminUserForm";
@@ -69,7 +70,7 @@ export default function App() {
             <Route path="activities" element={<AdminSection title="Atividades" />} />
             <Route path="forums" element={<ForumPage embedded />} />
             <Route path="forums/:turmaId" element={<ForumTurmaPage embedded />} />
-            <Route path="audit" element={<AdminSection title="Auditoria" />} />
+            <Route path="audit" element={<AdminAudit />} />
             <Route path="profile" element={<MeusDados embedded />} />
           </Route>
           <Route path="/cadastroAdministrativo" element={<Navigate to="/admin/users/new" replace />} />
