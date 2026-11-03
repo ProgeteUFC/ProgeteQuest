@@ -1,5 +1,7 @@
 import axios from "axios";
 import type { AdminFormUserData, CreatedUserResponse } from "../types/user";
+import type { AuditLogPage, AuditLogQuery } from "../types/audit";
+import { listarAuditoriaSimulada } from "../mocks/audit.mock";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const CREATE_USER_PATH = "/admin/users";
@@ -78,6 +80,9 @@ export interface ClassTransferResult {
 
 /* Só deve virar true quando o endpoint estiver liberado com segurança no backend. */
 export const PERMANENT_DELETE_ENABLED = false;
+
+/* Trocar para true quando GET /admin/audit-logs existir no backend; até lá a tela usa dados simulados. */
+export const AUDIT_API_AVAILABLE = false;
 
 export interface DashboardUser {
   userId: string;
@@ -272,6 +277,17 @@ export const adminService = {
       data,
       { headers: authorization(token) },
     );
+
+    return response.data;
+  },
+
+  async listarAuditoria(query: AuditLogQuery = {}): Promise<AuditLogPage> {
+    if (!AUDIT_API_AVAILABLE) return listarAuditoriaSimulada(query);
+
+    const response = await axios.get<AuditLogPage>(`${API_URL}/admin/audit-logs`, {
+      headers: authorization(),
+      params: query,
+    });
 
     return response.data;
   },
