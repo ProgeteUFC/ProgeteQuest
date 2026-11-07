@@ -4,6 +4,7 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AdminDashboardService } from './admin-dashboard.service';
 import { TeacherTransferService } from './teacher-transfer.service';
+import { PermanentUserDeletionService } from './permanent-user-deletion.service';
 import { AuditModule } from '../audit/audit.module';
 import { Class } from '../class/entities/class.entity';
 import { UserModule } from '../user/user.module';
@@ -16,6 +17,7 @@ import { User } from '../user/entities/user.entity';
     AdminService,
     AdminDashboardService,
     TeacherTransferService,
+    PermanentUserDeletionService,
   ],
 })
 export class AdminModule {}

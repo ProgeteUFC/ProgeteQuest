@@ -17,6 +17,8 @@ import { AdminController } from '../admin/admin.controller';
 import { AdminService } from '../admin/admin.service';
 import { AdminDashboardService } from '../admin/admin-dashboard.service';
 import { TeacherTransferService } from '../admin/teacher-transfer.service';
+import { PermanentUserDeletionService } from '../admin/permanent-user-deletion.service';
+import { CONFIRMATION_PHRASE } from '../admin/dtos/permanently-delete-user.dto';
 import { RolesGuard } from '../guards/roles.guard';
 import { UserStatus, UserType } from '../Enums/user.enum';
 
@@ -348,6 +350,7 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
   const adminService = { findUsers: jest.fn() };
   const dashboardService = { getDashboard: jest.fn() };
   const teacherTransferService = { transferClasses: jest.fn() };
+  const permanentUserDeletionService = { validate: jest.fn() };
   const service = {
     update: jest.fn(),
     findAll: jest.fn(),
@@ -367,6 +370,10 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
         { provide: AdminService, useValue: adminService },
         { provide: AdminDashboardService, useValue: dashboardService },
         { provide: TeacherTransferService, useValue: teacherTransferService },
+        {
+          provide: PermanentUserDeletionService,
+          useValue: permanentUserDeletionService,
+        },
       ],
     }).compile();
     const jwt = {
@@ -432,6 +439,59 @@ describe('Rotas administrativas: autorização e validação HTTP', () => {
       .set('Authorization', 'Bearer admin').expect(200, { userId: id, name: 'Maria' });
     await request(app.getHttpServer()).get(`/admin/users/${id}/deletion-impact`)
       .set('Authorization', 'Bearer admin').expect(200, { userId: id, checkins: 2 });
+  });
+
+  describe('DELETE /admin/users/:id/permanent', () => {
+    const corpo = {
+      confirmation: CONFIRMATION_PHRASE,
+      reason: 'Conta duplicada, confirmada após revisão dos vínculos.',
+      adminPassword: 'senha-do-admin',
+    };
+
+    it.each(['student', 'teacher', 'inactive'])(
+      'bloqueia a exclusão definitiva para %s',
+      async (role) => {
+        await request(app.getHttpServer())
+          .delete(`/admin/users/${id}/permanent`)
+          .set('Authorization', `Bearer ${role}`)
+          .send(corpo)
+          .expect(403);
+        expect(permanentUserDeletionService.validate).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each([
+      { confirmation: 'excluir definitivamente' },
+      { confirmation: 'EXCLUIR' },
+      { confirmation: '' },
+      { reason: '   ' },
+      { adminPassword: '' },
+      { campoDesconhecido: 'x' },
+    ])('rejeita corpo inválido %j', async (ajuste) => {
+      await request(app.getHttpServer())
+        .delete(`/admin/users/${id}/permanent`)
+        .set('Authorization', 'Bearer admin')
+        .send({ ...corpo, ...ajuste })
+        .expect(400);
+      expect(permanentUserDeletionService.validate).not.toHaveBeenCalled();
+    });
+
+    it('entrega a checagem de regras ao administrador ativo', async () => {
+      const liberacao = { userId: id, executed: false };
+      permanentUserDeletionService.validate.mockResolvedValue(liberacao);
+
+      await request(app.getHttpServer())
+        .delete(`/admin/users/${id}/permanent`)
+        .set('Authorization', 'Bearer admin')
+        .send({ ...corpo, confirmation: `  ${CONFIRMATION_PHRASE}  ` })
+        .expect(200, liberacao);
+
+      expect(permanentUserDeletionService.validate).toHaveBeenCalledWith(
+        id,
+        'admin',
+        expect.objectContaining({ confirmation: CONFIRMATION_PHRASE }),
+      );
+    });
   });
 
   it.each(['student', 'teacher', 'inactive'])(
