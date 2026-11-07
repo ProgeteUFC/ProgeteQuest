@@ -151,21 +151,14 @@ export const UsersPanel = styled(AdminUsersPanel)`
     outline: 3px solid ${({ theme }) => theme.colors.challengeOrange};
   }
   .admin-user-menu-options {
+    position: fixed;
+    inset: auto;
     border-radius: 16px;
-    width: max-content;
-    min-width: 280px;
-  }
-  .admin-user-menu-options button,
-  .admin-user-menu-options a {
-    font: inherit;
-    white-space: nowrap;
+    width: min(280px, calc(100vw - 16px));
+    min-width: 0;
+    overflow-y: auto;
   }
   .admin-user-menu-options button:disabled { opacity: 0.5; cursor: not-allowed; }
-  /* Keep the last rows' menus inside the scrolling table. */
-  tbody tr:nth-last-child(-n + 3) .admin-user-menu-options {
-    top: auto;
-    bottom: calc(100% + 4px);
-  }
   .admin-users-pagination { font-size: 14px; }
 
   @media (max-width: 768px) {
