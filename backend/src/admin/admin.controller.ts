@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -23,6 +24,8 @@ import {
   ApiOkResponse,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
+  ApiConflictResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
@@ -34,10 +37,16 @@ import { CreateManagedUserDto } from './dtos/create-managed-user.dto';
 import { DeactivateUserDto } from './dtos/deactivate-user.dto';
 import { ListUsersQueryDto } from './dtos/list-users-query.dto';
 import { TransferClassesDto } from './dtos/transfer-classes.dto';
+import {
+  CONFIRMATION_PHRASE,
+  PermanentlyDeleteUserDto,
+} from './dtos/permanently-delete-user.dto';
 import { AdminUserListResponseDto } from './dtos/responses/admin-user-list.response.dto';
 import { TransferClassesResponseDto } from './dtos/responses/transfer-classes.response.dto';
+import { PermanentDeletionClearanceResponseDto } from './dtos/responses/permanent-deletion-clearance.response.dto';
 import { TeacherTransferService } from './teacher-transfer.service';
 import { ResetUserPasswordDto } from './dtos/reset-user-password.dto';
+import { PermanentUserDeletionService } from './permanent-user-deletion.service';
 
 @ApiTags('Administração')
 @ApiBearerAuth('JWT')
@@ -52,6 +61,7 @@ export class AdminController {
     private readonly adminService: AdminService,
     private readonly dashboardService: AdminDashboardService,
     private readonly teacherTransferService: TeacherTransferService,
+    private readonly permanentUserDeletionService: PermanentUserDeletionService,
   ) {}
 
   @Roles('admin')
@@ -104,6 +114,66 @@ export class AdminController {
   }
 
   @Roles('admin')
+  @Delete('users/:id/permanent')
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @ApiOperation({
+    summary: 'Checar as regras da exclusão definitiva de um usuário',
+    description: [
+      '**Esta rota ainda não exclui nada.** Nesta sprint ela entrega apenas as regras:',
+      'valida o corpo, confere quem está pedindo e devolve `executed: false`. A exclusão',
+      'transacional entra na próxima sprint, reaproveitando exatamente estas checagens —',
+      'o formato da resposta não muda, só o valor de `executed`.',
+      '',
+      'As regras, na ordem em que são aplicadas:',
+      `1. O corpo precisa trazer a frase "${CONFIRMATION_PHRASE}", um motivo e a senha do administrador (400).`,
+      '2. Quem pede precisa ser administrador **ativo**, relido do banco (403).',
+      '3. A senha informada precisa bater com a do administrador autenticado (401).',
+      '4. O administrador não pode excluir a própria conta (400).',
+      '5. O usuário selecionado precisa existir (404).',
+      '6. O usuário selecionado precisa estar **inativo** — desative antes (409).',
+      '7. A consulta de impacto não pode apontar dependências impeditivas (409, com o impacto no corpo).',
+      '8. A exclusão não pode deixar o sistema sem administrador ativo (409).',
+    ].join('\n'),
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID do usuário que seria excluído definitivamente',
+    format: 'uuid',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiBody({ type: PermanentlyDeleteUserDto })
+  @ApiOkResponse({
+    type: PermanentDeletionClearanceResponseDto,
+    description:
+      'Todas as regras passaram. Nenhum dado foi excluído: `executed` vem como false.',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Corpo inválido, frase de confirmação errada, ou o administrador tentou excluir a própria conta.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Senha do administrador incorreta.',
+  })
+  @ApiNotFoundResponse({ description: 'Usuário não encontrado.' })
+  @ApiConflictResponse({
+    description:
+      'Usuário ainda ativo, com dependências que impedem a exclusão, ou é o último administrador ativo.',
+  })
+  async checkPermanentDeletion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: PermanentlyDeleteUserDto,
+    @User() admin: UserPayload,
+  ): Promise<PermanentDeletionClearanceResponseDto> {
+    return this.permanentUserDeletionService.validate(id, admin.userId, body);
+  }
+
+  @Roles('admin')
   @Get('users/:id')
   @ApiOperation({ summary: 'Visualizar dados administrativos do usuário' })
   findUser(@Param('id', ParseUUIDPipe) id: string) {
@@ -112,7 +182,13 @@ export class AdminController {
 
   @Roles('admin')
   @Patch('users/:id')
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
   @ApiOperation({ summary: 'Editar usuário sem alterar seu perfil ou senha' })
   @ApiBody({ type: UpdateManagedUserDto })
   updateUser(
