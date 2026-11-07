@@ -49,11 +49,6 @@ async listarTurmas(token: string) {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
-  async excluirConta(token: string, password: string) {
-    return axios.post(`${API_URL}/user/delete`, { password }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
   async buscarTurma(classId: string, token: string) {
     return axios.get(`${API_URL}/class/${classId}`, {
       headers: { Authorization: `Bearer ${token}` },

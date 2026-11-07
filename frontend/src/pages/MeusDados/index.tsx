@@ -6,24 +6,16 @@ import {
   InputWrapper,
   PersonalData,
   LogoBottom,
-  ExcluirButton,
   SaveButton,
   DadosTitle,
   DadosDescricao,
   Image,
-  ModalBackdrop,
-  ModalCard,
-  ModalIcon,
-  ModalActions,
-  CancelButton,
-  ConfirmDeleteButton,
-  ModalError,
+  DeletionNotice,
 } from "./styles";
 import Header from "../../components/Header";
 import logo from "../../assets/progete.png";
 import planetOrange from "../../assets/planet_orange.png";
 import { alunoService } from "../../services/alunoService";
-import { useNavigate } from "react-router-dom";
 
 export default function MeusDados({ embedded = false }: { embedded?: boolean }) {
   const [nome, setNome] = useState("");
@@ -33,12 +25,10 @@ export default function MeusDados({ embedded = false }: { embedded?: boolean }) 
   const [senhaConfirm, setSenhaConfirm] = useState("");
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
-  const [tipo, setTipo] = useState<"student" | "teacher" | "admin">("student");
-  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
-  const [senhaExcluir, setSenhaExcluir] = useState("");
-  const [erroExclusao, setErroExclusao] = useState("");
-  const [excluindo, setExcluindo] = useState(false);
-  const navigate = useNavigate();
+  const [tipo, setTipo] = useState<"student" | "teacher" | "admin">(() => {
+    const salvo = localStorage.getItem("userType");
+    return salvo === "teacher" || salvo === "admin" ? salvo : "student";
+  });
 
   useEffect(() => {
     async function fetchDados() {
@@ -88,40 +78,6 @@ export default function MeusDados({ embedded = false }: { embedded?: boolean }) 
           "Erro ao atualizar dados. Verifique os campos."
       );
     }
-  }
-
-  async function handleExcluirConta() {
-    setErroExclusao("");
-    if (!senhaExcluir) {
-      setErroExclusao("Digite sua senha para confirmar a exclusão.");
-      return;
-    }
-    try {
-      setExcluindo(true);
-      const token = localStorage.getItem("token") || "";
-      await alunoService.excluirConta(token, senhaExcluir);
-      localStorage.clear();
-      navigate("/");
-    } catch (err: any) {
-      setErroExclusao(
-        err?.response?.data?.message ||
-          "Erro ao excluir conta. Verifique a senha e tente novamente."
-      );
-    } finally {
-      setExcluindo(false);
-    }
-  }
-
-  function handleConfirmarExclusao() {
-    setErroExclusao("");
-    setMostrarConfirmacao(true);
-  }
-
-  function fecharConfirmacao() {
-    if (excluindo) return;
-    setMostrarConfirmacao(false);
-    setSenhaExcluir("");
-    setErroExclusao("");
   }
 
   return (
@@ -188,10 +144,16 @@ export default function MeusDados({ embedded = false }: { embedded?: boolean }) 
                 </InputWrapper>
                 <div className="button-group-vertical">
                   <SaveButton type="submit">SALVAR</SaveButton>
-                  <ExcluirButton type="button" onClick={handleConfirmarExclusao}>
-                    EXCLUIR CONTA
-                  </ExcluirButton>
                 </div>
+                {tipo !== "admin" && (
+                  <DeletionNotice role="note">
+                    <strong>Excluir conta</strong>
+                    <span>
+                      A exclusão de contas é feita pela administração do Progete. Para
+                      solicitar a exclusão da sua conta, procure a administração.
+                    </span>
+                  </DeletionNotice>
+                )}
                 {erro && <div style={{ color: "red", marginTop: 8 }}>{erro}</div>}
                 {sucesso && (
                   <div style={{ color: "green", marginTop: 8 }}>{sucesso}</div>
@@ -201,32 +163,6 @@ export default function MeusDados({ embedded = false }: { embedded?: boolean }) 
           </LeftColumn>
       </PageContent>
       <Image src={planetOrange} alt="" />
-      {mostrarConfirmacao && (
-        <ModalBackdrop onMouseDown={(event) => event.target === event.currentTarget && fecharConfirmacao()}>
-          <ModalCard role="dialog" aria-modal="true" aria-labelledby="titulo-excluir-conta">
-            <ModalIcon aria-hidden="true">!</ModalIcon>
-            <h2 id="titulo-excluir-conta">Excluir conta?</h2>
-            <p>Essa ação é permanente e todos os seus dados serão removidos.</p>
-            <label htmlFor="senha-exclusao">Digite sua senha para confirmar:</label>
-            <input
-              id="senha-exclusao"
-              type="password"
-              placeholder="Sua senha"
-              value={senhaExcluir}
-              onChange={(event) => setSenhaExcluir(event.target.value)}
-              onKeyDown={(event) => event.key === "Enter" && handleExcluirConta()}
-              autoFocus
-            />
-            {erroExclusao && <ModalError role="alert">{erroExclusao}</ModalError>}
-            <ModalActions>
-              <CancelButton type="button" onClick={fecharConfirmacao} disabled={excluindo}>CANCELAR</CancelButton>
-              <ConfirmDeleteButton type="button" onClick={handleExcluirConta} disabled={excluindo}>
-                {excluindo ? "EXCLUINDO..." : "EXCLUIR CONTA"}
-              </ConfirmDeleteButton>
-            </ModalActions>
-          </ModalCard>
-        </ModalBackdrop>
-      )}
     </Container>
   );
 }

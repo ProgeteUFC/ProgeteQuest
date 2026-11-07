@@ -5,6 +5,7 @@ import {
   adminErrorMessage,
   adminService,
   PERMANENT_DELETE_ENABLED,
+  permanentDeleteErrorMessage,
   type ManagedUser,
 } from "../../services/adminService";
 import UserDeletionImpact from "../UserDeletionImpact";
@@ -51,6 +52,7 @@ function PermanentDeleteUserForm({ user, onClose, onSuccess, refreshKey = 0 }: P
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [executed, setExecuted] = useState(false);
   const dialogRef = useRef<HTMLFormElement>(null);
   const busyRef = useRef(false);
   const dismissRef = useRef<() => void>(onClose);
@@ -116,7 +118,7 @@ function PermanentDeleteUserForm({ user, onClose, onSuccess, refreshKey = 0 }: P
     details?.userId === user.userId;
   const isInactive = current.status === "inactive";
   const phraseOk = phrase.trim() === CONFIRMATION_PHRASE;
-  const reasonOk = reason.trim().length > 0 && reason.length <= MAX_REASON_LENGTH;
+  const reasonOk = reason.trim().length > 0 && reason.trim().length <= MAX_REASON_LENGTH;
   const passwordOk = password.length > 0;
   const canSubmit =
     PERMANENT_DELETE_ENABLED &&
@@ -148,15 +150,16 @@ function PermanentDeleteUserForm({ user, onClose, onSuccess, refreshKey = 0 }: P
     setLoading(true);
     setError("");
     try {
-      await adminService.excluirDefinitivamente(user.userId, {
+      const response = await adminService.excluirDefinitivamente(user.userId, {
+        confirmation: CONFIRMATION_PHRASE,
         reason: reason.trim(),
-        confirm: true,
-        password,
+        adminPassword: password,
       });
       setPassword("");
+      setExecuted(response.data?.executed === true);
       setDone(true);
     } catch (err) {
-      setError(adminErrorMessage(err));
+      setError(permanentDeleteErrorMessage(err));
       setPassword("");
     } finally {
       busyRef.current = false;
@@ -255,7 +258,9 @@ function PermanentDeleteUserForm({ user, onClose, onSuccess, refreshKey = 0 }: P
 
         {done ? (
           <p className="delete-success" role="status">
-            Usuário excluído definitivamente com sucesso.
+            {executed
+              ? "Usuário excluído definitivamente com sucesso."
+              : "Regras validadas, mas nenhum dado foi excluído. A exclusão definitiva ainda será implementada."}
           </p>
         ) : (
           <>
