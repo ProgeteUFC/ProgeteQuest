@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Post,
   Get,
   Param,
   Put,
   UsePipes,
   ValidationPipe,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +18,7 @@ import {
   ApiParam,
   ApiBearerAuth,
   ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User, UserPayload } from 'src/decorators/user.decorator';
@@ -25,6 +28,21 @@ import { UserType } from 'src/Enums/user.enum';
 import { Public } from 'src/decorators/public.decorator';
 import { UserService } from './user.service';
 import { DeleteUserDto } from './dtos/deleteUser.dto';
+
+const SELF_DELETION_DISABLED_MESSAGE =
+  'A exclusão da própria conta está temporariamente indisponível. Procure a administração da plataforma para solicitar a exclusão ou esclarecer dúvidas.';
+const SELF_DELETION_DISABLED_CODE = 'ACCOUNT_SELF_DELETION_DISABLED';
+
+const selfDeletionDisabledResponse = {
+  statusCode: HttpStatus.FORBIDDEN,
+  error: 'Forbidden',
+  message: SELF_DELETION_DISABLED_MESSAGE,
+  code: SELF_DELETION_DISABLED_CODE,
+};
+
+function throwSelfDeletionDisabled(): never {
+  throw new ForbiddenException(selfDeletionDisabledResponse);
+}
 
 @ApiTags('Usuários')
 @Controller('user')
@@ -119,12 +137,27 @@ export class UserController {
   @Post('delete')
   @ApiOperation({
     summary: 'Remover usuário',
-    description: 'Remove o usuário autenticado (requer senha).',
+    deprecated: true,
+    description:
+      'A exclusão da própria conta está temporariamente indisponível. Procure a administração da plataforma para solicitar a exclusão ou esclarecer dúvidas.',
   })
   @ApiBody({ type: DeleteUserDto })
-  @ApiResponse({ status: 200, description: 'Usuário removido com sucesso.' })
-  async remove(@User() user: UserPayload, @Body() body: DeleteUserDto) {
-    return this.userService.remove(user.userId, body.password);
+  @ApiForbiddenResponse({
+    description:
+      'A exclusão da própria conta está temporariamente indisponível. Procure a administração da plataforma para solicitar a exclusão ou esclarecer dúvidas.',
+    schema: {
+      example: {
+        statusCode: 403,
+        error: 'Forbidden',
+        message:
+          'A exclusão da própria conta está temporariamente indisponível. Procure a administração da plataforma para solicitar a exclusão ou esclarecer dúvidas.',
+        code: 'ACCOUNT_SELF_DELETION_DISABLED',
+      },
+    },
+  })
+  async remove(@User() user: UserPayload) {
+    void user;
+    throwSelfDeletionDisabled();
   }
 
   @Roles('teacher', 'student')
