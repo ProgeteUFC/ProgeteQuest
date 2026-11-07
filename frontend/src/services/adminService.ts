@@ -247,6 +247,33 @@ export const adminService = {
     });
   },
 
+  async redefinirSenha(userId: string, newPassword: string, reason: string): Promise<void> {
+    const headers = authorization();
+
+    try {
+      await axios.post(
+        `${API_URL}/admin/users/${userId}/reset-password`,
+        { newPassword, reason },
+        { headers, timeout: 20_000 },
+      );
+    } catch (error) {
+      // O erro do Axios pode conter o corpo da requisição com a senha.
+      if (axios.isAxiosError(error)) {
+        switch (error.response?.status) {
+          case 400:
+            throw new Error("O servidor recusou a redefinição. Confira os dados do usuário e tente novamente.");
+          case 401:
+          case 403:
+            throw new Error("Acesso negado. Verifique sua sessão e sua permissão para redefinir senhas.");
+          case undefined:
+            throw new Error("Não foi possível confirmar a redefinição. Verifique a conexão com o servidor.");
+        }
+      }
+
+      throw new Error("Não foi possível redefinir a senha. Tente novamente.");
+    }
+  },
+
   async desativarUsuario(userId: string, reason: string) {
     return axios.patch(
       `${API_URL}/admin/users/${userId}/deactivate`,

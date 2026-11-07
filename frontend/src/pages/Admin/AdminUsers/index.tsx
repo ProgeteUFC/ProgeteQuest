@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiMoreVertical, FiUserPlus, FiX } from "react-icons/fi";
 import AdminUserForm from "../AdminUserForm";
 import UserDeletionImpact from "../../../components/UserDeletionImpact";
 import UserStatusModal from "../../../components/UserStatusModal";
 import PermanentDeleteUserModal from "../../../components/PermanentDeleteUserModal";
+import ResetUserPasswordModal from "../../../components/ResetUserPasswordModal";
 import { Backdrop, Dialog } from "../../../components/UserStatusModal/styles";
 import {
   adminErrorMessage,
@@ -40,6 +41,7 @@ export default function AdminUsers() {
   const [success, setSuccess] = useState("");
   const [selected, setSelected] = useState<ManagedUser | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
+  const [resetTarget, setResetTarget] = useState<ManagedUser | null>(null);
   const [search, setSearch] = useState("");
   const [profileFilter, setProfileFilter] = useState<ProfileFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -56,12 +58,15 @@ export default function AdminUsers() {
   const [revision, setRevision] = useState(0);
   const infoRequest = useRef(0);
   const infoDialog = useRef<HTMLDivElement>(null);
+  const menuTrigger = useRef<HTMLButtonElement>(null);
+  const menuOptions = useRef<HTMLDivElement>(null);
   const currentUserId = localStorage.getItem("userId");
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError("");
+    setMenuUserId(null);
     adminService
       .listarUsuarios({
         search: search.trim() || undefined,
@@ -90,6 +95,42 @@ export default function AdminUsers() {
       active = false;
     };
   }, [revision, search, profileFilter, statusFilter, page]);
+
+  useLayoutEffect(() => {
+    const trigger = menuTrigger.current;
+    const menu = menuOptions.current;
+    if (!trigger || !menu) return;
+
+    const table = trigger.closest(".admin-users-table");
+    const updatePosition = () => {
+      const { top, right, bottom, left } = trigger.getBoundingClientRect();
+      const { clientWidth, clientHeight } = document.documentElement;
+      const tableBounds = table?.getBoundingClientRect();
+      const visibleLeft = Math.max(0, tableBounds?.left ?? 0);
+      const visibleRight = Math.min(clientWidth, tableBounds?.right ?? clientWidth);
+      if (bottom <= 0 || top >= clientHeight || right <= visibleLeft || left >= visibleRight) {
+        setMenuUserId(null);
+        return;
+      }
+
+      const gap = 8;
+      const spaceAbove = top - 2 * gap;
+      const spaceBelow = clientHeight - bottom - 2 * gap;
+      const openAbove = menu.scrollHeight > spaceBelow && spaceAbove > spaceBelow;
+      menu.style.maxHeight = `${Math.max(0, openAbove ? spaceAbove : spaceBelow)}px`;
+      menu.style.top = openAbove ? "auto" : `${bottom + gap}px`;
+      menu.style.bottom = openAbove ? `${clientHeight - top + gap}px` : "auto";
+      menu.style.left = `${Math.max(gap, Math.min(right, clientWidth - gap) - menu.offsetWidth)}px`;
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [menuUserId]);
 
   useEffect(() => {
     if (!infoMode) return;
@@ -219,6 +260,7 @@ export default function AdminUsers() {
                   <td>
                     <div className="admin-user-menu">
                       <button
+                        ref={menuUserId === user.userId ? menuTrigger : undefined}
                         type="button"
                         aria-label={`Ações para ${user.name}`}
                         aria-haspopup="menu"
@@ -232,7 +274,7 @@ export default function AdminUsers() {
                         <FiMoreVertical aria-hidden="true" />
                       </button>
                       {menuUserId === user.userId && (
-                        <div className="admin-user-menu-options" role="menu">
+                        <div ref={menuOptions} className="admin-user-menu-options" role="menu">
                           <button role="menuitem" onClick={() => void openInfo(user, "view")}>
                             Visualizar detalhes
                           </button>
@@ -244,6 +286,18 @@ export default function AdminUsers() {
                             }}
                           >
                             Editar
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              menuTrigger.current?.focus({ preventScroll: true });
+                              setMenuUserId(null);
+                              setSuccess("");
+                              setResetTarget(user);
+                            }}
+                          >
+                            Redefinir senha
                           </button>
                           <button
                             role="menuitem"
@@ -320,6 +374,17 @@ export default function AdminUsers() {
             setSuccess("Usuário excluído definitivamente com sucesso.");
             setDeleteTarget(null);
             setRevision((r) => r + 1);
+          }}
+        />
+      )}
+      {resetTarget && (
+        <ResetUserPasswordModal
+          key={resetTarget.userId}
+          user={resetTarget}
+          onClose={() => setResetTarget(null)}
+          onSuccess={() => {
+            setResetTarget(null);
+            setSuccess("Senha redefinida com sucesso.");
           }}
         />
       )}
