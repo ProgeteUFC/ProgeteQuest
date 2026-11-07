@@ -38,6 +38,8 @@ import { AdminUserListResponseDto } from './dtos/responses/admin-user-list.respo
 import { TransferClassesResponseDto } from './dtos/responses/transfer-classes.response.dto';
 import { TeacherTransferService } from './teacher-transfer.service';
 import { ResetUserPasswordDto } from './dtos/reset-user-password.dto';
+import { ListAuditLogsQueryDto } from 'src/audit/dtos/list-audit-logs-query.dto';
+import { AuditLogListResponseDto } from 'src/audit/dtos/audit-log.response.dto';
 
 @ApiTags('Administração')
 @ApiBearerAuth('JWT')
@@ -167,6 +169,34 @@ export class AdminController {
     @User() admin: UserPayload,
   ) {
     return this.userService.create(createManagedUserDto, { adminId: admin.userId });
+  }
+
+  @Roles('admin')
+  @Get('audit-logs')
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @ApiOperation({
+    summary: 'Consultar registros de auditoria administrativa',
+    description:
+      'Exclusivo de administradores ativos. Lista os registros de auditoria com paginação, do mais recente para o mais antigo. Para administradores ou usuários afetados já excluídos, retorna o ID preservado na auditoria, com name e email nulos. Senhas, hashes e tokens nunca são retornados.',
+  })
+  @ApiOkResponse({
+    type: AuditLogListResponseDto,
+    description: 'Página de registros de auditoria.',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Parâmetros de consulta inválidos ou não reconhecidos (page ou limit).',
+  })
+  async listAuditLogs(
+    @Query() query: ListAuditLogsQueryDto,
+  ): Promise<AuditLogListResponseDto> {
+    return this.adminService.findAuditLogs(query);
   }
 
   @Roles('admin')
