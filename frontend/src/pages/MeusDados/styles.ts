@@ -175,19 +175,19 @@ export const SaveButton = styled.button`
   &:hover { background: ${(props) => props.theme.colors.challengeOrange}; }
 `;
 
-export const ExcluirButton = styled.button`
-  max-width: 260px;
-  padding: 5px 20px;
-  border: 0;
-  border-radius: 20px;
-  color: white;
-  background: ${(props) => props.theme.colors.indigo};
+export const DeletionNotice = styled.div`
+  margin-top: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 4px solid ${(props) => props.theme.colors.challengeOrange};
+  border-radius: 12px;
+  color: ${(props) => props.theme.colors.primaryDark};
+  background: ${(props) => props.theme.colors.primaryLight};
   font-family: "Baloo Paaji 2", sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-  &:hover { background: #e74c3c; }
+  font-size: 15px;
+  line-height: 1.35;
 `;
 
 export const LogoBottom = styled.img`
@@ -217,111 +217,3 @@ export const Image = styled.img`
 `;
 
 export const LogoTop = styled.img``;
-
-export const ModalBackdrop = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(20, 3, 65, 0.78);
-  backdrop-filter: blur(5px);
-`;
-
-export const ModalCard = styled.div`
-  width: min(440px, 100%);
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 8px solid white;
-  border-radius: 30px;
-  color: white;
-  background: ${(props) => props.theme.colors.indigo};
-  box-shadow: 0 24px 70px rgba(15, 0, 55, 0.45);
-  font-family: "Baloo Paaji 2", sans-serif;
-  text-align: center;
-
-  h2 { margin-top: 10px; font-size: 28px; line-height: 1.2; }
-  p { max-width: 340px; margin-top: 8px; font-size: 16px; line-height: 1.35; }
-  label { width: 100%; margin-top: 22px; text-align: left; font-size: 16px; font-weight: 600; }
-  > input {
-    width: 100%;
-    min-height: 44px;
-    margin-top: 6px;
-    padding: 8px 16px;
-    border: 2px solid transparent;
-    border-radius: 22px;
-    outline: none;
-    color: ${(props) => props.theme.colors.primaryDark};
-    background: white;
-    font-family: inherit;
-    font-size: 16px;
-  }
-  > input:focus { border-color: ${(props) => props.theme.colors.lightOrange}; }
-
-  @media (max-width: 480px) {
-    padding: 24px 18px;
-    border-width: 6px;
-    border-radius: 24px;
-    h2 { font-size: 24px; }
-  }
-`;
-
-export const ModalIcon = styled.div`
-  width: 52px;
-  height: 52px;
-  display: grid;
-  place-items: center;
-  border: 4px solid ${(props) => props.theme.colors.lightOrange};
-  border-radius: 50%;
-  color: ${(props) => props.theme.colors.lightOrange};
-  font-size: 30px;
-  font-weight: 800;
-`;
-
-export const ModalActions = styled.div`
-  width: 100%;
-  margin-top: 22px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-
-  @media (max-width: 480px) { flex-direction: column-reverse; }
-`;
-
-export const CancelButton = styled.button`
-  padding: 8px 20px;
-  border: 2px solid white;
-  border-radius: 22px;
-  color: white;
-  background: transparent;
-  font-family: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  &:hover { background: rgba(255, 255, 255, 0.12); }
-  &:disabled { cursor: wait; opacity: 0.65; }
-`;
-
-export const ConfirmDeleteButton = styled.button`
-  padding: 8px 20px;
-  border: 2px solid #e74c3c;
-  border-radius: 22px;
-  color: white;
-  background: #e74c3c;
-  font-family: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  &:hover { border-color: #c0392b; background: #c0392b; }
-  &:disabled { cursor: wait; opacity: 0.65; }
-`;
-
-export const ModalError = styled.p`
-  width: 100%;
-  margin-top: 8px !important;
-  color: #ffd1d1;
-  text-align: left;
-  font-weight: 600;
-`;

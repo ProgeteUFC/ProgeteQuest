@@ -63,9 +63,21 @@ export interface UserDeletionImpact {
 }
 
 export interface PermanentDeletePayload {
+  /** Frase digitada pelo administrador: "EXCLUIR DEFINITIVAMENTE". */
+  confirmation: string;
   reason: string;
-  confirm: true;
-  password: string;
+  adminPassword: string;
+}
+
+/** Resposta do DELETE /admin/users/:id/permanent. Enquanto `executed` for false, nada foi excluído. */
+export interface PermanentDeleteResult {
+  userId: string;
+  executed: boolean;
+  validatedAt?: string;
+  validatedBy?: string;
+  reason?: string;
+  impact?: UserDeletionImpact;
+  pendingStep?: string;
 }
 
 export interface ClassTransferResult {
@@ -134,6 +146,38 @@ export function adminErrorMessage(error: unknown): string {
   return error instanceof Error
     ? error.message
     : "Não foi possível concluir a operação.";
+}
+
+/* Mensagens da exclusão definitiva: senha incorreta, usuário ativo e dependências. */
+export function permanentDeleteErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error) && error.response) {
+    const { status, data } = error.response;
+    const raw = data?.message;
+    const message = Array.isArray(raw) ? raw.join(" ") : typeof raw === "string" ? raw : "";
+
+    if (status === 401) {
+      return !message || message === "Unauthorized"
+        ? "Senha de administrador incorreta ou sessão expirada. Confira a senha e tente novamente."
+        : message;
+    }
+
+    if (status === 409) {
+      // O 409 de dependências também devolve `impact.blockedReasons` com os motivos.
+      const reasons = Array.isArray(data?.impact?.blockedReasons)
+        ? data.impact.blockedReasons.filter((item: unknown) => typeof item === "string").join(" ")
+        : "";
+      const base =
+        message ||
+        "Não foi possível excluir. O usuário precisa estar inativo e sem dependências que impeçam a exclusão.";
+      return reasons ? `${base} ${reasons}` : base;
+    }
+
+    if (status === 400) {
+      return message || "Não foi possível excluir. Confira os dados informados e tente novamente.";
+    }
+  }
+
+  return adminErrorMessage(error);
 }
 
 /* Gera uma senha temporária. */
@@ -235,7 +279,7 @@ export const adminService = {
       throw new Error("A exclusão definitiva ainda não está disponível.");
     }
 
-    return axios.delete(`${API_URL}/admin/users/${userId}/permanent`, {
+    return axios.delete<PermanentDeleteResult>(`${API_URL}/admin/users/${userId}/permanent`, {
       headers: authorization(),
       data: payload,
     });
