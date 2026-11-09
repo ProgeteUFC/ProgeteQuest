@@ -1,5 +1,6 @@
 import React from "react";
 import { ThemeProvider } from "styled-components";
+import AdminActivities from "./pages/Admin/AdminActivities";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -66,7 +67,7 @@ export default function App() {
             <Route path="classes" element={<ViewClasses embedded />} />
             <Route path="classes/new" element={<CadastrarDisciplina embedded />} />
             <Route path="classes/:turmaId" element={<VisualizandoTurmasProfessor embedded />} />
-            <Route path="activities" element={<AdminSection title="Atividades" />} />
+            <Route path="activities" element={<AdminActivities />} />
             <Route path="forums" element={<ForumPage embedded />} />
             <Route path="forums/:turmaId" element={<ForumTurmaPage embedded />} />
             <Route path="audit" element={<AdminSection title="Auditoria" />} />
